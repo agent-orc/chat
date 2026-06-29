@@ -1,0 +1,22 @@
+{
+  "name": "@coding-agent/chat",
+  "version": "0.0.1",
+  "description": "Best-in-class Angular library for rendering coding-agent conversations — the frontend counterpart to coding-agent-runner.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RobertMischke/coding-agent-chat.git"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=21.0.0 <22.0.0",
+    "@angular/core": ">=21.0.0 <22.0.0",
+    "@angular/forms": ">=21.0.0 <22.0.0",
+    "rxjs": "~7.8.0"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.2",
+    "marked": "^18.0.3",
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
