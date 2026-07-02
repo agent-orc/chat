@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>coding-agent-chat — Migrationsstand</title>
+  <style>
+    :root {
+      --bg: #f8f9fb;
+      --card: #fff;
+      --ink: #1a1a2e;
+      --muted: #5f6368;
+      --line: #e1e5ee;
+      --accent: #6c5ce7;
+      --accent-soft: rgba(108, 92, 231, .09);
+      --ok: #16a34a;
+      --ok-soft: rgba(34, 197, 94, .1);
+      --warn: #d97706;
+      --warn-soft: rgba(245, 158, 11, .12);
+      --open: #64748b;
+      --open-soft: rgba(100, 116, 139, .1);
+      --code: #111827;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+    main { max-width: 1120px; margin: 0 auto; padding: 36px 28px 56px; }
+    header { padding-bottom: 22px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+    .kicker { color: var(--accent); font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.05; letter-spacing: -.02em; }
+    h2 { margin: 0 0 14px; font-size: 1.25rem; line-height: 1.25; }
+    h3 { margin: 20px 0 8px; font-size: .95rem; text-transform: uppercase; letter-spacing: .05em; }
+    p { margin: 0 0 12px; color: var(--muted); }
+    section { margin-bottom: 22px; padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+    ul, ol { margin: 0 0 0 20px; padding: 0; }
+    li { margin: 6px 0; color: var(--muted); }
+    strong { color: var(--ink); }
+    code { border-radius: 5px; background: #eef1f7; color: #111827; font-family: "SFMono-Regular", Consolas, monospace; font-size: .9em; padding: 1px 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: .92rem; }
+    th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--ink); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; background: #f3f5f9; }
+    td { color: var(--muted); }
+    .note { padding: 12px 14px; border-left: 4px solid var(--accent); border-radius: 8px; background: var(--accent-soft); color: var(--ink); margin-top: 12px; }
+    .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+
+    .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .74rem; font-weight: 700; letter-spacing: .03em; white-space: nowrap; }
+    .chip.done { color: var(--ok); background: var(--ok-soft); }
+    .chip.blocker { color: var(--warn); background: var(--warn-soft); }
+    .chip.open { color: var(--open); background: var(--open-soft); }
+    .chip.next { color: var(--accent); background: var(--accent-soft); }
+
+    .milestones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .milestone { flex: 1 1 150px; min-width: 150px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+    .milestone .state { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .milestone.done { border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); background: linear-gradient(180deg, var(--card), #f7fdf9); }
+    .milestone.done .state { color: var(--ok); }
+    .milestone.open .state { color: var(--open); }
+    .milestone.next { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: linear-gradient(180deg, var(--card), #fbfbff); }
+    .milestone.next .state { color: var(--accent); }
+    .milestone .label { margin-top: 2px; font-weight: 650; color: var(--ink); font-size: .92rem; }
+    .milestone .detail { margin-top: 2px; font-size: .8rem; color: var(--muted); }
+
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 4px; }
+    .fact { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; }
+    .fact .num { font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em; color: var(--ink); }
+    .fact .cap { font-size: .8rem; color: var(--muted); }
+
+    .plan-step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .plan-step:last-child { border-bottom: none; padding-bottom: 0; }
+    .plan-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--accent); background: var(--accent-soft); }
+    .plan-body h4 { margin: 4px 0 6px; font-size: 1.02rem; }
+    .plan-body p { margin-bottom: 6px; font-size: .92rem; }
+    .plan-meta { font-size: .8rem; color: var(--muted); }
+    .plan-meta b { color: var(--ink); font-weight: 650; }
+
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+
+  <header>
+    <div class="kicker">Coding Agent Chat · Extraktions-Tracker</div>
+    <h1>Migrationsstand <code>@coding-agent/chat</code></h1>
+    <p>
+      Die Chat-UI des Agent-Studio-Frontends wird als eigenständige Angular-Library
+      (<code>C:\Projects\coding-agent-chat</code>) extrahiert — das Frontend-Gegenstück zu
+      <code>CodingAgentRunner</code> (NuGet). Diese Seite verfolgt den Stand und hält den Plan
+      für die nächsten Schritte fest.
+    </p>
+    <div class="milestones">
+      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Kernel &amp; Rendering</div><div class="detail">Phasen 0–4c + Theme</div></div>
+      <div class="milestone next"><div class="state">→ Als Nächstes</div><div class="label">Packaging-Fixes</div><div class="detail">Theme-Assets, provide*()</div></div>
+      <div class="milestone open"><div class="state">Offen</div><div class="label">Tests &amp; History</div><div class="detail">TestBed, ChatRow/Verlauf</div></div>
+      <div class="milestone open"><div class="state">Offen</div><div class="label">npm-Publish</div><div class="detail">0.1.0 + Conversation Lab</div></div>
+      <div class="milestone open"><div class="state">Offen</div><div class="label">Host-Adoption</div><div class="detail">App konsumiert die Lib</div></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Kennzahlen <span class="chip done">Stand 02.07.2026</span></h2>
+    <div class="facts">
+      <div class="fact"><div class="num">7 / 7</div><div class="cap">nummerierte Phasen (0–4c) abgeschlossen</div></div>
+      <div class="fact"><div class="num">6</div><div class="cap">ng-packagr-Entrypoints, Build grün</div></div>
+      <div class="fact"><div class="num">123 / 123</div><div class="cap">Vitest-Specs grün (nur Kernel)</div></div>
+      <div class="fact"><div class="num">0</div><div class="cap">reale Divergenz zur App (Frontend seit 28.06. eingefroren)</div></div>
+      <div class="fact"><div class="num">0 %</div><div class="cap">Host-Adoption — App nutzt die Lib noch nirgends</div></div>
+    </div>
+    <div class="note warn">
+      <strong>Größtes Risiko:</strong> ~20 Dateien existieren doppelt (App ↔ Library). Jede künftige
+      Chat-Änderung im App-Frontend divergiert sofort. Die Doppelpflege endet erst mit Schritt 5 (Host-Adoption).
+    </div>
+  </section>
+
+  <section>
+    <h2>Erledigte Phasen</h2>
+    <table>
+      <thead><tr><th>Phase</th><th>Inhalt</th><th>Commit</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>0 + 1</strong></td><td>Workspace-Bootstrap (Angular 21.2, ng-packagr, Prefix <code>cac</code>) + purer Kernel: <code>/core</code> mit ConversationEvent-Contract (~25 Event-Kinds), <code>/markdown</code>-Utils</td><td><code>609ab67</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>2</strong></td><td>Projektion invertiert: <code>projectConversation()</code> + Activity-Log-Parser auf lib-eigene Lite-Inputs, zero Host-Imports; Feld <code>job → task</code></td><td><code>857750e</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>3</strong></td><td>Shared Primitives vendored: <code>cacTooltip</code>, <code>cacStickToBottom</code>, Lightbox-Directive + <code>CHAT_MEDIA_LIGHTBOX</code>-Token</td><td><code>d5757be</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>4a</strong></td><td><code>&lt;cac-markdown&gt;</code> + <code>CHAT_TASK_REFERENCE_PROVIDER</code>-Seam (ersetzt Host-Navigationsservice)</td><td><code>2619d8a</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>4b</strong></td><td><code>&lt;cac-conversation-view&gt;</code> (alle Event-Kinds) + ToolBurstChip + SessionCard</td><td><code>6b08c05</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>4c</strong></td><td><code>&lt;cac-chat&gt;</code>-Composer + RoleBadge + Workforce-/Phasen-Helfer — „Phase 4 (render components) complete“</td><td><code>3f52023</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>Theme</strong></td><td>Studio-Look als Drop-in-Stylesheet (<code>cac-theme.scss/css</code>, Dark/Light, Markdown-Typografie)</td><td><code>212375f</code></td><td><span class="chip done">done</span></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px">
+      Die Lib-Kopien sind auf dem letzten App-Stand (inkl. Hover-Timestamps vom 22.06.); Kernel-Dateien
+      byte-identisch, Komponenten nur mechanisch umbenannt (<code>app*</code> → <code>cac*</code>).
+    </p>
+  </section>
+
+  <section class="decision" style="border-color: color-mix(in srgb, var(--accent) 38%, var(--line)); background: linear-gradient(180deg, var(--card), #fbfbff);">
+    <h2>Plan: die nächsten Schritte</h2>
+
+    <div class="plan-step">
+      <div class="plan-num">1</div>
+      <div class="plan-body">
+        <h4>Packaging-Fixes — Publish-Blocker beseitigen <span class="chip blocker">Blocker</span></h4>
+        <p>
+          <strong>(a)</strong> <code>theme/</code> wird nicht ins Paket geliefert: <code>assets</code>-Eintrag in
+          <code>ng-package.json</code> + <code>./theme</code>-Export ergänzen — der im SCSS dokumentierte Import-Pfad
+          läuft sonst ins Leere. <strong>(b)</strong> <code>provideCodingAgentChat()</code> ist in README und
+          public-api-Kommentar versprochen, aber nicht implementiert. <strong>(c)</strong> README-Entrypoint-Tabelle
+          vervollständigen (nur 2 von 6 gelistet), obsolete devDependency <code>@types/dompurify</code> entfernen.
+        </p>
+        <div class="plan-meta"><b>Aufwand:</b> klein · <b>Ergebnis:</b> Paket technisch publishfähig</div>
+      </div>
+    </div>
+
+    <div class="plan-step">
+      <div class="plan-num">2</div>
+      <div class="plan-body">
+        <h4>Test-Harness + Komponenten-Specs <span class="chip next">angekündigt</span></h4>
+        <p>
+          In vier Commit-Bodies als „follows“ angekündigt: TestBed-Wiring für die Angular-Komponenten.
+          Aktuell testen die 123 Specs nur den puren Kernel — <code>conversation</code>, <code>composer</code>,
+          <code>markdown</code>-Komponente und <code>shared</code>-Directives haben null Abdeckung.
+        </p>
+        <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> Refactoring-Sicherheit vor der Adoption</div>
+      </div>
+    </div>
+
+    <div class="plan-step">
+      <div class="plan-num">3</div>
+      <div class="plan-body">
+        <h4>ChatRow/History-Phase <span class="chip next">angekündigt</span></h4>
+        <p>
+          Im Phase-4c-Body explizit als eigene Phase angekündigt: <code>chat-row</code> und den Projekt-Chat-Verlauf
+          (<code>project-chat-rail</code>, virtualisierte <code>project-chat-list</code> inkl. Load-Strategy) extrahieren.
+          Dabei <code>chat-row</code> auf die Lib-RoleBadge umstellen, sonst entstehen zwei Role-Badge-Wahrheiten.
+        </p>
+        <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> Chat-UI-Fläche der Lib vollständig</div>
+      </div>
+    </div>
+
+    <div class="plan-step">
+      <div class="plan-num">4</div>
+      <div class="plan-body">
+        <h4>Conversation Lab + npm-Publish 0.1.0</h4>
+        <p>
+          Die im README angekündigte Demo-/Playground-App als zweites Workspace-Projekt anlegen (Fixtures aus
+          <code>core</code> wiederverwenden) — sie ist zugleich der Konsumenten-Smoke-Test gegen <code>dist/</code>.
+          Danach Release-Workflow analog zum Runner: Version-Tag → GitHub Actions → npm (Trusted Publishing/OIDC
+          gibt es auch bei npm), <code>--access public</code> für das scoped Package.
+        </p>
+        <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> installierbares <code>@coding-agent/chat@0.1.0</code></div>
+      </div>
+    </div>
+
+    <div class="plan-step">
+      <div class="plan-num">5</div>
+      <div class="plan-body">
+        <h4>Host-Adoption im Agent-Studio-Frontend <span class="chip open">Schlussstein</span></h4>
+        <p>
+          Analog zum Runner-Muster (Block 6, heute für NuGet abgeschlossen): App konsumiert
+          <code>@coding-agent/chat</code>, die ~20 Duplikat-Dateien werden gelöscht, Import-Aliase leiten auf die
+          Lib um. Host-seitig bleiben: SignalR-/Polling-Anbindung, Seam-Implementierungen
+          (Task-Navigation, Lightbox-Viewer), Diff-Viewer, CLI-Console, Rich-Editor, Attachment-Upload.
+          Erst dieser Schritt beendet die Doppelpflege.
+        </p>
+        <div class="plan-meta"><b>Aufwand:</b> groß · <b>Ergebnis:</b> eine Quelle der Wahrheit, Migration abgeschlossen</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Empfohlene Reihenfolge:</strong> 1 → 2 → 3 → 4 → 5. Schritt 1 ist klein und entsperrt alles Weitere;
+      2 vor 5, damit die Adoption gegen getestete Komponenten läuft. Solange 5 aussteht: Chat-Änderungen im
+      App-Frontend immer in beide Richtungen spiegeln (heiße Dateien: <code>conversation-view/*</code>,
+      <code>conversation-projection.ts</code>, <code>chat.component.ts</code>, <code>conversation-event.ts</code>).
+    </div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>In der Library <span class="chip done">extrahiert</span></h2>
+      <ul>
+        <li><code>/core</code> — Event-Contract, Projektion, Activity-Log-Parser, Session-/Rate-Limit-Parsing (gut getestet)</li>
+        <li><code>/conversation</code> — <code>cac-conversation-view</code>, ToolBurstChip, SessionCard</li>
+        <li><code>/composer</code> — <code>cac-chat</code>, RoleBadge, Workforce-/Phasen-Helfer</li>
+        <li><code>/markdown</code> — <code>cac-markdown</code> + Utils (marked + dompurify, SSR-sicher)</li>
+        <li><code>/shared</code> — Tooltip, StickToBottom, Lightbox-Directive + Tokens</li>
+        <li><code>theme/</code> — Studio-Tokens als Stylesheet (⚠ noch nicht im Paket)</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Bewusst (noch) im Host <span class="chip open">offen</span></h2>
+      <ul>
+        <li><code>project-chat</code> (Rail + virtualisierte Liste) und <code>chat-row</code> → Schritt 3</li>
+        <li>SignalR-Streaming (<code>agent-bus</code>), CLI-Output-Polling → bleibt Host-Wiring</li>
+        <li>Seam-Implementierungen: Task-Navigation, Media-Lightbox-Viewer</li>
+        <li>Activity-Log-Raw-View, Diff-Viewer-Stack, CLI-Console, <code>markdown-rich-editor</code>, Attachment-Upload-Pipeline</li>
+        <li><code>jobId → task</code> Wire-Rename im Host („separate later task“, Commit 857750e)</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer>
+    <p>
+      <strong>Pflege:</strong> Diese Seite liegt als <code>docs/migration-status.html</code> im Repo
+      <code>coding-agent-chat</code> und ist damit git-versioniert (Wiki-Historie funktioniert). Bei jedem
+      abgeschlossenen Schritt: Status-Chips und Kennzahlen aktualisieren, Zeile in „Erledigte Phasen“ ergänzen.
+      Befund-Basis: Repo-Analyse vom 02.07.2026 (Build, 123 Specs, Paritätsvergleich gegen
+      <code>agent-taskboard-dev/frontend</code>).
+    </p>
+  </footer>
+
+</main>
+</body>
+</html>
