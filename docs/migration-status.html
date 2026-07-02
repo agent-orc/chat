@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>coding-agent-chat — Migrationsstand</title>
+  <title>coding-agent-chat — Migration Status</title>
   <style>
     :root {
       --bg: #f8f9fb;
@@ -86,188 +86,177 @@
 <main>
 
   <header>
-    <div class="kicker">Coding Agent Chat · Extraktions-Tracker</div>
-    <h1>Migrationsstand <code>@coding-agent/chat</code></h1>
+    <div class="kicker">Coding Agent Chat · Extraction Tracker</div>
+    <h1>Migration status <code>@coding-agent/chat</code></h1>
     <p>
-      Die Chat-UI des Agent-Studio-Frontends wird als eigenständige Angular-Library
-      (<code>C:\Projects\coding-agent-chat</code>) extrahiert — das Frontend-Gegenstück zu
-      <code>CodingAgentRunner</code> (NuGet). Diese Seite verfolgt den Stand und hält den Plan
-      für die nächsten Schritte fest.
+      The chat UI of the Agent Studio frontend is being extracted into a standalone
+      Angular library (<code>C:\Projects\coding-agent-chat</code>) — the frontend
+      counterpart to <code>CodingAgentRunner</code> (NuGet). This page tracks the
+      state of the migration and the plan for what comes next.
     </p>
     <div class="milestones">
-      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Kernel &amp; Rendering</div><div class="detail">Phasen 0–4c + Theme</div></div>
-      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Packaging-Fixes</div><div class="detail">Theme im Paket, provide*()</div></div>
-      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Komponenten-Tests</div><div class="detail">217 Specs, alle Entrypoints</div></div>
-      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">History-Extraktion</div><div class="detail">/history-Entrypoint, 7 Entrypoints</div></div>
-      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Conversation Lab</div><div class="detail">Demo-App gegen dist/</div></div>
-      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Host-Adoption</div><div class="detail">−16.644 Zeilen Duplikate</div></div>
-      <div class="milestone next"><div class="state">→ Letzter Schritt</div><div class="label">npm-Publish 0.1.0</div><div class="detail">wartet auf npm-Login (s.u.)</div></div>
+      <div class="milestone done"><div class="state">✔ Done</div><div class="label">Kernel &amp; rendering</div><div class="detail">Phases 0–4c + theme</div></div>
+      <div class="milestone done"><div class="state">✔ Done</div><div class="label">Packaging fixes</div><div class="detail">Theme in package, provide*()</div></div>
+      <div class="milestone done"><div class="state">✔ Done</div><div class="label">Component tests</div><div class="detail">246 specs, every entry point</div></div>
+      <div class="milestone done"><div class="state">✔ Done</div><div class="label">History extraction</div><div class="detail">/history entry point, 7 total</div></div>
+      <div class="milestone done"><div class="state">✔ Done</div><div class="label">Conversation Lab</div><div class="detail">demo app against dist/</div></div>
+      <div class="milestone done"><div class="state">✔ Done</div><div class="label">Host adoption</div><div class="detail">−16,644 lines of duplicates</div></div>
+      <div class="milestone next"><div class="state">→ Final step</div><div class="label">npm publish 0.1.0</div><div class="detail">waiting for npm login (see below)</div></div>
     </div>
   </header>
 
   <section>
-    <h2>Kennzahlen <span class="chip done">Stand 02.07.2026, abends</span></h2>
+    <h2>Key numbers <span class="chip done">as of 2026-07-03</span></h2>
     <div class="facts">
-      <div class="fact"><div class="num">217 / 217</div><div class="cap">Specs grün — Kernel <em>und</em> alle Komponenten (TestBed)</div></div>
-      <div class="fact"><div class="num">6 (+1)</div><div class="cap">Entrypoints publishfähig; /history in Extraktion</div></div>
-      <div class="fact"><div class="num">✔</div><div class="cap">Theme im Paket + <code>provideCodingAgentChat()</code> — Publish-Blocker beseitigt</div></div>
-      <div class="fact"><div class="num">100 %</div><div class="cap">Host-Adoption — App konsumiert die Lib, alle Duplikate gelöscht</div></div>
-      <div class="fact"><div class="num">−16.644</div><div class="cap">Zeilen Duplikat-Code aus dem App-Frontend entfernt (293 Dateien)</div></div>
-    </div>
-    <div class="note warn">
-      <strong>Größtes Risiko:</strong> ~20 Dateien existieren doppelt (App ↔ Library). Jede künftige
-      Chat-Änderung im App-Frontend divergiert sofort. Die Doppelpflege endet erst mit Schritt 5 (Host-Adoption).
+      <div class="fact"><div class="num">246 / 246</div><div class="cap">specs green — kernel <em>and</em> every component (TestBed)</div></div>
+      <div class="fact"><div class="num">7</div><div class="cap">entry points built and publishable (incl. /history)</div></div>
+      <div class="fact"><div class="num">✔</div><div class="cap">theme shipped in the package + <code>provideCodingAgentChat()</code> — publish blockers cleared</div></div>
+      <div class="fact"><div class="num">100 %</div><div class="cap">host adoption — the app consumes the library, all duplicates deleted</div></div>
+      <div class="fact"><div class="num">−16,644</div><div class="cap">lines of duplicated code removed from the app frontend (293 files)</div></div>
     </div>
   </section>
 
   <section>
-    <h2>Erledigte Phasen</h2>
+    <h2>Completed phases</h2>
     <table>
-      <thead><tr><th>Phase</th><th>Inhalt</th><th>Commit</th><th>Status</th></tr></thead>
+      <thead><tr><th>Phase</th><th>Contents</th><th>Commit</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td><strong>0 + 1</strong></td><td>Workspace-Bootstrap (Angular 21.2, ng-packagr, Prefix <code>cac</code>) + purer Kernel: <code>/core</code> mit ConversationEvent-Contract (~25 Event-Kinds), <code>/markdown</code>-Utils</td><td><code>609ab67</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>2</strong></td><td>Projektion invertiert: <code>projectConversation()</code> + Activity-Log-Parser auf lib-eigene Lite-Inputs, zero Host-Imports; Feld <code>job → task</code></td><td><code>857750e</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>3</strong></td><td>Shared Primitives vendored: <code>cacTooltip</code>, <code>cacStickToBottom</code>, Lightbox-Directive + <code>CHAT_MEDIA_LIGHTBOX</code>-Token</td><td><code>d5757be</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>4a</strong></td><td><code>&lt;cac-markdown&gt;</code> + <code>CHAT_TASK_REFERENCE_PROVIDER</code>-Seam (ersetzt Host-Navigationsservice)</td><td><code>2619d8a</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>4b</strong></td><td><code>&lt;cac-conversation-view&gt;</code> (alle Event-Kinds) + ToolBurstChip + SessionCard</td><td><code>6b08c05</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>4c</strong></td><td><code>&lt;cac-chat&gt;</code>-Composer + RoleBadge + Workforce-/Phasen-Helfer — „Phase 4 (render components) complete“</td><td><code>3f52023</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>Theme</strong></td><td>Studio-Look als Drop-in-Stylesheet (<code>cac-theme.scss/css</code>, Dark/Light, Markdown-Typografie)</td><td><code>212375f</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>5a</strong></td><td>Packaging-Fixes: Theme-Assets im Paket mit <code>./theme/*</code>-Exports, <code>provideCodingAgentChat()</code> (useExisting-Seams), README vollständig, <code>@types/dompurify</code> entfernt</td><td><code>d6e8e4a</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>5b</strong></td><td>Test-Harness: <code>ng test</code> entdeckt alle Entrypoints; TestBed-Specs für ConversationView, ToolBurstChip, SessionCard, cac-chat, cac-markdown, Tooltip/StickToBottom/Lightbox, provide*() — 217 Specs grün</td><td><code>ca05e91</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>5d′</strong></td><td>npm-Release-Workflow (Tag → Build+Test → Publish mit OIDC-Provenance) + <code>scripts/release.sh</code>, analog zum Runner</td><td><code>bea8636</code></td><td><span class="chip done">done</span></td></tr>
-        <tr><td><strong>5c</strong></td><td>History-Entrypoint <code>/history</code>: <code>cac-chat-row</code>, <code>cac-project-chat-list</code> (Virtualisierung + Load-Strategy), <code>cac-project-chat-rail</code>, <code>cac-phase-summary-list</code>; Seams <code>PROJECT_CHAT_DATA_SOURCE</code> + <code>CHAT_HISTORY_CONFIRM</code> (No-op-Defaults); inkl. Fix des Projektwechsel-Race aus dem App-Original; 246 Specs grün</td><td><em>siehe git log</em></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>0 + 1</strong></td><td>Workspace bootstrap (Angular 21.2, ng-packagr, prefix <code>cac</code>) + pure kernel: <code>/core</code> with the ConversationEvent contract (~25 event kinds), <code>/markdown</code> utils</td><td><code>609ab67</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>2</strong></td><td>Projection inverted: <code>projectConversation()</code> + activity-log parser onto library-owned lite inputs, zero host imports; field <code>job → task</code></td><td><code>857750e</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>3</strong></td><td>Shared primitives vendored: <code>cacTooltip</code>, <code>cacStickToBottom</code>, lightbox directive + <code>CHAT_MEDIA_LIGHTBOX</code> token</td><td><code>d5757be</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>4a</strong></td><td><code>&lt;cac-markdown&gt;</code> + <code>CHAT_TASK_REFERENCE_PROVIDER</code> seam (replaces the host navigation service)</td><td><code>2619d8a</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>4b</strong></td><td><code>&lt;cac-conversation-view&gt;</code> (all event kinds) + ToolBurstChip + SessionCard</td><td><code>6b08c05</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>4c</strong></td><td><code>&lt;cac-chat&gt;</code> composer + RoleBadge + workforce/phase helpers — "Phase 4 (render components) complete"</td><td><code>3f52023</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>Theme</strong></td><td>Studio look as a drop-in stylesheet (<code>cac-theme.scss/css</code>, dark/light, markdown typography)</td><td><code>212375f</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5a</strong></td><td>Packaging fixes: theme assets in the package with <code>./theme/*</code> exports, <code>provideCodingAgentChat()</code> (useExisting seams), README completed, <code>@types/dompurify</code> removed</td><td><code>d6e8e4a</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5b</strong></td><td>Test harness: <code>ng test</code> discovers every entry point; TestBed specs for ConversationView, ToolBurstChip, SessionCard, cac-chat, cac-markdown, tooltip/stick-to-bottom/lightbox, provide*()</td><td><code>ca05e91</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5d′</strong></td><td>npm release workflow (tag → build+test → publish with OIDC provenance) + <code>scripts/release.sh</code>, mirroring the runner</td><td><code>bea8636</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5c</strong></td><td>History entry point <code>/history</code>: <code>cac-chat-row</code>, <code>cac-project-chat-list</code> (virtualisation + load strategy), <code>cac-project-chat-rail</code>, <code>cac-phase-summary-list</code>; seams <code>PROJECT_CHAT_DATA_SOURCE</code> + <code>CHAT_HISTORY_CONFIRM</code> (no-op defaults); includes a fix for the project-switch race inherited from the app original</td><td><code>7fb9383</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5d</strong></td><td>Conversation Lab demo app: consumes the built <code>dist/</code> output, in-memory <code>PROJECT_CHAT_DATA_SOURCE</code>, dark/light toggle — <code>npm run lab</code></td><td><code>d995a7d</code></td><td><span class="chip done">done</span></td></tr>
       </tbody>
     </table>
     <p style="margin-top:10px">
-      Die Lib-Kopien sind auf dem letzten App-Stand (inkl. Hover-Timestamps vom 22.06.); Kernel-Dateien
-      byte-identisch, Komponenten nur mechanisch umbenannt (<code>app*</code> → <code>cac*</code>).
+      Library copies matched the app's latest state at extraction time; kernel files
+      byte-identical, components mechanically renamed (<code>app*</code> → <code>cac*</code>).
     </p>
   </section>
 
   <section class="decision" style="border-color: color-mix(in srgb, var(--accent) 38%, var(--line)); background: linear-gradient(180deg, var(--card), #fbfbff);">
-    <h2>Plan: die nächsten Schritte</h2>
+    <h2>Plan: the steps</h2>
 
     <div class="plan-step">
       <div class="plan-num">1</div>
       <div class="plan-body">
-        <h4>Packaging-Fixes — Publish-Blocker beseitigen <span class="chip done">✔ erledigt (5a)</span></h4>
+        <h4>Packaging fixes — clear the publish blockers <span class="chip done">✔ done (5a)</span></h4>
         <p>
-          <strong>(a)</strong> <code>theme/</code> wird nicht ins Paket geliefert: <code>assets</code>-Eintrag in
-          <code>ng-package.json</code> + <code>./theme</code>-Export ergänzen — der im SCSS dokumentierte Import-Pfad
-          läuft sonst ins Leere. <strong>(b)</strong> <code>provideCodingAgentChat()</code> ist in README und
-          public-api-Kommentar versprochen, aber nicht implementiert. <strong>(c)</strong> README-Entrypoint-Tabelle
-          vervollständigen (nur 2 von 6 gelistet), obsolete devDependency <code>@types/dompurify</code> entfernen.
+          Theme assets ship in the package with working <code>./theme/*</code> exports,
+          <code>provideCodingAgentChat()</code> is implemented, README covers all entry points,
+          obsolete <code>@types/dompurify</code> removed.
         </p>
-        <div class="plan-meta"><b>Aufwand:</b> klein · <b>Ergebnis:</b> Paket technisch publishfähig</div>
+        <div class="plan-meta"><b>Result:</b> package technically publishable</div>
       </div>
     </div>
 
     <div class="plan-step">
       <div class="plan-num">2</div>
       <div class="plan-body">
-        <h4>Test-Harness + Komponenten-Specs <span class="chip done">✔ erledigt (5b)</span></h4>
+        <h4>Test harness + component specs <span class="chip done">✔ done (5b)</span></h4>
         <p>
-          In vier Commit-Bodies als „follows“ angekündigt: TestBed-Wiring für die Angular-Komponenten.
-          Aktuell testen die 123 Specs nur den puren Kernel — <code>conversation</code>, <code>composer</code>,
-          <code>markdown</code>-Komponente und <code>shared</code>-Directives haben null Abdeckung.
+          TestBed wiring for every Angular component; before this phase only the pure
+          kernel was covered. 17 spec files, 217 specs at completion (246 after 5c).
         </p>
-        <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> Refactoring-Sicherheit vor der Adoption</div>
+        <div class="plan-meta"><b>Result:</b> refactoring safety ahead of adoption</div>
       </div>
     </div>
 
     <div class="plan-step">
       <div class="plan-num">3</div>
       <div class="plan-body">
-        <h4>ChatRow/History-Phase <span class="chip done">✔ erledigt (5c)</span></h4>
+        <h4>ChatRow/History phase <span class="chip done">✔ done (5c)</span></h4>
         <p>
-          Im Phase-4c-Body explizit als eigene Phase angekündigt: <code>chat-row</code> und den Projekt-Chat-Verlauf
-          (<code>project-chat-rail</code>, virtualisierte <code>project-chat-list</code> inkl. Load-Strategy) extrahieren.
-          Dabei <code>chat-row</code> auf die Lib-RoleBadge umstellen, sonst entstehen zwei Role-Badge-Wahrheiten.
+          <code>chat-row</code> and the project-chat history (rail + virtualised list incl.
+          load strategy) extracted as the <code>/history</code> entry point; chat-row now uses
+          the library role badge, so there is a single role-badge truth.
         </p>
-        <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> Chat-UI-Fläche der Lib vollständig</div>
+        <div class="plan-meta"><b>Result:</b> the library covers the full chat UI surface</div>
       </div>
     </div>
 
     <div class="plan-step">
       <div class="plan-num">4</div>
       <div class="plan-body">
-        <h4>Conversation Lab + npm-Publish 0.1.0 <span class="chip blocker">wartet auf npm-Login</span></h4>
+        <h4>Conversation Lab + npm publish 0.1.0 <span class="chip blocker">waiting for npm login</span></h4>
         <p>
-          Release-Workflow und <code>scripts/release.sh</code> stehen bereits (Commit <code>bea8636</code>).
-          <strong>Einmalige Handarbeit nötig:</strong> npm verlangt, dass das Paket existiert, bevor ein Trusted
-          Publisher konfigurierbar ist — d.h. einmal <code>npm login</code> und Erstpublish
-          (<code>npm run build && cd dist/coding-agent-chat && npm version 0.1.0 --no-git-tag-version && npm publish --access public</code>),
-          danach auf npmjs.com den Trusted Publisher (Repo <code>coding-agent-chat</code>, Workflow <code>release.yml</code>)
-          eintragen — analog zum NuGet-Setup des Runners. Der Scope <code>@coding-agent</code> muss dir auf npmjs.com
-          gehören (Org anlegen, falls noch nicht geschehen). Die Demo-App „Conversation Lab" folgt als zweites
-          Workspace-Projekt (Fixtures aus <code>core</code>).
+          The release workflow and <code>scripts/release.sh</code> are in place (commit <code>bea8636</code>),
+          the Conversation Lab demo app ships (<code>d995a7d</code>). <strong>One-time manual step left:</strong>
+          npm requires the package to exist before a Trusted Publisher can be configured — so log in once
+          (2FA or a granular token with 2FA bypass is mandatory) and run the first publish
+          (<code>npm run build &amp;&amp; cd dist/coding-agent-chat &amp;&amp; npm version 0.1.0 --no-git-tag-version &amp;&amp; npm publish --access public</code>),
+          then register the Trusted Publisher on npmjs.com (repo <code>coding-agent-chat</code>, workflow
+          <code>release.yml</code>) — mirroring the runner's NuGet setup. The <code>@coding-agent</code> scope
+          must belong to you.
         </p>
-        <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> installierbares <code>@coding-agent/chat@0.1.0</code></div>
+        <div class="plan-meta"><b>Result:</b> installable <code>@coding-agent/chat@0.1.0</code></div>
       </div>
     </div>
 
     <div class="plan-step">
       <div class="plan-num">5</div>
       <div class="plan-body">
-        <h4>Host-Adoption im Agent-Studio-Frontend <span class="chip done">✔ erledigt (5e)</span></h4>
+        <h4>Host adoption in the Agent Studio frontend <span class="chip done">✔ done (5e)</span></h4>
         <p>
-          Vollzogen am 03.07.2026 (App-Commit <code>90a9120b</code>): Das Frontend konsumiert
-          <code>@coding-agent/chat</code> (vorerst als <code>file:</code>-Dependency auf <code>dist/</code>,
-          Registry-Version nach dem Erstpublish). Alle ~72 Duplikat-Dateien gelöscht (−16.644 Zeilen), ~200
-          Konsumenten auf Lib-Entrypoints und <code>cac-*</code>-Selektoren umgestellt, Seams verkabelt
-          (<code>provideCodingAgentChat</code>, <code>PROJECT_CHAT_DATA_SOURCE</code>-Adapter,
-          <code>CHAT_HISTORY_CONFIRM</code>, SignalR via <code>appendLive()</code>). Host-seitig bleiben wie
-          geplant: Transport, Confirm-Dialog-UI, Diff-Viewer, CLI-Console, Rich-Editor, Attachment-Upload.
-          Verifiziert: Build grün, 991 Unit-Tests ohne neue Fehler, zwei adversariale Reviews, Live-Smoke auf
-          Dev und Stable ohne Konsolenfehler.
+          Completed 2026-07-03 (app commit <code>90a9120b</code>): the frontend consumes
+          <code>@coding-agent/chat</code> (as a <code>file:</code> dependency on <code>dist/</code> for now,
+          registry version after the first publish). All ~72 duplicated files deleted (−16,644 lines),
+          ~200 consumers moved to library entry points and <code>cac-*</code> selectors, seams wired
+          (<code>provideCodingAgentChat</code>, <code>PROJECT_CHAT_DATA_SOURCE</code> adapter,
+          <code>CHAT_HISTORY_CONFIRM</code>, SignalR via <code>appendLive()</code>). The host keeps, as planned:
+          transport, confirm dialog UI, diff viewer, CLI console, rich editor, attachment upload.
+          Verified: green build, 991 unit tests with zero new failures, two adversarial reviews,
+          live smoke on dev and stable without console errors.
         </p>
-        <div class="plan-meta"><b>Ergebnis:</b> eine Quelle der Wahrheit — die Doppelpflege ist beendet</div>
+        <div class="plan-meta"><b>Result:</b> a single source of truth — double maintenance has ended</div>
       </div>
     </div>
 
     <div class="note">
-      <strong>Verbleibende Handarbeit (einziger offener Punkt):</strong> npm-Erstpublish — einmal
-      <code>npm login</code>, dann <code>npm run build && cd dist/coding-agent-chat && npm version 0.1.0
-      --no-git-tag-version && npm publish --access public</code>; danach auf npmjs.com den Trusted Publisher
-      (Repo <code>coding-agent-chat</code>, Workflow <code>release.yml</code>) eintragen und im App-Frontend die
-      <code>file:</code>-Dependency durch die Registry-Version ersetzen. Der Scope <code>@coding-agent</code>
-      muss dir gehören. <strong>Wichtig bis dahin:</strong> Nach jedem Lib-Rebuild (<code>npm run build</code>)
-      im App-Frontend <code>npm install</code> ausführen (file:-Kopie, dokumentiert in <code>frontend/AGENTS.md</code>).
+      <strong>Remaining manual work (the only open item):</strong> the first npm publish — see step 4.
+      Afterwards replace the <code>file:</code> dependency in the app frontend with the registry version.
+      <strong>Until then:</strong> after every library rebuild (<code>npm run build</code>) run
+      <code>npm install</code> in the app frontend (the <code>file:</code> dependency is a physical copy;
+      documented in <code>frontend/AGENTS.md</code>).
     </div>
   </section>
 
   <div class="cols">
     <section>
-      <h2>In der Library <span class="chip done">extrahiert</span></h2>
+      <h2>In the library <span class="chip done">extracted</span></h2>
       <ul>
-        <li><code>/core</code> — Event-Contract, Projektion, Activity-Log-Parser, Session-/Rate-Limit-Parsing (gut getestet)</li>
+        <li><code>/core</code> — event contract, projection, activity-log parser, session/rate-limit parsing (well tested)</li>
         <li><code>/conversation</code> — <code>cac-conversation-view</code>, ToolBurstChip, SessionCard</li>
-        <li><code>/composer</code> — <code>cac-chat</code>, RoleBadge, Workforce-/Phasen-Helfer</li>
-        <li><code>/markdown</code> — <code>cac-markdown</code> + Utils (marked + dompurify, SSR-sicher)</li>
-        <li><code>/shared</code> — Tooltip, StickToBottom, Lightbox-Directive + Tokens</li>
-        <li><code>theme/</code> — Studio-Tokens als Stylesheet (⚠ noch nicht im Paket)</li>
+        <li><code>/composer</code> — <code>cac-chat</code>, RoleBadge, workforce/phase helpers</li>
+        <li><code>/markdown</code> — <code>cac-markdown</code> + utils (marked + dompurify, SSR-safe)</li>
+        <li><code>/history</code> — <code>cac-chat-row</code>, <code>cac-project-chat-list</code>, rail, phase summary</li>
+        <li><code>/shared</code> — tooltip, stick-to-bottom, lightbox directive + tokens</li>
+        <li><code>theme/</code> — studio tokens as a stylesheet, shipped in the package</li>
       </ul>
     </section>
     <section>
-      <h2>Bewusst (noch) im Host <span class="chip open">offen</span></h2>
+      <h2>Deliberately kept in the host <span class="chip open">by design</span></h2>
       <ul>
-        <li><code>project-chat</code> (Rail + virtualisierte Liste) und <code>chat-row</code> → Schritt 3</li>
-        <li>SignalR-Streaming (<code>agent-bus</code>), CLI-Output-Polling → bleibt Host-Wiring</li>
-        <li>Seam-Implementierungen: Task-Navigation, Media-Lightbox-Viewer</li>
-        <li>Activity-Log-Raw-View, Diff-Viewer-Stack, CLI-Console, <code>markdown-rich-editor</code>, Attachment-Upload-Pipeline</li>
-        <li><code>jobId → task</code> Wire-Rename im Host („separate later task“, Commit 857750e)</li>
+        <li>SignalR streaming (<code>agent-bus</code>), CLI output polling — host wiring</li>
+        <li>Seam implementations: task navigation, media-lightbox viewer, confirm dialog UI</li>
+        <li>Activity-log raw view, diff-viewer stack, CLI console, <code>markdown-rich-editor</code>, attachment upload pipeline</li>
       </ul>
     </section>
   </div>
 
   <footer>
     <p>
-      <strong>Pflege:</strong> Diese Seite liegt als <code>docs/migration-status.html</code> im Repo
-      <code>coding-agent-chat</code> und ist damit git-versioniert (Wiki-Historie funktioniert). Bei jedem
-      abgeschlossenen Schritt: Status-Chips und Kennzahlen aktualisieren, Zeile in „Erledigte Phasen“ ergänzen.
-      Befund-Basis: Repo-Analyse vom 02.07.2026; Schritte 5a–5e am 02./03.07.2026 vollständig umgesetzt
-      (Packaging, 246 Lib-Specs, /history-Entrypoint, Conversation Lab, Host-Adoption mit −16.644 Zeilen).
-      Offen ist allein der npm-Erstpublish (siehe Hinweis im Plan).
+      <strong>Maintenance:</strong> this page lives as <code>docs/migration-status.html</code> in the
+      <code>coding-agent-chat</code> repo and is git-versioned (wiki history works). Update the status
+      chips and key numbers with every completed step. Basis: repo analysis of 2026-07-02; steps
+      5a–5e implemented 2026-07-02/03. The only open item is the first npm publish (see plan step 4).
     </p>
   </footer>
 
