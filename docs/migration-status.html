@@ -99,8 +99,9 @@
       <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Packaging-Fixes</div><div class="detail">Theme im Paket, provide*()</div></div>
       <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Komponenten-Tests</div><div class="detail">217 Specs, alle Entrypoints</div></div>
       <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">History-Extraktion</div><div class="detail">/history-Entrypoint, 7 Entrypoints</div></div>
-      <div class="milestone open"><div class="state">Offen</div><div class="label">npm-Publish + Lab</div><div class="detail">wartet auf npm-Login (s.u.)</div></div>
-      <div class="milestone open"><div class="state">Offen</div><div class="label">Host-Adoption</div><div class="detail">App konsumiert die Lib</div></div>
+      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Conversation Lab</div><div class="detail">Demo-App gegen dist/</div></div>
+      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Host-Adoption</div><div class="detail">−16.644 Zeilen Duplikate</div></div>
+      <div class="milestone next"><div class="state">→ Letzter Schritt</div><div class="label">npm-Publish 0.1.0</div><div class="detail">wartet auf npm-Login (s.u.)</div></div>
     </div>
   </header>
 
@@ -110,8 +111,8 @@
       <div class="fact"><div class="num">217 / 217</div><div class="cap">Specs grün — Kernel <em>und</em> alle Komponenten (TestBed)</div></div>
       <div class="fact"><div class="num">6 (+1)</div><div class="cap">Entrypoints publishfähig; /history in Extraktion</div></div>
       <div class="fact"><div class="num">✔</div><div class="cap">Theme im Paket + <code>provideCodingAgentChat()</code> — Publish-Blocker beseitigt</div></div>
-      <div class="fact"><div class="num">0</div><div class="cap">reale Divergenz zur App (Frontend seit 28.06. eingefroren)</div></div>
-      <div class="fact"><div class="num">0 %</div><div class="cap">Host-Adoption — App nutzt die Lib noch nirgends</div></div>
+      <div class="fact"><div class="num">100 %</div><div class="cap">Host-Adoption — App konsumiert die Lib, alle Duplikate gelöscht</div></div>
+      <div class="fact"><div class="num">−16.644</div><div class="cap">Zeilen Duplikat-Code aus dem App-Frontend entfernt (293 Dateien)</div></div>
     </div>
     <div class="note warn">
       <strong>Größtes Risiko:</strong> ~20 Dateien existieren doppelt (App ↔ Library). Jede künftige
@@ -208,23 +209,30 @@
     <div class="plan-step">
       <div class="plan-num">5</div>
       <div class="plan-body">
-        <h4>Host-Adoption im Agent-Studio-Frontend <span class="chip open">Schlussstein</span></h4>
+        <h4>Host-Adoption im Agent-Studio-Frontend <span class="chip done">✔ erledigt (5e)</span></h4>
         <p>
-          Analog zum Runner-Muster (Block 6, heute für NuGet abgeschlossen): App konsumiert
-          <code>@coding-agent/chat</code>, die ~20 Duplikat-Dateien werden gelöscht, Import-Aliase leiten auf die
-          Lib um. Host-seitig bleiben: SignalR-/Polling-Anbindung, Seam-Implementierungen
-          (Task-Navigation, Lightbox-Viewer), Diff-Viewer, CLI-Console, Rich-Editor, Attachment-Upload.
-          Erst dieser Schritt beendet die Doppelpflege.
+          Vollzogen am 03.07.2026 (App-Commit <code>90a9120b</code>): Das Frontend konsumiert
+          <code>@coding-agent/chat</code> (vorerst als <code>file:</code>-Dependency auf <code>dist/</code>,
+          Registry-Version nach dem Erstpublish). Alle ~72 Duplikat-Dateien gelöscht (−16.644 Zeilen), ~200
+          Konsumenten auf Lib-Entrypoints und <code>cac-*</code>-Selektoren umgestellt, Seams verkabelt
+          (<code>provideCodingAgentChat</code>, <code>PROJECT_CHAT_DATA_SOURCE</code>-Adapter,
+          <code>CHAT_HISTORY_CONFIRM</code>, SignalR via <code>appendLive()</code>). Host-seitig bleiben wie
+          geplant: Transport, Confirm-Dialog-UI, Diff-Viewer, CLI-Console, Rich-Editor, Attachment-Upload.
+          Verifiziert: Build grün, 991 Unit-Tests ohne neue Fehler, zwei adversariale Reviews, Live-Smoke auf
+          Dev und Stable ohne Konsolenfehler.
         </p>
-        <div class="plan-meta"><b>Aufwand:</b> groß · <b>Ergebnis:</b> eine Quelle der Wahrheit, Migration abgeschlossen</div>
+        <div class="plan-meta"><b>Ergebnis:</b> eine Quelle der Wahrheit — die Doppelpflege ist beendet</div>
       </div>
     </div>
 
     <div class="note">
-      <strong>Empfohlene Reihenfolge:</strong> 1 → 2 → 3 → 4 → 5. Schritt 1 ist klein und entsperrt alles Weitere;
-      2 vor 5, damit die Adoption gegen getestete Komponenten läuft. Solange 5 aussteht: Chat-Änderungen im
-      App-Frontend immer in beide Richtungen spiegeln (heiße Dateien: <code>conversation-view/*</code>,
-      <code>conversation-projection.ts</code>, <code>chat.component.ts</code>, <code>conversation-event.ts</code>).
+      <strong>Verbleibende Handarbeit (einziger offener Punkt):</strong> npm-Erstpublish — einmal
+      <code>npm login</code>, dann <code>npm run build && cd dist/coding-agent-chat && npm version 0.1.0
+      --no-git-tag-version && npm publish --access public</code>; danach auf npmjs.com den Trusted Publisher
+      (Repo <code>coding-agent-chat</code>, Workflow <code>release.yml</code>) eintragen und im App-Frontend die
+      <code>file:</code>-Dependency durch die Registry-Version ersetzen. Der Scope <code>@coding-agent</code>
+      muss dir gehören. <strong>Wichtig bis dahin:</strong> Nach jedem Lib-Rebuild (<code>npm run build</code>)
+      im App-Frontend <code>npm install</code> ausführen (file:-Kopie, dokumentiert in <code>frontend/AGENTS.md</code>).
     </div>
   </section>
 
@@ -257,9 +265,9 @@
       <strong>Pflege:</strong> Diese Seite liegt als <code>docs/migration-status.html</code> im Repo
       <code>coding-agent-chat</code> und ist damit git-versioniert (Wiki-Historie funktioniert). Bei jedem
       abgeschlossenen Schritt: Status-Chips und Kennzahlen aktualisieren, Zeile in „Erledigte Phasen“ ergänzen.
-      Befund-Basis: Repo-Analyse vom 02.07.2026 (Build, Paritätsvergleich gegen
-      <code>agent-taskboard-dev/frontend</code>); Schritte 5a/5b/5d′ am Abend des 02.07. umgesetzt,
-      History-Extraktion (Schritt 3) in Arbeit.
+      Befund-Basis: Repo-Analyse vom 02.07.2026; Schritte 5a–5e am 02./03.07.2026 vollständig umgesetzt
+      (Packaging, 246 Lib-Specs, /history-Entrypoint, Conversation Lab, Host-Adoption mit −16.644 Zeilen).
+      Offen ist allein der npm-Erstpublish (siehe Hinweis im Plan).
     </p>
   </footer>
 
