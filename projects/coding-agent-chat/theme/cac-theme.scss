@@ -1,0 +1,554 @@
+// =============================================================================
+// coding-agent-chat — theme contract  (source; compiled to cac-theme.css)
+// =============================================================================
+//
+// Optional, drop-in side-effect stylesheet that gives the `cac-*` components
+// the studio look out of the box. Import it once at app level:
+//
+//   // angular.json "styles": [ "node_modules/@coding-agent/chat/theme/cac-theme.css" ]
+//   //  — or —
+//   @use '@coding-agent/chat/theme/cac-theme.css';      // global SCSS
+//
+// Components read these CSS custom properties (every one has a built-in
+// fallback, so the library still renders without this sheet — just unstyled).
+// Re-theme by overriding any token in your own `:root`; switch to the light
+// palette by setting `data-studio-theme="light"` on a root element
+// (typically <html>).
+//
+// This is a FOCUSED mirror of the agent-taskboard studio design tokens — only
+// the tokens the chat components actually consume, plus their transitive
+// primitives and the shared `.markdown-body` typography. It deliberately does
+// NOT ship the host's app-specific tokens (kanban lanes, board nav, modal
+// sizing, explorer geometry, …) — those don't belong to a chat library.
+//
+// Two tiers, mirroring the host:
+//   Tier 1 — primitives: raw palette + shadows, theme-independent (frozen).
+//   Tier 2 — semantic aliases: what components read; the light block overrides
+//            only the Tier-2 values that differ.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Tier 1 — Primitives (frozen across themes)
+// -----------------------------------------------------------------------------
+:root {
+  // Brand
+  --color-orange-500: #d97757;
+
+  // Neutral — slate (dark foreground / surfaces)
+  --color-slate-50:  #f8fafc;
+  --color-slate-200: #e2e8f0;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+
+  // Mocha — dark surfaces
+  --color-mocha-base:   #1e1e2e; // surface-2 (elevated)
+  --color-mocha-base-0: #0f0f1a; // surface-0 (body / editor)
+  --color-mocha-blue:   #89b4fa;
+
+  // Accent / status hues
+  --color-blue-400:      #569cd6; // VS Code blue
+  --color-blue-700:      #1d4ed8;
+  --color-purple-vscode: #c586c0;
+  --color-green-vscode:  #4ec9b0; // VS Code teal — markdown "accent-2" rail
+  --color-green-600:     #16a34a;
+  --color-green-700:     #15803d;
+  --color-red-500:       #ef4444;
+  --color-red-700:       #b91c1c;
+  --color-yellow-vscode: #cca700;
+  --color-yellow-700:    #a16207;
+  --color-violet-300:    #c4b5fd;
+  --color-violet-700:    #6d28d9;
+
+  // Greys — light theme surfaces / foreground
+  --color-grey-50:  #ffffff;
+  --color-grey-200: #ececec;
+  --color-grey-400: #d4d4d4;
+  --color-grey-500: #b4b4b4;
+  --color-grey-600: #888888;
+  --color-grey-700: #6e6e6e;
+  --color-grey-800: #555555;
+  --color-grey-900: #333333;
+  --color-grey-950: #1a1a1a;
+
+  // Alpha overlays
+  --alpha-white-04: rgba(255, 255, 255, 0.04);
+  --alpha-white-06: rgba(255, 255, 255, 0.06);
+  --alpha-white-10: rgba(255, 255, 255, 0.10);
+  --alpha-black-05: rgba(0, 0, 0, 0.05);
+
+  // Shadow scale (only the popover/tooltip step is used here)
+  --shadow-200:       0 2px 6px rgba(0, 0, 0, 0.30);
+  --shadow-200-light: 0 4px 14px rgba(0, 0, 0, 0.10);
+}
+
+// -----------------------------------------------------------------------------
+// Tier 2 — Semantic aliases — dark theme (the daily driver)
+// -----------------------------------------------------------------------------
+:root {
+  // Surfaces
+  --studio-bg-surface:  var(--color-mocha-base-0); // chrome-less pane background
+  --studio-bg-editor:   var(--color-mocha-base-0); // body surface
+  --studio-bg-elevated: var(--color-mocha-base);   // raised cards / inputs
+  --studio-bg-hover:    var(--alpha-white-04);
+  --studio-surface:     var(--studio-bg-elevated);
+
+  // Borders
+  --studio-border:        var(--alpha-white-06);
+  --studio-border-strong: var(--alpha-white-10);
+
+  // Foreground (text)
+  --studio-fg:        var(--color-slate-200);
+  --studio-fg-strong: var(--color-slate-50);
+  --studio-fg-dim:    var(--color-slate-400);
+  --studio-fg-muted:  var(--color-slate-500);
+
+  // Accents (brand + semantic)
+  --studio-accent:         var(--color-orange-500);   // brand orange
+  --studio-accent-2:       var(--color-green-vscode);  // teal (markdown code rail)
+  --studio-accent-3:       var(--color-blue-400);      // info
+  --studio-accent-4:       var(--color-purple-vscode);
+  --studio-accent-warn:    var(--color-yellow-vscode);
+  --studio-accent-success: var(--color-green-600);
+  --studio-accent-6:       var(--color-red-500);       // error / danger
+  --studio-on-accent:      var(--color-grey-950);      // text on an accent fill
+
+  // Severity (verdict / status pigments used by the conversation renderer)
+  --severity-pending: var(--color-violet-300);
+  --severity-info:    var(--color-mocha-blue);
+
+  // Tooltip surface (singleton injected by TooltipController)
+  --studio-tooltip-bg:        rgba(15, 17, 28, 0.96);
+  --studio-tooltip-fg:        var(--color-slate-200);
+  --studio-tooltip-fg-strong: var(--color-slate-50);
+  --studio-tooltip-fg-dim:    var(--color-slate-400);
+  --studio-tooltip-border:    rgba(148, 163, 184, 0.28);
+
+  // Elevation — tooltip drop shadow
+  --elevation-tooltip: var(--shadow-200);
+
+  // Type families
+  --font-ui:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  // Spacing scale (4px base) — only the steps the chat components use
+  --studio-spacing-2: 8px;
+  --studio-spacing-3: 12px;
+
+  // Density — compact row gap (host default: --studio-row-gap-compact)
+  --studio-row-gap: 3px;
+}
+
+// -----------------------------------------------------------------------------
+// Tier 2 — Light theme — overrides only the values that differ
+// -----------------------------------------------------------------------------
+[data-studio-theme='light'] {
+  // Surfaces
+  --studio-bg-surface:  #ffffff;                 // pure-white paper
+  --studio-bg-editor:   var(--color-grey-50);
+  --studio-bg-elevated: var(--color-grey-200);
+  --studio-bg-hover:    var(--alpha-black-05);
+  --studio-surface:     var(--studio-bg-surface);
+
+  // Borders
+  --studio-border:        var(--color-grey-400);
+  --studio-border-strong: var(--color-grey-500);
+
+  // Foreground
+  --studio-fg:        var(--color-grey-900);
+  --studio-fg-strong: var(--color-grey-950);
+  --studio-fg-dim:    var(--color-grey-800);
+  --studio-fg-muted:  var(--color-grey-600);
+
+  // Accents — darker on light so tinted-low-alpha pills stay WCAG-AA legible.
+  // (--studio-accent / -2 / -3 / -4 stay single-value across themes.)
+  --studio-accent-warn:    var(--color-yellow-700);
+  --studio-accent-success: var(--color-green-700);
+  --studio-accent-6:       var(--color-red-700);
+
+  // Severity — darker variants for readable pills on white.
+  --severity-pending: var(--color-violet-700);
+  --severity-info:    var(--color-blue-700);
+
+  // Tooltip — white shell.
+  --studio-tooltip-bg:        rgba(255, 255, 255, 0.97);
+  --studio-tooltip-fg:        var(--color-grey-900);
+  --studio-tooltip-fg-strong: var(--color-grey-950);
+  --studio-tooltip-fg-dim:    var(--color-grey-700);
+  --studio-tooltip-border:    rgba(0, 0, 0, 0.14);
+
+  // Elevation — softer shadow on white.
+  --elevation-tooltip: var(--shadow-200-light);
+}
+
+// -----------------------------------------------------------------------------
+// Shared markdown / rich-text typography.
+//
+// Every surface that renders markdown applies `class="markdown-body"` (plus the
+// `markdown-body--dense` variant for chat-width columns) and stops re-declaring
+// h/li/code/pre/table/a rules. Palette is Catppuccin Mocha on dark; the light
+// block at the bottom swaps to a contrast-safe palette on white.
+// -----------------------------------------------------------------------------
+.markdown-body {
+  /* -- Tunable density tokens -------------------------------------- */
+  --md-font-size: 14.5px;
+  --md-line-height: 1.65;
+
+  /* -- Palette (Catppuccin Mocha) ---------------------------------- */
+  --md-fg:           #cdd6f4;            /* text       */
+  --md-fg-strong:    #f5e0dc;            /* rosewater  */
+  --md-fg-em:        #f2cdcd;            /* flamingo   */
+  --md-fg-muted:     #a6adc8;            /* subtext0   */
+  --md-fg-link:      #89dceb;            /* sky        */
+  --md-fg-link-hov:  #74c7ec;            /* sapphire   */
+  --md-fg-code:      #fab387;            /* peach      */
+  --md-fg-h3:        #b4befe;            /* lavender   */
+  --md-fg-h4:        #89b4fa;            /* blue       */
+  --md-marker:       #cba6f7;            /* mauve      */
+  --md-border-soft:  rgba(127, 132, 156, 0.30);
+  --md-border:       rgba(127, 132, 156, 0.45);
+  --md-rule:         rgba(127, 132, 156, 0.40);
+  --md-surface-soft: rgba(49, 50, 68, 0.45);
+  --md-surface:      rgba(49, 50, 68, 0.70);
+  --md-code-bg:      #181825;            /* mantle     */
+
+  color: var(--md-fg);
+  font-family: var(--font-ui);
+  font-size: var(--md-font-size);
+  line-height: var(--md-line-height);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Surrounding margin is owned by the host. */
+.markdown-body > :first-child { margin-top: 0; }
+.markdown-body > :last-child  { margin-bottom: 0; }
+
+/* -- Paragraphs --------------------------------------------------- */
+.markdown-body p {
+  margin: 0 0 0.85em;
+}
+
+/* -- Headings ----------------------------------------------------- */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--md-fg-strong);
+  margin: 1.6em 0 0.45em;
+}
+.markdown-body > h1:first-child,
+.markdown-body > h2:first-child,
+.markdown-body > h3:first-child,
+.markdown-body > h4:first-child,
+.markdown-body > h5:first-child,
+.markdown-body > h6:first-child {
+  margin-top: 0;
+}
+.markdown-body h1 {
+  font-size: 1.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--md-rule);
+}
+.markdown-body h2 {
+  font-size: 1.32em;
+  padding-bottom: 0.22em;
+  border-bottom: 1px solid var(--md-border-soft);
+}
+.markdown-body h3 {
+  font-size: 1.15em;
+  color: var(--md-fg-h3);
+}
+.markdown-body h4 {
+  font-size: 1em;
+  color: var(--md-fg-h4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.markdown-body h5 { font-size: 0.98em; }
+.markdown-body h6 { font-size: 0.92em; color: var(--md-fg-muted); }
+
+/* -- Emphasis ----------------------------------------------------- */
+.markdown-body strong,
+.markdown-body b { color: var(--md-fg-strong); font-weight: 600; }
+.markdown-body em,
+.markdown-body i { color: var(--md-fg-em); font-style: italic; }
+
+/* A lone-bold-line paragraph is a common "section header" in agent prose. */
+.markdown-body p:has(> strong:only-child) {
+  margin-top: 1.3em;
+  margin-bottom: 0.4em;
+  color: var(--md-fg-strong);
+  font-size: 1.02em;
+}
+.markdown-body > p:first-child:has(> strong:only-child) { margin-top: 0; }
+
+/* -- Lists -------------------------------------------------------- */
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0 0 0.9em;
+  padding-left: 1.7em;
+}
+.markdown-body li { margin: 0.25em 0; }
+.markdown-body li::marker { color: var(--md-marker); }
+.markdown-body li > p { margin: 0.2em 0; }
+.markdown-body li > ul,
+.markdown-body li > ol { margin: 0.25em 0; }
+
+/* GFM task lists ([ ] / [x]) render as <li><input type=checkbox>… */
+.markdown-body li > input[type='checkbox'] {
+  margin-right: 6px;
+  vertical-align: middle;
+  accent-color: var(--md-marker);
+}
+
+/* -- Blockquote --------------------------------------------------- */
+.markdown-body blockquote {
+  margin: 0.9em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid var(--md-marker);
+  background: var(--md-surface-soft);
+  color: var(--md-fg-muted);
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+}
+.markdown-body blockquote > :first-child { margin-top: 0; }
+.markdown-body blockquote > :last-child  { margin-bottom: 0; }
+
+/* -- Horizontal rule --------------------------------------------- */
+.markdown-body hr {
+  border: 0;
+  height: 1px;
+  background: var(--md-rule);
+  margin: 1.4em 0;
+}
+
+/* -- Links -------------------------------------------------------- */
+.markdown-body a {
+  color: var(--md-fg-link);
+  text-decoration: underline;
+  text-decoration-color: rgba(137, 220, 235, 0.45);
+  text-underline-offset: 2px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  transition: color 0.12s ease, text-decoration-color 0.12s ease;
+}
+.markdown-body a:hover {
+  color: var(--md-fg-link-hov);
+  text-decoration-color: var(--md-fg-link-hov);
+}
+
+/* -- Inline code (anything not nested in <pre>) ------------------- */
+.markdown-body :not(pre) > code {
+  padding: 1px 6px;
+  background: var(--md-surface);
+  border: 1px solid var(--md-border-soft);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--md-fg-code);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* -- Fenced code blocks ------------------------------------------ */
+.markdown-body pre {
+  margin: 0.85em 0;
+  padding: 12px 14px;
+  background: var(--md-code-bg);
+  border: 1px solid var(--md-border-soft);
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  line-height: 1.55;
+  max-height: 480px;
+  overflow-y: auto;
+  /* Relative so the language badge can be absolutely positioned. */
+  position: relative;
+}
+
+/* Language hint badge — top-right pill when the block has `data-lang`. */
+.markdown-body pre.md-code[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-fg-meta, rgba(148, 163, 184, 0.65));
+  opacity: 0.65;
+  pointer-events: none;
+}
+.markdown-body pre.md-code[data-lang]:hover::before {
+  opacity: 1;
+}
+
+/* Per-language 2px accent rail — flips with the theme via studio accents. */
+.markdown-body pre.md-code--lang-ts,
+.markdown-body pre.md-code--lang-js {
+  border-left: 2px solid var(--studio-accent-3, #569cd6);
+}
+.markdown-body pre.md-code--lang-py {
+  border-left: 2px solid var(--studio-accent-2, #4ec9b0);
+}
+.markdown-body pre.md-code--lang-bash,
+.markdown-body pre.md-code--lang-powershell {
+  border-left: 2px solid var(--studio-fg-muted, #64748b);
+}
+.markdown-body pre.md-code--lang-json,
+.markdown-body pre.md-code--lang-yaml {
+  border-left: 2px solid var(--studio-accent-warn, #cca700);
+}
+.markdown-body pre.md-code--lang-diff {
+  border-left: 2px solid var(--studio-accent-4, #c586c0);
+}
+.markdown-body pre.md-code--lang-csharp {
+  border-left: 2px solid var(--studio-accent-4, #c586c0);
+}
+.markdown-body pre.md-code--lang-html,
+.markdown-body pre.md-code--lang-scss,
+.markdown-body pre.md-code--lang-css {
+  border-left: 2px solid var(--studio-accent, #d97757);
+}
+
+.markdown-body pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--md-fg);
+  font-size: inherit;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* Numbered fenced blocks (markdown-utils' opt-in numbered shape). */
+.markdown-body pre.md-code--numbered {
+  padding: 8px 0;
+}
+.markdown-body pre.md-code--numbered code {
+  display: block;
+  line-height: 1.55;
+}
+.markdown-body .md-code-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  column-gap: 12px;
+}
+.markdown-body .md-code-num {
+  text-align: right;
+  color: rgba(148, 163, 184, 0.55);
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+  padding-right: 2px;
+  border-right: 1px solid rgba(148, 163, 184, 0.12);
+}
+.markdown-body .md-code-text {
+  padding-left: 8px;
+  white-space: pre;
+  color: var(--md-fg);
+}
+
+/* -- Tables ------------------------------------------------------- */
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.9em 0;
+  font-size: 0.93em;
+  border: 1px solid var(--md-border-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.markdown-body th,
+.markdown-body td {
+  padding: 0.5em 0.8em;
+  text-align: left;
+  border-bottom: 1px solid var(--md-border-soft);
+  vertical-align: top;
+}
+.markdown-body th {
+  background: var(--md-surface);
+  color: var(--md-fg-h3);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.markdown-body tr:nth-child(even) td { background: var(--md-surface-soft); }
+.markdown-body tr:last-child td { border-bottom: none; }
+
+/* -- Images ------------------------------------------------------- */
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--md-border-soft);
+}
+
+/* Images decorated by `cacMarkdownLightbox` become clickable. */
+.markdown-body img.md-image-zoomable {
+  cursor: zoom-in;
+  transition: outline-color 0.15s ease, transform 0.15s ease;
+}
+.markdown-body img.md-image-zoomable:hover {
+  transform: translateY(-1px);
+}
+.markdown-body img.md-image-zoomable:focus-visible {
+  outline: 2px solid var(--md-fg-link);
+  outline-offset: 2px;
+}
+
+/* -- Dense variant (chat width, activity-log, prompt-history) ---- */
+.markdown-body.markdown-body--dense {
+  --md-font-size: 13.5px;
+  --md-line-height: 1.55;
+}
+.markdown-body.markdown-body--dense h1,
+.markdown-body.markdown-body--dense h2 {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.markdown-body.markdown-body--dense h1 { font-size: 1.3em; }
+.markdown-body.markdown-body--dense h2 { font-size: 1.18em; }
+.markdown-body.markdown-body--dense h3 { font-size: 1.08em; }
+.markdown-body.markdown-body--dense h4 { font-size: 0.98em; }
+
+/* -- Editor variant (TipTap ProseMirror) ------------------------- */
+.markdown-body.markdown-body--editor {
+  min-height: 124px;
+  white-space: pre-wrap;
+  caret-color: auto;
+}
+.markdown-body.markdown-body--editor:focus {
+  outline: none;
+}
+.markdown-body.markdown-body--editor img.ProseMirror-selectednode {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+
+/* -- Light-theme palette override --------------------------------- */
+html[data-studio-theme='light'] .markdown-body {
+  --md-fg:           #1a1a1a;
+  --md-fg-strong:    #1a1a1a;
+  --md-fg-em:        #1a1a1a;
+  --md-fg-muted:     #4a4a4a;
+  --md-fg-link:      #1d4ed8;
+  --md-fg-link-hov:  #1e40af;
+  --md-fg-code:      #a8472d;
+  --md-fg-h3:        #1a1a1a;
+  --md-fg-h4:        #1a1a1a;
+  --md-marker:       #d97757;
+  --md-border-soft:  rgba(0, 0, 0, 0.10);
+  --md-border:       rgba(0, 0, 0, 0.16);
+  --md-rule:         rgba(0, 0, 0, 0.12);
+  --md-surface-soft: rgba(0, 0, 0, 0.04);
+  --md-surface:      rgba(0, 0, 0, 0.06);
+  --md-code-bg:      rgba(0, 0, 0, 0.06);
+}
