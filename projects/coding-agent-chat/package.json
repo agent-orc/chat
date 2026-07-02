@@ -7,6 +7,16 @@
     "type": "git",
     "url": "https://github.com/RobertMischke/coding-agent-chat.git"
   },
+  "exports": {
+    "./theme/cac-theme.css": {
+      "style": "./theme/cac-theme.css",
+      "default": "./theme/cac-theme.css"
+    },
+    "./theme/cac-theme.scss": {
+      "sass": "./theme/cac-theme.scss",
+      "default": "./theme/cac-theme.scss"
+    }
+  },
   "peerDependencies": {
     "@angular/common": ">=21.0.0 <22.0.0",
     "@angular/core": ">=21.0.0 <22.0.0",
