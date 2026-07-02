@@ -1,18 +1,20 @@
 import { defineConfig } from 'vitest/config';
 
 /**
- * Vitest config for the pure, zero-Angular kernel (`core` + `markdown` entry
- * points). These specs are the frozen regression net carried over from the
- * host frontend; they need no Angular TestBed, only a DOM (jsdom) for the
- * markdown sanitiser / task-ref linker.
+ * Vitest config for the pure, zero-Angular kernel specs (`core` + the
+ * `markdown` utils). They need no Angular TestBed, only a DOM (jsdom) for
+ * the markdown sanitiser / task-ref linker.
  *
- * Angular component specs (ConversationView, Chat, ...) arrive in a later
- * phase and run through the `@angular/build:unit-test` builder (`ng test`).
+ * Angular component specs (*.component.spec.ts across all entry points) run
+ * through the `@angular/build:unit-test` builder (`npx ng test`), which
+ * resolves the `@coding-agent/chat/*` self-references — raw vitest cannot,
+ * so component specs are excluded here.
  */
 export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
     include: ['projects/coding-agent-chat/{core,markdown}/**/*.spec.ts'],
+    exclude: ['**/*.component.spec.ts', '**/node_modules/**'],
   },
 });

@@ -1,0 +1,40 @@
+<header class="lab-header">
+  <div class="lab-header__titles">
+    <h1>Conversation Lab</h1>
+    <p class="lab-header__sub">
+      Playground for the &#64;coding-agent/chat library — rendered against the built
+      <code>dist/</code> output (partial Ivy).
+    </p>
+  </div>
+  <button
+    type="button"
+    class="lab-theme-toggle"
+    data-testid="lab-theme-toggle"
+    (click)="toggleTheme()"
+  >
+    {{ theme() === 'dark' ? 'Switch to light' : 'Switch to dark' }}
+  </button>
+</header>
+
+<main class="lab-columns">
+  <section class="lab-panel" aria-label="Conversation view and composer">
+    <h2>Conversation view + composer</h2>
+    <div class="lab-panel__scroll">
+      <cac-conversation-view [events]="events()" />
+    </div>
+    <cac-chat
+      [messages]="[]"
+      placeholder="Steer the agent — Enter sends, Shift+Enter breaks the line"
+      emptyState="Type below: submits append a user turn to the conversation above."
+      submitLabel="Send"
+      bodyMaxHeight="10rem"
+      [allowAttachments]="false"
+      (submitMessage)="onComposerSubmit($event)"
+    />
+  </section>
+
+  <section class="lab-panel" aria-label="Project chat history">
+    <h2>Project chat history — in-memory data source</h2>
+    <cac-project-chat-list class="lab-history" project="conversation-lab" />
+  </section>
+</main>

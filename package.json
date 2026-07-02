@@ -6,6 +6,7 @@
     "build": "ng build coding-agent-chat",
     "watch": "ng build coding-agent-chat --watch --configuration development",
     "pack": "npm pack ./dist/coding-agent-chat --pack-destination ./dist",
+    "lab": "ng serve conversation-lab",
     "test": "vitest run",
     "test:watch": "vitest"
   },

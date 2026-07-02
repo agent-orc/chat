@@ -46,6 +46,12 @@
     },
     {
       "path": "./projects/coding-agent-chat/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/conversation-lab/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/conversation-lab/tsconfig.spec.json"
     }
   ]
 }
