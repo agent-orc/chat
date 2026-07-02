@@ -1,0 +1,57 @@
+name: release
+
+# Publishes @coding-agent/chat to npmjs.com when a version tag is pushed
+# (e.g. v0.1.0). The version is derived from the tag.
+#
+# Auth uses npm **Trusted Publishing** (OIDC): no long-lived token in secrets.
+# GitHub Actions mints a short-lived OIDC token; npm (CLI >= 11.5) exchanges it
+# against the Trusted Publisher policy configured on npmjs.com for this
+# package (repo RobertMischke/coding-agent-chat, workflow release.yml).
+#
+# ONE-TIME SETUP (npm requires the package to exist before a Trusted
+# Publisher can be configured): the very first publish must be manual —
+#   npm login && npm run build
+#   cd dist/coding-agent-chat && npm version 0.1.0 --no-git-tag-version
+#   npm publish --access public
+# — then add the Trusted Publisher on npmjs.com > package > Settings.
+#
+# To cut a release: `scripts/release.sh 0.1.0` (or push a `v0.1.0` tag).
+on:
+  push:
+    tags: [ 'v*.*.*' ]
+
+jobs:
+  publish:
+    name: build, test & publish to npmjs.com
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # required for Trusted Publishing / provenance
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Derive version from tag
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install
+        run: npm ci
+
+      - name: Test (kernel + component specs)
+        run: npx ng test
+
+      - name: Build library
+        run: npm run build
+
+      - name: Stamp version
+        working-directory: dist/coding-agent-chat
+        run: npm version ${{ steps.ver.outputs.version }} --no-git-tag-version
+
+      - name: Publish (Trusted Publishing / provenance)
+        working-directory: dist/coding-agent-chat
+        run: npm publish --provenance --access public
