@@ -1,5 +1,8 @@
+// Covers the pure markdown kernel: markdown -> HTML rendering (GFM, code
+// shapes, sanitised links, task-reference linking) and the HTML -> markdown
+// serialisation path the rich editor round-trips through.
 import { describe, expect, it } from 'vitest';
-import { linkTaskReferencesInHtml, markdownToHtml } from './markdown-utils';
+import { htmlToMarkdown, linkTaskReferencesInHtml, markdownToHtml } from './markdown-utils';
 
 describe('markdownToHtml', () => {
   it('renders headings, lists and inline formatting', () => {
@@ -298,5 +301,70 @@ describe('markdownToHtml', () => {
       expect(html).toContain('data-task-key="agent-taskboard::ass-738"');
       expect(html.match(/data-task-ref="true"/g)?.length).toBe(1);
     });
+
+    it('matches labels case-insensitively but keeps the original casing in the link text', () => {
+      const html = linkTaskReferencesInHtml('<p>see ass-738 now</p>', refs);
+
+      expect(html).toContain('data-task-key="agent-taskboard::ass-738"');
+      expect(html).toContain('>ass-738</a>');
+    });
+
+    it('links every occurrence of a label within one text node', () => {
+      const html = linkTaskReferencesInHtml('<p>ASS-738 first, then ASS-738 again.</p>', refs);
+
+      expect(html.match(/data-task-ref="true"/g)?.length).toBe(2);
+    });
+
+    it('returns the input unchanged for empty or blank-only reference lists', () => {
+      const input = '<p>See ASS-738.</p>';
+
+      expect(linkTaskReferencesInHtml(input, [])).toBe(input);
+      expect(linkTaskReferencesInHtml(input, null)).toBe(input);
+      expect(
+        linkTaskReferencesInHtml(input, [{ label: '   ', taskKey: 'agent-taskboard::blank' }]),
+      ).toBe(input);
+    });
+  });
+});
+
+describe('htmlToMarkdown', () => {
+  it('converts headings and paragraphs back to markdown blocks', () => {
+    expect(htmlToMarkdown('<h1>Title</h1><p>Body text</p><h2>Sub</h2>')).toBe(
+      '# Title\n\nBody text\n\n## Sub'
+    );
+  });
+
+  it('converts emphasis, inline code and links back to inline markdown', () => {
+    expect(
+      htmlToMarkdown('<p>Some <strong>bold</strong>, <em>soft</em>, <code>x</code> and <a href="https://example.com">docs</a></p>')
+    ).toBe('Some **bold**, _soft_, `x` and [docs](https://example.com)');
+  });
+
+  it('drops the link syntax for anchors without an href', () => {
+    expect(htmlToMarkdown('<p><a>plain label</a></p>')).toBe('plain label');
+  });
+
+  it('converts unordered and ordered lists', () => {
+    expect(htmlToMarkdown('<ul><li>one</li><li>two</li></ul>')).toBe('- one\n- two');
+    expect(htmlToMarkdown('<ol><li>first</li><li>second</li></ol>')).toBe('1. first\n2. second');
+  });
+
+  it('converts <pre><code> blocks to fenced code and <br> to a newline', () => {
+    expect(htmlToMarkdown('<pre><code>const a = 1;\nconst b = 2;</code></pre>')).toBe(
+      '```\nconst a = 1;\nconst b = 2;\n```'
+    );
+    expect(htmlToMarkdown('<p>line one<br>line two</p>')).toBe('line one\nline two');
+  });
+
+  it('collapses image srcs through serializeImageSrc when serialising', () => {
+    const markdown = htmlToMarkdown('<img src="/api/tasks/x/attachments/abc.png" alt="shot">', {
+      serializeImageSrc: (src) => src.replace('/api/tasks/x/', ''),
+    });
+    expect(markdown).toBe('![shot](attachments/abc.png)');
+  });
+
+  it('round-trips markdownToHtml output byte-stable (rich-editor invariant)', () => {
+    const md = '# Title\n\nSome **bold** and `code`\n\n- one\n- two\n\n```\na = 1\n```';
+    expect(htmlToMarkdown(markdownToHtml(md))).toBe(md);
   });
 });

@@ -9,7 +9,7 @@
     "coding-agent-chat": {
       "projectType": "library",
       "root": "projects/coding-agent-chat",
-      "sourceRoot": "projects/coding-agent-chat/src",
+      "sourceRoot": "projects/coding-agent-chat",
       "prefix": "cac",
       "architect": {
         "build": {
