@@ -27,6 +27,7 @@ and `rxjs ~7.8`.
 | `@coding-agent/chat/markdown` | `<cac-markdown>` + markdown utils + task-reference seam |
 | `@coding-agent/chat/conversation` | `<cac-conversation-view>` + tool-burst chip + session card |
 | `@coding-agent/chat/composer` | `<cac-chat>` composer + role badge + workforce/phase helpers |
+| `@coding-agent/chat/history` | `<cac-project-chat-list>` virtualised history + `<cac-chat-row>` + minimap rail + phase summary strip |
 | `@coding-agent/chat/shared` | `cacTooltip`, `cacStickToBottom`, lightbox directive + tokens |
 
 The `core` entry point keeps the `ConversationEvent` wire contract importable with
@@ -44,6 +45,12 @@ provideCodingAgentChat({
   mediaLightbox: MediaLightboxService,            // implements ChatMediaLightbox
 })
 ```
+
+The `history` entry point adds two more optional seams, provided directly:
+`PROJECT_CHAT_DATA_SOURCE` (the scroll/search/stats/turn transport behind
+`<cac-project-chat-list>` — defaults to an empty history) and
+`CHAT_HISTORY_CONFIRM` (guard prompt before loading an entire deep history —
+defaults to auto-confirm).
 
 ## Theme
 

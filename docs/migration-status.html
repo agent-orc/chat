@@ -96,19 +96,20 @@
     </p>
     <div class="milestones">
       <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Kernel &amp; Rendering</div><div class="detail">Phasen 0–4c + Theme</div></div>
-      <div class="milestone next"><div class="state">→ Als Nächstes</div><div class="label">Packaging-Fixes</div><div class="detail">Theme-Assets, provide*()</div></div>
-      <div class="milestone open"><div class="state">Offen</div><div class="label">Tests &amp; History</div><div class="detail">TestBed, ChatRow/Verlauf</div></div>
-      <div class="milestone open"><div class="state">Offen</div><div class="label">npm-Publish</div><div class="detail">0.1.0 + Conversation Lab</div></div>
+      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Packaging-Fixes</div><div class="detail">Theme im Paket, provide*()</div></div>
+      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">Komponenten-Tests</div><div class="detail">217 Specs, alle Entrypoints</div></div>
+      <div class="milestone done"><div class="state">✔ Fertig</div><div class="label">History-Extraktion</div><div class="detail">/history-Entrypoint, 7 Entrypoints</div></div>
+      <div class="milestone open"><div class="state">Offen</div><div class="label">npm-Publish + Lab</div><div class="detail">wartet auf npm-Login (s.u.)</div></div>
       <div class="milestone open"><div class="state">Offen</div><div class="label">Host-Adoption</div><div class="detail">App konsumiert die Lib</div></div>
     </div>
   </header>
 
   <section>
-    <h2>Kennzahlen <span class="chip done">Stand 02.07.2026</span></h2>
+    <h2>Kennzahlen <span class="chip done">Stand 02.07.2026, abends</span></h2>
     <div class="facts">
-      <div class="fact"><div class="num">7 / 7</div><div class="cap">nummerierte Phasen (0–4c) abgeschlossen</div></div>
-      <div class="fact"><div class="num">6</div><div class="cap">ng-packagr-Entrypoints, Build grün</div></div>
-      <div class="fact"><div class="num">123 / 123</div><div class="cap">Vitest-Specs grün (nur Kernel)</div></div>
+      <div class="fact"><div class="num">217 / 217</div><div class="cap">Specs grün — Kernel <em>und</em> alle Komponenten (TestBed)</div></div>
+      <div class="fact"><div class="num">6 (+1)</div><div class="cap">Entrypoints publishfähig; /history in Extraktion</div></div>
+      <div class="fact"><div class="num">✔</div><div class="cap">Theme im Paket + <code>provideCodingAgentChat()</code> — Publish-Blocker beseitigt</div></div>
       <div class="fact"><div class="num">0</div><div class="cap">reale Divergenz zur App (Frontend seit 28.06. eingefroren)</div></div>
       <div class="fact"><div class="num">0 %</div><div class="cap">Host-Adoption — App nutzt die Lib noch nirgends</div></div>
     </div>
@@ -130,6 +131,10 @@
         <tr><td><strong>4b</strong></td><td><code>&lt;cac-conversation-view&gt;</code> (alle Event-Kinds) + ToolBurstChip + SessionCard</td><td><code>6b08c05</code></td><td><span class="chip done">done</span></td></tr>
         <tr><td><strong>4c</strong></td><td><code>&lt;cac-chat&gt;</code>-Composer + RoleBadge + Workforce-/Phasen-Helfer — „Phase 4 (render components) complete“</td><td><code>3f52023</code></td><td><span class="chip done">done</span></td></tr>
         <tr><td><strong>Theme</strong></td><td>Studio-Look als Drop-in-Stylesheet (<code>cac-theme.scss/css</code>, Dark/Light, Markdown-Typografie)</td><td><code>212375f</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5a</strong></td><td>Packaging-Fixes: Theme-Assets im Paket mit <code>./theme/*</code>-Exports, <code>provideCodingAgentChat()</code> (useExisting-Seams), README vollständig, <code>@types/dompurify</code> entfernt</td><td><code>d6e8e4a</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5b</strong></td><td>Test-Harness: <code>ng test</code> entdeckt alle Entrypoints; TestBed-Specs für ConversationView, ToolBurstChip, SessionCard, cac-chat, cac-markdown, Tooltip/StickToBottom/Lightbox, provide*() — 217 Specs grün</td><td><code>ca05e91</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5d′</strong></td><td>npm-Release-Workflow (Tag → Build+Test → Publish mit OIDC-Provenance) + <code>scripts/release.sh</code>, analog zum Runner</td><td><code>bea8636</code></td><td><span class="chip done">done</span></td></tr>
+        <tr><td><strong>5c</strong></td><td>History-Entrypoint <code>/history</code>: <code>cac-chat-row</code>, <code>cac-project-chat-list</code> (Virtualisierung + Load-Strategy), <code>cac-project-chat-rail</code>, <code>cac-phase-summary-list</code>; Seams <code>PROJECT_CHAT_DATA_SOURCE</code> + <code>CHAT_HISTORY_CONFIRM</code> (No-op-Defaults); inkl. Fix des Projektwechsel-Race aus dem App-Original; 246 Specs grün</td><td><em>siehe git log</em></td><td><span class="chip done">done</span></td></tr>
       </tbody>
     </table>
     <p style="margin-top:10px">
@@ -144,7 +149,7 @@
     <div class="plan-step">
       <div class="plan-num">1</div>
       <div class="plan-body">
-        <h4>Packaging-Fixes — Publish-Blocker beseitigen <span class="chip blocker">Blocker</span></h4>
+        <h4>Packaging-Fixes — Publish-Blocker beseitigen <span class="chip done">✔ erledigt (5a)</span></h4>
         <p>
           <strong>(a)</strong> <code>theme/</code> wird nicht ins Paket geliefert: <code>assets</code>-Eintrag in
           <code>ng-package.json</code> + <code>./theme</code>-Export ergänzen — der im SCSS dokumentierte Import-Pfad
@@ -159,7 +164,7 @@
     <div class="plan-step">
       <div class="plan-num">2</div>
       <div class="plan-body">
-        <h4>Test-Harness + Komponenten-Specs <span class="chip next">angekündigt</span></h4>
+        <h4>Test-Harness + Komponenten-Specs <span class="chip done">✔ erledigt (5b)</span></h4>
         <p>
           In vier Commit-Bodies als „follows“ angekündigt: TestBed-Wiring für die Angular-Komponenten.
           Aktuell testen die 123 Specs nur den puren Kernel — <code>conversation</code>, <code>composer</code>,
@@ -172,7 +177,7 @@
     <div class="plan-step">
       <div class="plan-num">3</div>
       <div class="plan-body">
-        <h4>ChatRow/History-Phase <span class="chip next">angekündigt</span></h4>
+        <h4>ChatRow/History-Phase <span class="chip done">✔ erledigt (5c)</span></h4>
         <p>
           Im Phase-4c-Body explizit als eigene Phase angekündigt: <code>chat-row</code> und den Projekt-Chat-Verlauf
           (<code>project-chat-rail</code>, virtualisierte <code>project-chat-list</code> inkl. Load-Strategy) extrahieren.
@@ -185,12 +190,16 @@
     <div class="plan-step">
       <div class="plan-num">4</div>
       <div class="plan-body">
-        <h4>Conversation Lab + npm-Publish 0.1.0</h4>
+        <h4>Conversation Lab + npm-Publish 0.1.0 <span class="chip blocker">wartet auf npm-Login</span></h4>
         <p>
-          Die im README angekündigte Demo-/Playground-App als zweites Workspace-Projekt anlegen (Fixtures aus
-          <code>core</code> wiederverwenden) — sie ist zugleich der Konsumenten-Smoke-Test gegen <code>dist/</code>.
-          Danach Release-Workflow analog zum Runner: Version-Tag → GitHub Actions → npm (Trusted Publishing/OIDC
-          gibt es auch bei npm), <code>--access public</code> für das scoped Package.
+          Release-Workflow und <code>scripts/release.sh</code> stehen bereits (Commit <code>bea8636</code>).
+          <strong>Einmalige Handarbeit nötig:</strong> npm verlangt, dass das Paket existiert, bevor ein Trusted
+          Publisher konfigurierbar ist — d.h. einmal <code>npm login</code> und Erstpublish
+          (<code>npm run build && cd dist/coding-agent-chat && npm version 0.1.0 --no-git-tag-version && npm publish --access public</code>),
+          danach auf npmjs.com den Trusted Publisher (Repo <code>coding-agent-chat</code>, Workflow <code>release.yml</code>)
+          eintragen — analog zum NuGet-Setup des Runners. Der Scope <code>@coding-agent</code> muss dir auf npmjs.com
+          gehören (Org anlegen, falls noch nicht geschehen). Die Demo-App „Conversation Lab" folgt als zweites
+          Workspace-Projekt (Fixtures aus <code>core</code>).
         </p>
         <div class="plan-meta"><b>Aufwand:</b> mittel · <b>Ergebnis:</b> installierbares <code>@coding-agent/chat@0.1.0</code></div>
       </div>
@@ -248,8 +257,9 @@
       <strong>Pflege:</strong> Diese Seite liegt als <code>docs/migration-status.html</code> im Repo
       <code>coding-agent-chat</code> und ist damit git-versioniert (Wiki-Historie funktioniert). Bei jedem
       abgeschlossenen Schritt: Status-Chips und Kennzahlen aktualisieren, Zeile in „Erledigte Phasen“ ergänzen.
-      Befund-Basis: Repo-Analyse vom 02.07.2026 (Build, 123 Specs, Paritätsvergleich gegen
-      <code>agent-taskboard-dev/frontend</code>).
+      Befund-Basis: Repo-Analyse vom 02.07.2026 (Build, Paritätsvergleich gegen
+      <code>agent-taskboard-dev/frontend</code>); Schritte 5a/5b/5d′ am Abend des 02.07. umgesetzt,
+      History-Extraktion (Schritt 3) in Arbeit.
     </p>
   </footer>
 

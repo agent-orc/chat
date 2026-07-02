@@ -12,5 +12,6 @@ export * from '@coding-agent/chat/markdown';
 export * from '@coding-agent/chat/shared';
 export * from '@coding-agent/chat/conversation';
 export * from '@coding-agent/chat/composer';
+export * from '@coding-agent/chat/history';
 
 export * from './provide-coding-agent-chat';

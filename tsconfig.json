@@ -9,7 +9,8 @@
       "@coding-agent/chat/markdown": ["./dist/coding-agent-chat/markdown"],
       "@coding-agent/chat/shared": ["./dist/coding-agent-chat/shared"],
       "@coding-agent/chat/conversation": ["./dist/coding-agent-chat/conversation"],
-      "@coding-agent/chat/composer": ["./dist/coding-agent-chat/composer"]
+      "@coding-agent/chat/composer": ["./dist/coding-agent-chat/composer"],
+      "@coding-agent/chat/history": ["./dist/coding-agent-chat/history"]
     },
     "strict": true,
     "noImplicitOverride": true,
