@@ -92,55 +92,158 @@
       <p class="section__kicker reveal">Live demo — real components, no screenshots</p>
       <h2 class="section__title reveal">Watch a run become a conversation</h2>
       <p class="section__lead reveal">
-        Everything below is rendered by the library itself: a
-        <code>&lt;cac-conversation-view&gt;</code> replaying one run — user ask, agent plan, tool
-        bursts, a markdown answer with code, run marker, orchestrator sign-off — plus a
-        <code>&lt;cac-chat&gt;</code> composer that appends your turns locally.
+        Everything below is rendered by the library itself: two
+        <code>&lt;cac-conversation-view&gt;</code>s side by side — a feature run replayed event by
+        event, and a CI-flake hunt with a failing command, watchdog wait and orchestrator retry —
+        plus a <code>&lt;cac-chat&gt;</code> composer answered by a scripted demo agent.
       </p>
 
-      <div class="demo-frame reveal" [attr.data-studio-theme]="demoTheme()">
-        <div class="demo-frame__bar">
-          <button type="button" class="demo-btn demo-btn--accent" (click)="play()">
-            @if (playing()) {
-              ◼ Restart
-            } @else if (hasPlayed()) {
-              ↺ Replay
-            } @else {
-              ▶ Play
+      <div class="demo-controls reveal">
+        <button type="button" class="demo-btn" (click)="toggleDemoTheme()">
+          {{ demoTheme() === 'dark' ? '☀ Light preview' : '☾ Dark preview' }}
+        </button>
+      </div>
+
+      <div class="demo-duo">
+        <div class="demo-frame reveal" [attr.data-studio-theme]="demoTheme()">
+          <div class="demo-frame__bar">
+            <span class="demo-chip">Feature run · replay</span>
+            <button type="button" class="demo-btn demo-btn--accent" (click)="play()">
+              @if (playing()) {
+                ◼ Restart
+              } @else if (hasPlayed()) {
+                ↺ Replay
+              } @else {
+                ▶ Play
+              }
+            </button>
+            <span class="demo-frame__progress" aria-live="polite">
+              @if (playing()) {
+                event {{ shownSteps() }} / {{ totalSteps }} …
+              } @else if (hasPlayed()) {
+                {{ shownSteps() }} / {{ totalSteps }} events
+              } @else {
+                scroll or press play
+              }
+            </span>
+          </div>
+          <div class="demo-frame__view">
+            <!-- Browser-only: the page is prerendered, so the interactive library
+                 components load lazily on scroll instead of rendering on the server.
+                 The one-item @for tracked by theme re-creates the view on theme
+                 toggle: Chromium pins `color-mix(… currentColor …)` colors at node
+                 creation, so reused nodes would keep the previous theme's colors. -->
+            @defer (on viewport) {
+              @for (theme of [demoTheme()]; track theme) {
+                <cac-conversation-view [events]="demoEvents()" [isRunning]="playing()" />
+              }
+            } @placeholder {
+              <div class="skeleton skeleton--conversation" aria-hidden="true">
+                <div class="skeleton__row skeleton__row--user">
+                  <i class="skeleton__bar" style="width: 46%"></i>
+                </div>
+                <div class="skeleton__row">
+                  <i class="skeleton__bar" style="width: 72%"></i>
+                  <i class="skeleton__bar" style="width: 58%"></i>
+                </div>
+                <div class="skeleton__row">
+                  <i class="skeleton__bar skeleton__bar--chip" style="width: 34%"></i>
+                </div>
+                <div class="skeleton__row">
+                  <i class="skeleton__bar" style="width: 80%"></i>
+                  <i class="skeleton__bar" style="width: 64%"></i>
+                  <i class="skeleton__bar" style="width: 40%"></i>
+                </div>
+              </div>
             }
-          </button>
-          <span class="demo-frame__progress" aria-live="polite">
-            @if (playing()) {
-              streaming event {{ shownSteps() }} / {{ totalSteps }} …
-            } @else if (hasPlayed()) {
-              {{ shownSteps() }} / {{ totalSteps }} events
-            } @else {
-              scroll or press play to start the replay
+          </div>
+        </div>
+
+        <div class="demo-frame reveal" [attr.data-studio-theme]="demoTheme()">
+          <div class="demo-frame__bar">
+            <span class="demo-chip">Bugfix session · full transcript</span>
+            <span class="demo-frame__progress">stderr → retry → green</span>
+          </div>
+          <div class="demo-frame__view">
+            @defer (on viewport) {
+              @for (theme of [demoTheme()]; track theme) {
+                <cac-conversation-view [events]="demoEventsB" [isRunning]="false" />
+              }
+            } @placeholder {
+              <div class="skeleton skeleton--conversation" aria-hidden="true">
+                <div class="skeleton__row skeleton__row--user">
+                  <i class="skeleton__bar" style="width: 52%"></i>
+                </div>
+                <div class="skeleton__row">
+                  <i class="skeleton__bar" style="width: 68%"></i>
+                  <i class="skeleton__bar" style="width: 44%"></i>
+                </div>
+                <div class="skeleton__row">
+                  <i class="skeleton__bar skeleton__bar--chip" style="width: 30%"></i>
+                </div>
+                <div class="skeleton__row">
+                  <i class="skeleton__bar" style="width: 76%"></i>
+                  <i class="skeleton__bar" style="width: 60%"></i>
+                  <i class="skeleton__bar" style="width: 36%"></i>
+                </div>
+              </div>
             }
-          </span>
-          <button type="button" class="demo-btn" (click)="toggleDemoTheme()">
-            {{ demoTheme() === 'dark' ? '☀ Light preview' : '☾ Dark preview' }}
-          </button>
-        </div>
-        <div class="demo-frame__view">
-          <cac-conversation-view [events]="demoEvents()" [isRunning]="playing()" />
-        </div>
-        <div class="demo-frame__composer">
-          <cac-chat
-            [messages]="[]"
-            placeholder="Steer the agent — Enter sends, Shift+Enter breaks the line"
-            emptyState="Your turn: submits append a user message to the conversation above."
-            submitLabel="Send"
-            bodyMaxHeight="8rem"
-            [allowAttachments]="false"
-            (submitMessage)="onComposerSubmit($event)"
-          />
+          </div>
         </div>
       </div>
       <p class="section__foot reveal">
         The transcript is a plain <code>ConversationEvent[]</code> — the same wire contract the
         runner emits. Feed it your own events and the view does the grouping, folding and
         progressive disclosure.
+      </p>
+
+      <div
+        class="demo-frame demo-frame--solo reveal"
+        [attr.data-studio-theme]="demoTheme()"
+        id="try-it"
+      >
+        <div class="demo-frame__bar">
+          <span class="demo-chip">Try it · scripted demo agent</span>
+          <span class="demo-frame__progress" aria-live="polite">
+            @if (composerBusy()) {
+              Demo Agent is replying …
+            } @else if (composerEvents().length > 0) {
+              scripted reply delivered — send another
+            } @else {
+              type below — a scripted reply streams back
+            }
+          </span>
+        </div>
+        @defer (when composerEvents().length > 0) {
+          @if (composerEvents().length > 0) {
+            <div class="demo-frame__view demo-frame__view--mini">
+              @for (theme of [demoTheme()]; track theme) {
+                <cac-conversation-view [events]="composerEvents()" [isRunning]="composerBusy()" />
+              }
+            </div>
+          }
+        }
+        <div class="demo-frame__composer">
+          @defer (on viewport) {
+            <cac-chat
+              [messages]="[]"
+              placeholder="Ask the demo agent anything — Enter sends, Shift+Enter breaks the line"
+              emptyState="Submits get a scripted Demo Agent reply — plan, tool burst, markdown answer — streamed in right here."
+              submitLabel="Send"
+              bodyMaxHeight="8rem"
+              [allowAttachments]="false"
+              (submitMessage)="onComposerSubmit($event)"
+            />
+          } @placeholder {
+            <div class="skeleton skeleton--composer" aria-hidden="true">
+              <i class="skeleton__bar skeleton__bar--input"></i>
+            </div>
+          }
+        </div>
+      </div>
+      <p class="section__foot section__foot--center reveal">
+        The demo agent is scripted in the page — in production, wire
+        <code>(submitMessage)</code> to your runner and stream real events back.
       </p>
     </div>
   </section>
@@ -157,7 +260,18 @@
         come back ranked, with snippet highlighting.
       </p>
       <div class="history-frame reveal">
-        <cac-project-chat-list class="history-frame__list" project="website-demo" />
+        @defer (on viewport) {
+          <cac-project-chat-list class="history-frame__list" project="website-demo" />
+        } @placeholder {
+          <div class="skeleton skeleton--history" aria-hidden="true">
+            @for (width of [58, 44, 66, 38, 72, 50, 62, 46]; track $index) {
+              <div class="skeleton__row">
+                <i class="skeleton__bar skeleton__bar--chip" style="width: 12%"></i>
+                <i class="skeleton__bar" [style.width.%]="width"></i>
+              </div>
+            }
+          </div>
+        }
       </div>
       <p class="section__foot reveal">
         Scroll paging by timestamp cursor, ranked search, stats headline and single-turn resolve —

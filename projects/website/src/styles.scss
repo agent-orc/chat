@@ -430,6 +430,50 @@ code {
 
 /* ---------------------------------------------------------- demo frame -- */
 
+/* Shared width cap for single-column demo surfaces (composer + history):
+ * chat typography reads best well under the full 1120px content column. */
+:root {
+  --demo-solo-max: 680px;
+}
+
+.demo-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+/* Two different conversations side by side; stacked below 1000px. */
+.demo-duo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 22px);
+  align-items: stretch;
+}
+
+@media (max-width: 999px) {
+  .demo-duo {
+    grid-template-columns: 1fr;
+    max-width: var(--demo-solo-max);
+    margin: 0 auto;
+  }
+}
+
+.demo-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 119, 87, 0.4);
+  background: rgba(217, 119, 87, 0.12);
+  color: var(--site-accent);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .demo-frame {
   position: relative;
   border: 1px solid var(--site-line-strong);
@@ -540,6 +584,39 @@ code {
   overscroll-behavior: contain;
 }
 
+/* The "try it" frame sits alone under the duo, capped at chat width. */
+.demo-frame--solo {
+  max-width: var(--demo-solo-max);
+  margin: clamp(26px, 4vw, 40px) auto 0;
+}
+
+/* Its conversation grows with the scripted replies instead of reserving
+ * a full-height viewport up front. */
+.demo-frame__view--mini {
+  height: auto;
+  min-height: 0;
+  max-height: min(48vh, 420px);
+}
+
+.section__foot--center {
+  max-width: var(--demo-solo-max);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/* The scripted replies in the try-it frame are authored by a "Demo Agent" —
+ * relabel the library's generic Agent chip there (site-owned override; the
+ * library itself derives the label from the event kind). */
+.demo-frame--solo .conv__row--message[data-actor='message.taskAgent'] .msg__actor {
+  font-size: 0;
+}
+
+.demo-frame--solo .conv__row--message[data-actor='message.taskAgent'] .msg__actor::after {
+  content: 'Demo Agent';
+  font-size: 11.5px;
+}
+
 .demo-frame__composer {
   padding: 10px clamp(10px, 2.5vw, 22px) 14px;
   border-top: 1px solid var(--site-line);
@@ -563,6 +640,8 @@ code {
 /* -------------------------------------------------------- history frame -- */
 
 .history-frame {
+  max-width: var(--demo-solo-max);
+  margin: 0 auto;
   border: 1px solid var(--site-line-strong);
   border-radius: 18px;
   background: var(--studio-bg-surface, #0f0f1a);
@@ -577,6 +656,89 @@ code {
   display: block;
   height: min(62vh, 580px);
   min-height: 340px;
+}
+
+/* --------------------------------------------- defer-block skeletons -- */
+/* Static placeholders shown in the prerendered HTML while the interactive
+ * library components (`@defer (on viewport)`) are still loading. They mimic
+ * the frames' final geometry so nothing jumps when the real content lands. */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.skeleton--conversation {
+  min-height: 320px;
+  padding: 6px 2px;
+}
+
+.skeleton--history {
+  height: min(62vh, 580px);
+  min-height: 340px;
+  padding: 10px 8px;
+  overflow: hidden;
+}
+
+.skeleton--composer {
+  padding: 6px 0 2px;
+}
+
+.skeleton__row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton--history .skeleton__row {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton__row--user {
+  align-items: flex-end;
+}
+
+.skeleton__bar {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--site-line-strong) 25%,
+    rgba(255, 255, 255, 0.16) 50%,
+    var(--site-line-strong) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton__bar--chip {
+  height: 20px;
+  border-radius: 10px;
+}
+
+.skeleton__bar--input {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__bar {
+    animation: none;
+  }
 }
 
 /* -------------------------------------------------------------- cards -- */

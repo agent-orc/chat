@@ -15,6 +15,7 @@ import type {
   OrchestratorDecisionEvent,
   RawLineRange,
   RunMarkerEvent,
+  SupervisorWaitEvent,
   ToolBurstEvent,
 } from '@coding-agent/chat/core';
 
@@ -235,4 +236,373 @@ export function userTurnEvent(body: string): MessageEvent {
     body,
     rawRange: { source: 'website-demo.local', start: localTurnSeq, end: localTurnSeq },
   };
+}
+
+/* ======================================================================== *
+ * Second demo conversation — a different story for the right-hand frame:
+ * a red CI pipeline, a failing command with stderr, a watchdog wait, an
+ * orchestrator retry decision — and only then the green finish. Together
+ * with the feature replay on the left it shows the grammar covers the
+ * unhappy path too.
+ * ======================================================================== */
+
+const SOURCE_B = 'website-demo-ci.log';
+
+let lineCursorB = 0;
+function nextRangeB(span = 2): RawLineRange {
+  const start = lineCursorB + 1;
+  lineCursorB = start + span - 1;
+  return { source: SOURCE_B, start, end: lineCursorB };
+}
+
+/** Fixed base timestamp for run B (later the same afternoon). */
+function atB(minute: number, second = 0): string {
+  return new Date(Date.UTC(2026, 6, 2, 16, minute, second)).toISOString();
+}
+
+const bRunStart: RunMarkerEvent = {
+  id: 'run-7-start',
+  kind: 'runMarker',
+  timestamp: atB(0),
+  marker: 'start',
+  runId: 7,
+  cli: 'claude',
+  model: 'claude-fable-5',
+  sessionId: 'a41c6f80-2b9d-47e3-8c15-6e9f0d3b7a24',
+  rawRange: nextRangeB(),
+};
+
+const bUserAsk: MessageEvent = {
+  id: 'b-msg-user-1',
+  kind: 'message.user',
+  timestamp: atB(1),
+  actor: 'You',
+  body: 'CI is red again: `checkout.spec.ts` times out on the Linux runner only — `TimeoutError: locator(\'#pay-now\') not found`. Find the real flake, no retry band-aids.',
+  rawRange: nextRangeB(),
+};
+
+const bAgentPlan: MessageEvent = {
+  id: 'b-msg-agent-1',
+  kind: 'message.taskAgent',
+  timestamp: atB(2),
+  actor: 'Agent',
+  body: [
+    'On it. Suspicion: a race, not a missing element. Plan:',
+    '',
+    '1. Reproduce under the CI viewport and network throttle.',
+    '2. Trace when `#pay-now` actually mounts vs. when the test clicks.',
+    '3. Fix the root cause in the app or the wait condition — not the timeout.',
+  ].join('\n'),
+  rawRange: nextRangeB(4),
+};
+
+const bFailBurst: ToolBurstEvent = {
+  id: 'b-burst-1',
+  kind: 'toolBurst',
+  timestamp: atB(3, 20),
+  count: 7,
+  families: { read: 2, command: 4, search: 1 },
+  failures: 2,
+  durationMs: 41800,
+  files: ['e2e/checkout.spec.ts', 'src/app/checkout/payment-panel.ts'],
+  tests: [{ command: 'npx playwright test checkout --project=linux-ci', status: 'fail' }],
+  samples: {
+    command: 'npx playwright test checkout --project=linux-ci',
+    read: 'Read payment-panel.ts',
+    search: 'Grep "pay-now" src e2e',
+  },
+  commands: [
+    {
+      command: 'npx playwright test checkout --project=linux-ci',
+      status: 'failed',
+      exitCode: 1,
+      output: [
+        '  1) checkout.spec.ts:31 › pays with saved card',
+        "  TimeoutError: locator('#pay-now') not found after 15000ms",
+        '  stderr | payment-panel: currency feed not ready, deferring render',
+      ].join('\n'),
+      outputLineCount: 3,
+      outputTruncated: false,
+    },
+  ],
+  rawRange: nextRangeB(14),
+};
+
+const bWatchdog: SupervisorWaitEvent = {
+  id: 'b-wait-1',
+  kind: 'supervisor.wait',
+  timestamp: atB(5, 10),
+  state: 'resumed',
+  quietSeconds: 96,
+  reason: 'agent quiet while the traced re-run was executing',
+  rawRange: nextRangeB(1),
+};
+
+const bRetryDecision: OrchestratorDecisionEvent = {
+  id: 'b-dec-1',
+  kind: 'decision.orchestrator',
+  timestamp: atB(6),
+  decisionType: 'reissue',
+  reason: 'Repro confirmed but the first fix attempt only raised the timeout — that treats the symptom.',
+  evidence: 'stderr shows `currency feed not ready, deferring render`: the button mounts late, the test is right to fail.',
+  action: 'reissue',
+  retryBudget: { used: 1, max: 3 },
+  rawRange: nextRangeB(5),
+};
+
+const bAgentFindings: MessageEvent = {
+  id: 'b-msg-agent-2',
+  kind: 'message.taskAgent',
+  timestamp: atB(7),
+  actor: 'Agent',
+  body: 'Root cause found: `payment-panel` defers rendering until the currency feed resolves, and the Linux runner\'s cold cache makes that feed ~2s slower — the button genuinely is not there yet. Fixing the panel to render disabled-first, then enable on feed resolve. The spec keeps its strict timeout.',
+  rawRange: nextRangeB(3),
+};
+
+const bFixBurst: ToolBurstEvent = {
+  id: 'b-burst-2',
+  kind: 'toolBurst',
+  timestamp: atB(8, 30),
+  count: 8,
+  families: { edit: 3, read: 1, command: 4 },
+  failures: 0,
+  durationMs: 52400,
+  files: ['src/app/checkout/payment-panel.ts', 'e2e/checkout.spec.ts'],
+  tests: [{ command: 'npx playwright test checkout --repeat-each=25', status: 'pass' }],
+  samples: {
+    edit: 'Edit payment-panel.ts',
+    command: 'npx playwright test checkout --repeat-each=25',
+  },
+  commands: [
+    {
+      command: 'npx playwright test checkout --repeat-each=25',
+      status: 'completed',
+      exitCode: 0,
+      output: '  25 passed (3.1m) — zero flakes across repeats',
+      outputLineCount: 1,
+      outputTruncated: false,
+    },
+  ],
+  rawRange: nextRangeB(11),
+};
+
+const bAgentAnswer: MessageEvent = {
+  id: 'b-msg-agent-3',
+  kind: 'message.taskAgent',
+  timestamp: atB(10),
+  actor: 'Agent',
+  body: [
+    'Fixed at the root — no timeout was touched. The pay button now renders **disabled-first** and flips on when the currency feed resolves:',
+    '',
+    '```ts',
+    'readonly feed = inject(CurrencyFeed).rates; // resource',
+    '',
+    '// Render immediately; enable when rates resolve.',
+    'readonly payDisabled = computed(() =>',
+    '  this.feed.status() !== \'resolved\',',
+    ');',
+    '```',
+    '',
+    'The spec asserts the button exists *immediately* and becomes enabled within the old budget — `--repeat-each=25` runs green on the CI profile.',
+  ].join('\n'),
+  rawRange: nextRangeB(16),
+};
+
+const bRunComplete: RunMarkerEvent = {
+  id: 'run-7-complete',
+  kind: 'runMarker',
+  timestamp: atB(11),
+  marker: 'complete',
+  runId: 7,
+  cli: 'claude',
+  model: 'claude-fable-5',
+  durationSeconds: 660,
+  exitCode: 0,
+  tokens: { inputTokens: 48210, outputTokens: 9040 },
+  rawRange: nextRangeB(1),
+};
+
+const bFinalDecision: OrchestratorDecisionEvent = {
+  id: 'b-dec-2',
+  kind: 'decision.orchestrator',
+  timestamp: atB(11, 40),
+  decisionType: 'decision',
+  reason: 'Second attempt fixed the render race itself; the flake is gone under repeat pressure.',
+  evidence: '25/25 repeated checkout runs pass on the linux-ci profile with the original 15s budget.',
+  action: 'complete',
+  retryBudget: { used: 1, max: 3 },
+  rawRange: nextRangeB(5),
+};
+
+/** The right-hand demo: a debugging story with a failure, a retry, a fix. */
+export const DEMO_CONVERSATION_B: readonly ConversationEvent[] = [
+  bRunStart,
+  bUserAsk,
+  bAgentPlan,
+  bFailBurst,
+  bWatchdog,
+  bRetryDecision,
+  bAgentFindings,
+  bFixBurst,
+  bAgentAnswer,
+  bRunComplete,
+  bFinalDecision,
+];
+
+/* ======================================================================== *
+ * Scripted composer replies — a submit in the "try it" frame streams back
+ * a clearly-labelled Demo Agent turn (plan → tool burst → markdown answer
+ * that quotes the visitor's text). Purely local; no backend involved.
+ * ======================================================================== */
+
+/** One streamed step of a scripted reply: the event plus the pause before it. */
+export interface DemoResponseStep {
+  readonly event: ConversationEvent;
+  /** Milliseconds to wait before this event appears (0.5–2s pacing). */
+  readonly delayMs: number;
+}
+
+const DEMO_AGENT = 'Demo Agent';
+const DEMO_DISCLAIMER = '*(Demo response — in production this comes from your agent backend.)*';
+
+/** Compact single-line quote of the visitor's text for reply bodies. */
+function quoteUserText(text: string, max = 96): string {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  return flat.length > max ? `${flat.slice(0, max - 1)}…` : flat;
+}
+
+interface DemoResponseTemplate {
+  plan(quoted: string): string;
+  burst(): Omit<ToolBurstEvent, 'id' | 'timestamp' | 'rawRange' | 'kind'>;
+  answer(quoted: string): string;
+}
+
+const RESPONSE_TEMPLATES: readonly DemoResponseTemplate[] = [
+  {
+    plan: (q) =>
+      [
+        DEMO_DISCLAIMER,
+        '',
+        `Got it — you asked: “${q}”. Sketching a quick plan: locate the code involved, make the change, prove it with a spec.`,
+      ].join('\n'),
+    burst: () => ({
+      count: 6,
+      families: { read: 3, search: 2, command: 1 },
+      failures: 0,
+      durationMs: 4200,
+      files: ['src/app/feature/feature.ts', 'src/app/feature/feature.spec.ts'],
+      tests: [{ command: 'npx vitest run feature', status: 'pass' }],
+      samples: { read: 'Read feature.ts', search: 'Grep "feature" src/app' },
+    }),
+    answer: (q) =>
+      [
+        `Done — here is what a finished turn for **“${q}”** would look like:`,
+        '',
+        '- scoped the change to one module and its spec',
+        '- kept the public API untouched',
+        '- verification: `npx vitest run feature` → **all green**',
+        '',
+        'In a real deployment this text streams from *your* runner; the page only fakes the timing.',
+      ].join('\n'),
+  },
+  {
+    plan: (q) =>
+      [
+        DEMO_DISCLAIMER,
+        '',
+        `Reading “${q}” as the task. First a look at the surrounding code, then the smallest change that could work.`,
+      ].join('\n'),
+    burst: () => ({
+      count: 8,
+      families: { read: 3, edit: 3, command: 2 },
+      failures: 0,
+      durationMs: 6900,
+      files: ['src/app/core/service.ts', 'src/app/core/service.spec.ts'],
+      tests: [{ command: 'npx vitest run core', status: 'pass' }],
+      samples: { edit: 'Edit service.ts', command: 'npx vitest run core' },
+    }),
+    answer: (q) =>
+      [
+        `Landed. For **“${q}”** an agent would now report:`,
+        '',
+        '```diff',
+        '- const result = legacyPath(input);',
+        '+ const result = handleRequest(input); // covers the new case',
+        '```',
+        '',
+        'Two new specs pin the behaviour; the whole suite stays green. (Scripted demo — wire `submitMessage` to your backend for the real thing.)',
+      ].join('\n'),
+  },
+  {
+    plan: (q) =>
+      [
+        DEMO_DISCLAIMER,
+        '',
+        `“${q}” — checking whether that touches code, config or docs before editing anything.`,
+      ].join('\n'),
+    burst: () => ({
+      count: 5,
+      families: { search: 2, read: 2, command: 1 },
+      failures: 0,
+      durationMs: 3600,
+      files: ['docs/usage.md'],
+      samples: { search: 'Grep across src and docs', command: 'npm run lint' },
+    }),
+    answer: (q) =>
+      [
+        `Wrapped up. Summary for **“${q}”**:`,
+        '',
+        '1. traced the request to its owning module',
+        '2. applied the change plus an inline note for reviewers',
+        '3. `npm run lint` and the affected specs pass',
+        '',
+        '> This reply is scripted for the demo — the event shapes are exactly what a live backend would emit.',
+      ].join('\n'),
+  },
+];
+
+let demoResponseSeq = 0;
+
+/** Build the timed, scripted Demo Agent reply for one composer submit. */
+export function demoAgentResponseSteps(userText: string): readonly DemoResponseStep[] {
+  demoResponseSeq += 1;
+  const seq = demoResponseSeq;
+  const template = RESPONSE_TEMPLATES[(seq - 1) % RESPONSE_TEMPLATES.length];
+  const quoted = quoteUserText(userText);
+  const stamp = () => new Date().toISOString();
+  const range = (n: number): RawLineRange => ({
+    source: 'website-demo.scripted',
+    start: seq * 100 + n,
+    end: seq * 100 + n,
+  });
+
+  const plan: MessageEvent = {
+    id: `demo-reply-${seq}-plan`,
+    kind: 'message.taskAgent',
+    timestamp: stamp(),
+    actor: DEMO_AGENT,
+    body: template.plan(quoted),
+    rawRange: range(1),
+  };
+  const burst: ToolBurstEvent = {
+    id: `demo-reply-${seq}-burst`,
+    kind: 'toolBurst',
+    timestamp: stamp(),
+    ...template.burst(),
+    rawRange: range(2),
+  };
+  const answer: MessageEvent = {
+    id: `demo-reply-${seq}-answer`,
+    kind: 'message.taskAgent',
+    timestamp: stamp(),
+    actor: DEMO_AGENT,
+    body: template.answer(quoted),
+    rawRange: range(3),
+  };
+
+  return [
+    { event: plan, delayMs: 700 },
+    { event: burst, delayMs: 1400 },
+    { event: answer, delayMs: 1800 },
+  ];
 }

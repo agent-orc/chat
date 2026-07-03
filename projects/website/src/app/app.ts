@@ -13,7 +13,12 @@ import { ConversationViewComponent } from '@coding-agent/chat/conversation';
 import { ProjectChatListComponent } from '@coding-agent/chat/history';
 
 import { CodeBlockComponent } from './code-block.component';
-import { DEMO_REPLAY_STEPS, userTurnEvent } from './demo-fixtures';
+import {
+  DEMO_CONVERSATION_B,
+  DEMO_REPLAY_STEPS,
+  demoAgentResponseSteps,
+  userTurnEvent,
+} from './demo-fixtures';
 import {
   SNIPPET_CORE_ONLY,
   SNIPPET_DATA_SOURCE,
@@ -52,8 +57,6 @@ export class App {
   // --- Live demo: replayed conversation --------------------------------------
   /** How many fixture steps are currently on screen. */
   private readonly playedCount = signal(0);
-  /** Extra user turns appended locally by the composer. */
-  private readonly localTurns = signal<readonly ConversationEvent[]>([]);
   /** Invalidates pending timers when a replay restarts. */
   private replayToken = 0;
 
@@ -63,10 +66,22 @@ export class App {
   protected readonly totalSteps = DEMO_REPLAY_STEPS.length;
 
   protected readonly shownSteps = computed(() => this.playedCount());
-  protected readonly demoEvents = computed<readonly ConversationEvent[]>(() => [
-    ...DEMO_REPLAY_STEPS.slice(0, this.playedCount()).map((step) => step.event),
-    ...this.localTurns(),
-  ]);
+  protected readonly demoEvents = computed<readonly ConversationEvent[]>(() =>
+    DEMO_REPLAY_STEPS.slice(0, this.playedCount()).map((step) => step.event),
+  );
+
+  /** Second, static example conversation for the right-hand frame. */
+  protected readonly demoEventsB = DEMO_CONVERSATION_B;
+
+  // --- Composer demo: scripted Demo Agent replies ------------------------------
+  /** The composer frame's own mini conversation (user turns + scripted replies). */
+  protected readonly composerEvents = signal<readonly ConversationEvent[]>([]);
+  /** True while a scripted reply is still streaming in. */
+  protected readonly composerBusy = signal(false);
+  /** Submits waiting for their scripted reply, processed strictly in order. */
+  private readonly pendingReplies: string[] = [];
+  /** Guards composer timers on teardown. */
+  private composerAlive = true;
 
   // --- Sticky nav highlight ---------------------------------------------------
   protected readonly activeSection = signal<string>('');
@@ -79,13 +94,13 @@ export class App {
     });
     this.destroyRef.onDestroy(() => {
       this.replayToken += 1; // cancel any scheduled replay step
+      this.composerAlive = false; // cancel any scheduled scripted reply
     });
   }
 
   protected play(): void {
     this.replayToken += 1;
     const token = this.replayToken;
-    this.localTurns.set([]);
     this.playedCount.set(0);
     this.playing.set(true);
     this.hasPlayed.set(true);
@@ -99,12 +114,32 @@ export class App {
   protected onComposerSubmit(submit: ChatSubmitEvent): void {
     const text = submit.text.trim();
     if (text.length === 0) return;
-    // If the visitor types before pressing play, show the full transcript first.
-    if (this.playedCount() === 0) {
-      this.playedCount.set(this.totalSteps);
-      this.hasPlayed.set(true);
+    // The user turn lands immediately; the scripted reply queues behind any
+    // reply that is still streaming so multiple submits play out in order.
+    this.composerEvents.update((list) => [...list, userTurnEvent(text)]);
+    this.pendingReplies.push(text);
+    if (!this.composerBusy()) this.streamNextReply();
+  }
+
+  /** Pop the next queued submit and stream its scripted reply step by step. */
+  private streamNextReply(): void {
+    const text = this.pendingReplies.shift();
+    if (text === undefined) {
+      this.composerBusy.set(false);
+      return;
     }
-    this.localTurns.update((list) => [...list, userTurnEvent(text)]);
+    this.composerBusy.set(true);
+    const steps = demoAgentResponseSteps(text);
+    let elapsed = 0;
+    for (const [i, step] of steps.entries()) {
+      elapsed += step.delayMs;
+      const isLast = i === steps.length - 1;
+      setTimeout(() => {
+        if (!this.composerAlive) return;
+        this.composerEvents.update((list) => [...list, step.event]);
+        if (isLast) this.streamNextReply();
+      }, elapsed);
+    }
   }
 
   private scheduleStep(index: number, token: number): void {
