@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RootNamespace>CodingAgentChat.Workbench</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Deliberately a PackageReference to the *published* nuget.org package, not a
+      ProjectReference into the runner repo: the whole point of this workbench is
+      to exercise the two released artifacts together — the CodingAgentRunner
+      NuGet package driving a real CLI, and the @coding-agent/chat npm library
+      rendering its output.
+    -->
+    <PackageReference Include="CodingAgentRunner" Version="0.2.0" />
+  </ItemGroup>
+
+</Project>

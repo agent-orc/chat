@@ -6,26 +6,105 @@
       <code>dist/</code> output (partial Ivy).
     </p>
   </div>
-  <button
-    type="button"
-    class="lab-theme-toggle"
-    data-testid="lab-theme-toggle"
-    (click)="toggleTheme()"
-  >
-    {{ theme() === 'dark' ? 'Switch to light' : 'Switch to dark' }}
-  </button>
+  <div class="lab-header__actions">
+    <div class="lab-mode" role="group" aria-label="Datenquelle">
+      <button
+        type="button"
+        class="lab-mode__option"
+        [class.lab-mode__option--active]="mode() === 'demo'"
+        data-testid="lab-mode-demo"
+        (click)="setMode('demo')"
+      >
+        Demo
+      </button>
+      <button
+        type="button"
+        class="lab-mode__option"
+        [class.lab-mode__option--active]="mode() === 'live'"
+        data-testid="lab-mode-live"
+        (click)="setMode('live')"
+      >
+        Workbench (live)
+      </button>
+    </div>
+    <button
+      type="button"
+      class="lab-theme-toggle"
+      data-testid="lab-theme-toggle"
+      (click)="toggleTheme()"
+    >
+      {{ theme() === 'dark' ? 'Switch to light' : 'Switch to dark' }}
+    </button>
+  </div>
 </header>
+
+@if (mode() === 'live') {
+  <section class="lab-live-bar" aria-label="Workbench live controls">
+    <label class="lab-live-bar__field">
+      <span>Workbench-URL</span>
+      <input
+        type="url"
+        data-testid="lab-live-url"
+        [value]="live.baseUrl()"
+        (input)="setWorkbenchUrl($any($event.target).value)"
+      />
+    </label>
+    <label class="lab-live-bar__field">
+      <span>CLI</span>
+      <select
+        data-testid="lab-live-cli"
+        [value]="live.cliType()"
+        (change)="setCliType($any($event.target).value)"
+      >
+        @for (cli of cliTypes; track cli) {
+          <option [value]="cli">{{ cli }}</option>
+        }
+      </select>
+    </label>
+    <button
+      type="button"
+      class="lab-live-bar__start"
+      data-testid="lab-live-start"
+      (click)="startLive()"
+    >
+      Start
+    </button>
+    @if (live.sessionId()) {
+      <button
+        type="button"
+        class="lab-live-bar__stop"
+        data-testid="lab-live-stop"
+        (click)="stopLive()"
+      >
+        Stop
+      </button>
+    }
+    <span
+      class="lab-live-bar__status"
+      [attr.data-state]="live.connection()"
+      data-testid="lab-live-status"
+    >
+      <span class="lab-live-bar__status-dot" aria-hidden="true"></span>
+      {{ live.connection() }}
+      @if (live.sessionId(); as sid) {
+        <code class="lab-live-bar__session">{{ sid }}</code>
+      }
+    </span>
+  </section>
+}
 
 <main class="lab-columns">
   <section class="lab-panel" aria-label="Conversation view and composer">
-    <h2>Conversation view + composer</h2>
+    <h2>
+      {{ mode() === 'live' ? 'Live conversation — real CLI via workbench' : 'Conversation view + composer' }}
+    </h2>
     <div class="lab-panel__scroll">
       <cac-conversation-view [events]="events()" />
     </div>
     <cac-chat
       [messages]="[]"
-      placeholder="Steer the agent — Enter sends, Shift+Enter breaks the line"
-      emptyState="Type below: submits append a user turn to the conversation above."
+      [placeholder]="composerPlaceholder()"
+      [emptyState]="composerEmptyState()"
       submitLabel="Send"
       bodyMaxHeight="10rem"
       [allowAttachments]="false"
@@ -38,3 +117,10 @@
     <cac-project-chat-list class="lab-history" project="conversation-lab" />
   </section>
 </main>
+
+@if (live.error(); as toast) {
+  <div class="lab-toast" role="alert" data-testid="lab-live-toast">
+    <span>{{ toast }}</span>
+    <button type="button" aria-label="Meldung schließen" (click)="live.dismissError()">×</button>
+  </div>
+}

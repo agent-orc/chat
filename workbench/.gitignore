@@ -1,0 +1,6 @@
+# .NET build output of the workbench host
+bin/
+obj/
+
+# Scratch working directory the workbench hands to agent CLI runs
+sandbox/
