@@ -114,6 +114,8 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "projects/website/src/main.ts",
+            "server": "projects/website/src/main.server.ts",
+            "outputMode": "static",
             "tsConfig": "projects/website/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
