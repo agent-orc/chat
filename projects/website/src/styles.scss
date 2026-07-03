@@ -221,10 +221,12 @@ code {
 
 /* --------------------------------------------------------------- hero -- */
 
+/* Kept deliberately small: the first demo should be visible with little or
+ * no scrolling, so the hero is title + two sentences + install line + links. */
 .hero {
   position: relative;
   overflow: hidden;
-  padding: clamp(64px, 11vw, 128px) 0 clamp(48px, 7vw, 84px);
+  padding: clamp(28px, 4.5vw, 48px) 0 clamp(20px, 3vw, 30px);
   border-bottom: 1px solid var(--site-line);
   text-align: center;
 }
@@ -239,145 +241,49 @@ code {
     radial-gradient(900px 460px at 50% 118%, rgba(197, 134, 192, 0.08), transparent 70%);
 }
 
-.hero__grid {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse 78% 62% at 50% 32%, #000 25%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse 78% 62% at 50% 32%, #000 25%, transparent 78%);
-}
-
 .hero__inner {
   position: relative;
 }
 
-.hero__badge {
-  display: inline-block;
-  margin: 0 0 22px;
-  padding: 5px 14px;
-  border: 1px solid rgba(217, 119, 87, 0.35);
-  border-radius: 999px;
-  background: rgba(217, 119, 87, 0.1);
-  color: var(--site-accent);
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
 .hero__title {
-  margin: 0 0 18px;
-  font-size: clamp(2.5rem, 7vw, 4.35rem);
-  line-height: 1.06;
-  letter-spacing: -0.03em;
-  font-weight: 700;
+  margin: 0 0 12px;
+  font-size: clamp(1.7rem, 3.2vw, 2.35rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  font-weight: 650;
   color: var(--studio-fg-strong, #f8fafc);
   text-wrap: balance;
 }
 
-.hero__title .grad {
-  background: linear-gradient(
-    92deg,
-    var(--site-accent) 8%,
-    var(--site-accent-purple) 55%,
-    var(--site-accent-blue) 98%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 .hero__tag {
-  max-width: 680px;
-  margin: 0 auto 30px;
-  font-size: clamp(1.02rem, 2vw, 1.2rem);
+  max-width: 780px;
+  margin: 0 auto 16px;
+  font-size: clamp(0.95rem, 1.6vw, 1.02rem);
   color: var(--studio-fg-dim, #94a3b8);
   text-wrap: pretty;
 }
 
-.hero__tag b {
-  color: var(--studio-fg, #e2e8f0);
-  font-weight: 600;
-}
-
 .hero__install {
   max-width: 460px;
-  margin: 0 auto 26px;
+  margin: 0 auto 12px;
   text-align: left;
 }
 
-.hero__actions {
+.hero__links {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 42px;
-}
-
-.btn {
-  display: inline-block;
-  padding: 11px 22px;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-
-.btn:hover {
-  text-decoration: none;
-  transform: translateY(-1px);
-}
-
-.btn--primary {
-  background: linear-gradient(135deg, var(--site-accent), #c05f3f);
-  color: #16100d;
-  box-shadow: 0 4px 22px rgba(217, 119, 87, 0.35);
-}
-
-.btn--primary:hover {
-  box-shadow: 0 6px 28px rgba(217, 119, 87, 0.5);
-}
-
-.btn--ghost {
-  border: 1px solid var(--site-line-strong);
-  background: var(--studio-surface, #1e1e2e);
-  color: var(--studio-fg, #e2e8f0);
-}
-
-.btn--ghost:hover {
-  border-color: var(--site-accent);
-}
-
-.hero__stats {
-  display: flex;
-  justify-content: center;
-  gap: clamp(18px, 4vw, 46px);
+  gap: 8px 22px;
   flex-wrap: wrap;
   margin: 0;
+  font-size: 14px;
 }
 
-.hero__stats > div {
-  min-width: 96px;
+.hero__links a {
+  color: var(--studio-fg-dim, #94a3b8);
 }
 
-.hero__stats dt {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.hero__links a:hover {
   color: var(--studio-fg-strong, #f8fafc);
-}
-
-.hero__stats dd {
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: var(--site-muted);
 }
 
 /* ------------------------------------------------------------ sections -- */
@@ -386,6 +292,25 @@ code {
   padding: clamp(56px, 9vw, 104px) 0;
   border-bottom: 1px solid var(--site-line);
   scroll-margin-top: calc(var(--nav-height) + 10px);
+}
+
+/* The demo sits directly under the compact hero: a tight top padding keeps
+ * the first conversation frame inside the fold at 1440x900. */
+#demo.section {
+  padding-top: clamp(22px, 2.5vw, 32px);
+}
+
+#demo .section__kicker {
+  margin-bottom: 6px;
+}
+
+#demo .section__title {
+  margin-bottom: 10px;
+}
+
+#demo .section__lead {
+  max-width: 880px;
+  margin-bottom: 12px;
 }
 
 .section--alt {
@@ -439,23 +364,22 @@ code {
 .demo-controls {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
-/* Two different conversations side by side; stacked below 1000px. */
-.demo-duo {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(14px, 2vw, 22px);
-  align-items: stretch;
+/* The two example conversations stack vertically at reading width — chat
+ * typography reads best in a single centred column, same as the composer
+ * and history frames below. */
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 3vw, 32px);
 }
 
-@media (max-width: 999px) {
-  .demo-duo {
-    grid-template-columns: 1fr;
-    max-width: var(--demo-solo-max);
-    margin: 0 auto;
-  }
+.demo-stack > .demo-frame {
+  width: 100%;
+  max-width: 720px;
 }
 
 .demo-chip {
@@ -574,6 +498,101 @@ code {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* While the working indicator is up the status text may wrap instead of
+ * truncating — "last contact Ns ago" must stay readable. */
+.demo-frame__progress:has(.demo-working) {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+/* Working indicator in the frame chrome: pulsing dot + activity label +
+ * "last contact Ns ago". Shown during replay/reply gaps so long-running
+ * agent work visibly stays alive; disappears on "run complete". */
+.demo-working {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--studio-fg, #e2e8f0);
+  font-weight: 600;
+}
+
+.demo-working__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--site-accent-green);
+  animation: working-pulse 1.6s ease-out infinite;
+}
+
+@keyframes working-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(78, 201, 176, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(78, 201, 176, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(78, 201, 176, 0);
+  }
+}
+
+.demo-working__contact {
+  margin-left: 12px;
+  color: var(--studio-fg-dim, #94a3b8);
+  font-weight: 400;
+}
+
+/* Thinking-row placeholder: three animated dots as the "next line" of the
+ * conversation while the agent works; the real event replaces the gap. */
+.demo-thinking {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+  margin: 10px 0 4px;
+  padding: 11px 16px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  background: var(--studio-bg-elevated, #1e1e2e);
+}
+
+.demo-thinking i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--studio-fg-dim, #94a3b8);
+  animation: thinking-bounce 1.2s ease-in-out infinite;
+}
+
+.demo-thinking i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.demo-thinking i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes thinking-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-working__dot,
+  .demo-thinking i {
+    animation: none;
+  }
 }
 
 .demo-frame__view {
@@ -742,6 +761,14 @@ code {
 }
 
 /* -------------------------------------------------------------- cards -- */
+
+/* The numbers that used to headline the hero, demoted to one quiet line. */
+.stats-line {
+  margin: -14px 0 26px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  color: var(--site-muted);
+}
 
 .cards {
   display: grid;
@@ -1193,16 +1220,6 @@ code {
 
   .site-nav__sep {
     display: none;
-  }
-
-  /* The desktop-tuned line break makes the h1 wrap mid-phrase on narrow
-   * screens — let text-wrap: balance handle it instead. */
-  .hero__title br {
-    display: none;
-  }
-
-  .hero__stats {
-    gap: 18px 28px;
   }
 
   .demo-frame__bar {

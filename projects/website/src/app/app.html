@@ -6,9 +6,9 @@
       <span>&#64;coding-agent/<b>chat</b></span>
     </a>
     <div class="site-nav__links">
-      <a href="#demo" [class.is-active]="activeSection() === 'demo'">Live demo</a>
+      <a href="#demo" [class.is-active]="activeSection() === 'demo'">Demo</a>
       <a href="#history" [class.is-active]="activeSection() === 'history'">History</a>
-      <a href="#features" [class.is-active]="activeSection() === 'features'">Features</a>
+      <a href="#features" [class.is-active]="activeSection() === 'features'">Overview</a>
       <a href="#docs" [class.is-active]="activeSection() === 'docs'">Docs</a>
       <span class="site-nav__sep" aria-hidden="true"></span>
       <a
@@ -43,45 +43,28 @@
 <!-- ======================================================= Hero -->
 <header class="hero" id="top">
   <div class="hero__glow" aria-hidden="true"></div>
-  <div class="hero__grid" aria-hidden="true"></div>
   <div class="wrap hero__inner">
-    <p class="hero__badge reveal">Angular 21 · zoneless · Apache-2.0</p>
-    <h1 class="hero__title reveal">
-      The Angular chat UI for <br /><span class="grad">coding agents</span>
-    </h1>
+    <h1 class="hero__title reveal">Chat UI components for coding agents</h1>
     <p class="hero__tag reveal">
-      The frontend counterpart to
+      An Angular library that renders an agent's event stream as a readable conversation —
+      messages, tool activity, waits and decisions. Built as the frontend for
       <a href="https://github.com/RobertMischke/coding-agent-runner" target="_blank" rel="noopener"
         >coding-agent-runner</a
-      >: the runner produces the server-side event stream — <b>&#64;coding-agent/chat</b> renders it
-      as a fully grouped, progressively-disclosed conversation.
+      >; it works with any backend that emits the same events.
     </p>
     <div class="hero__install reveal">
       <site-code [code]="heroInstall" lang="sh" />
     </div>
-    <div class="hero__actions reveal">
-      <a class="btn btn--primary" href="#demo">See it live ↓</a>
-      <a
-        class="btn btn--ghost"
-        href="https://github.com/RobertMischke/coding-agent-chat"
-        target="_blank"
-        rel="noopener"
-        >Star on GitHub</a
+    <p class="hero__links reveal">
+      <a href="#demo">Demo below ↓</a>
+      <a href="#docs">Docs</a>
+      <a href="https://github.com/RobertMischke/coding-agent-chat" target="_blank" rel="noopener"
+        >GitHub</a
       >
-      <a
-        class="btn btn--ghost"
-        href="https://www.npmjs.com/package/@coding-agent/chat"
-        target="_blank"
-        rel="noopener"
-        >View on npm</a
+      <a href="https://www.npmjs.com/package/@coding-agent/chat" target="_blank" rel="noopener"
+        >npm</a
       >
-    </div>
-    <dl class="hero__stats reveal">
-      <div><dt>23+</dt><dd>event kinds</dd></div>
-      <div><dt>7</dt><dd>entry points</dd></div>
-      <div><dt>379</dt><dd>green specs</dd></div>
-      <div><dt>0</dt><dd>Angular imports in <code>core</code></dd></div>
-    </dl>
+    </p>
   </div>
 </header>
 
@@ -89,13 +72,12 @@
   <!-- ======================================================= Live demo -->
   <section id="demo" class="section">
     <div class="wrap">
-      <p class="section__kicker reveal">Live demo — real components, no screenshots</p>
-      <h2 class="section__title reveal">Watch a run become a conversation</h2>
+      <p class="section__kicker reveal">Demo — rendered by the library</p>
+      <h2 class="section__title reveal">A run, replayed as a conversation</h2>
       <p class="section__lead reveal">
-        Everything below is rendered by the library itself: two
-        <code>&lt;cac-conversation-view&gt;</code>s side by side — a feature run replayed event by
-        event, and a CI-flake hunt with a failing command, watchdog wait and orchestrator retry —
-        plus a <code>&lt;cac-chat&gt;</code> composer answered by a scripted demo agent.
+        Both conversations are rendered by <code>&lt;cac-conversation-view&gt;</code> from a plain
+        <code>ConversationEvent[]</code>. They replay at roughly real pace — while the agent
+        works, the frame shows what it is doing and when it last reported back.
       </p>
 
       <div class="demo-controls reveal">
@@ -104,24 +86,36 @@
         </button>
       </div>
 
-      <div class="demo-duo">
-        <div class="demo-frame reveal" [attr.data-studio-theme]="demoTheme()">
+      <div class="demo-stack">
+        <div
+          class="demo-frame reveal"
+          id="demo-frame-a"
+          [attr.data-studio-theme]="demoTheme()"
+        >
           <div class="demo-frame__bar">
             <span class="demo-chip">Feature run · replay</span>
-            <button type="button" class="demo-btn demo-btn--accent" (click)="play()">
-              @if (playing()) {
+            <button type="button" class="demo-btn demo-btn--accent" (click)="replayA.play()">
+              @if (replayA.playing()) {
                 ◼ Restart
-              } @else if (hasPlayed()) {
+              } @else if (replayA.hasPlayed()) {
                 ↺ Replay
               } @else {
                 ▶ Play
               }
             </button>
-            <span class="demo-frame__progress" aria-live="polite">
-              @if (playing()) {
-                event {{ shownSteps() }} / {{ totalSteps }} …
-              } @else if (hasPlayed()) {
-                {{ shownSteps() }} / {{ totalSteps }} events
+            <span class="demo-frame__progress">
+              @if (replayA.playing()) {
+                <span class="demo-working">
+                  <i class="demo-working__dot" aria-hidden="true"></i>
+                  Working — {{ workingA() }}
+                </span>
+                <span class="demo-working__contact"
+                  >last contact {{ contactA() }}s ago · event {{ replayA.played() }}/{{
+                    replayA.total
+                  }}</span
+                >
+              } @else if (replayA.hasPlayed()) {
+                run complete · {{ replayA.total }} events
               } @else {
                 scroll or press play
               }
@@ -135,7 +129,7 @@
                  creation, so reused nodes would keep the previous theme's colors. -->
             @defer (on viewport) {
               @for (theme of [demoTheme()]; track theme) {
-                <cac-conversation-view [events]="demoEvents()" [isRunning]="playing()" />
+                <cac-conversation-view [events]="replayA.events()" [isRunning]="replayA.playing()" />
               }
             } @placeholder {
               <div class="skeleton skeleton--conversation" aria-hidden="true">
@@ -156,18 +150,52 @@
                 </div>
               </div>
             }
+            @if (replayA.playing()) {
+              <div class="demo-thinking" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </div>
+            }
           </div>
         </div>
 
-        <div class="demo-frame reveal" [attr.data-studio-theme]="demoTheme()">
+        <div
+          class="demo-frame reveal"
+          id="demo-frame-b"
+          [attr.data-studio-theme]="demoTheme()"
+        >
           <div class="demo-frame__bar">
-            <span class="demo-chip">Bugfix session · full transcript</span>
-            <span class="demo-frame__progress">stderr → retry → green</span>
+            <span class="demo-chip">Bugfix session · replay</span>
+            <button type="button" class="demo-btn demo-btn--accent" (click)="replayB.play()">
+              @if (replayB.playing()) {
+                ◼ Restart
+              } @else if (replayB.hasPlayed()) {
+                ↺ Replay
+              } @else {
+                ▶ Play
+              }
+            </button>
+            <span class="demo-frame__progress">
+              @if (replayB.playing()) {
+                <span class="demo-working">
+                  <i class="demo-working__dot" aria-hidden="true"></i>
+                  Working — {{ workingB() }}
+                </span>
+                <span class="demo-working__contact"
+                  >last contact {{ contactB() }}s ago · event {{ replayB.played() }}/{{
+                    replayB.total
+                  }}</span
+                >
+              } @else if (replayB.hasPlayed()) {
+                run complete · {{ replayB.total }} events
+              } @else {
+                failing command → watchdog → retry → green
+              }
+            </span>
           </div>
           <div class="demo-frame__view">
             @defer (on viewport) {
               @for (theme of [demoTheme()]; track theme) {
-                <cac-conversation-view [events]="demoEventsB" [isRunning]="false" />
+                <cac-conversation-view [events]="replayB.events()" [isRunning]="replayB.playing()" />
               }
             } @placeholder {
               <div class="skeleton skeleton--conversation" aria-hidden="true">
@@ -188,13 +216,18 @@
                 </div>
               </div>
             }
+            @if (replayB.playing()) {
+              <div class="demo-thinking" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </div>
+            }
           </div>
         </div>
       </div>
       <p class="section__foot reveal">
-        The transcript is a plain <code>ConversationEvent[]</code> — the same wire contract the
-        runner emits. Feed it your own events and the view does the grouping, folding and
-        progressive disclosure.
+        Feed the view your own events and it does the grouping, folding and progressive
+        disclosure. The pacing above is scripted; the components themselves render whatever
+        arrives, whenever it arrives.
       </p>
 
       <div
@@ -203,12 +236,16 @@
         id="try-it"
       >
         <div class="demo-frame__bar">
-          <span class="demo-chip">Try it · scripted demo agent</span>
-          <span class="demo-frame__progress" aria-live="polite">
+          <span class="demo-chip">Composer · scripted demo agent</span>
+          <span class="demo-frame__progress">
             @if (composerBusy()) {
-              Demo Agent is replying …
+              <span class="demo-working">
+                <i class="demo-working__dot" aria-hidden="true"></i>
+                Working — {{ workingComposer() }}
+              </span>
+              <span class="demo-working__contact">last contact {{ contactComposer() }}s ago</span>
             } @else if (composerEvents().length > 0) {
-              scripted reply delivered — send another
+              reply delivered — send another
             } @else {
               type below — a scripted reply streams back
             }
@@ -220,6 +257,11 @@
               @for (theme of [demoTheme()]; track theme) {
                 <cac-conversation-view [events]="composerEvents()" [isRunning]="composerBusy()" />
               }
+              @if (composerBusy()) {
+                <div class="demo-thinking" aria-hidden="true">
+                  <i></i><i></i><i></i>
+                </div>
+              }
             </div>
           }
         }
@@ -227,8 +269,8 @@
           @defer (on viewport) {
             <cac-chat
               [messages]="[]"
-              placeholder="Ask the demo agent anything — Enter sends, Shift+Enter breaks the line"
-              emptyState="Submits get a scripted Demo Agent reply — plan, tool burst, markdown answer — streamed in right here."
+              placeholder="Type a message — Enter sends, Shift+Enter breaks the line"
+              emptyState="Submits get a scripted Demo Agent reply — plan, tool burst, answer — streamed in above."
               submitLabel="Send"
               bodyMaxHeight="8rem"
               [allowAttachments]="false"
@@ -242,8 +284,8 @@
         </div>
       </div>
       <p class="section__foot section__foot--center reveal">
-        The demo agent is scripted in the page — in production, wire
-        <code>(submitMessage)</code> to your runner and stream real events back.
+        The reply here is scripted in the page. In an app, wire <code>(submitMessage)</code> to
+        your backend and stream real events back.
       </p>
     </div>
   </section>
@@ -251,13 +293,13 @@
   <!-- ======================================================= History demo -->
   <section id="history" class="section section--alt">
     <div class="wrap">
-      <p class="section__kicker reveal">Second surface — the /history entry point</p>
-      <h2 class="section__title reveal">A whole project’s chat, virtualised</h2>
+      <p class="section__kicker reveal">Demo — the /history entry point</p>
+      <h2 class="section__title reveal">Project history</h2>
       <p class="section__lead reveal">
         <code>&lt;cac-project-chat-list&gt;</code> renders a day of project history behind the
-        <code>PROJECT_CHAT_DATA_SOURCE</code> seam — here an in-memory implementation, in your app
-        an HTTP service. Try the search (e.g. <i>fuzzy</i>, <i>release</i>, <i>review</i>): hits
-        come back ranked, with snippet highlighting.
+        <code>PROJECT_CHAT_DATA_SOURCE</code> interface — an in-memory implementation here, an
+        HTTP service in your app. Search returns ranked hits with snippet highlighting; try
+        <i>fuzzy</i>, <i>release</i> or <i>review</i>.
       </p>
       <div class="history-frame reveal">
         @defer (on viewport) {
@@ -274,8 +316,8 @@
         }
       </div>
       <p class="section__foot reveal">
-        Scroll paging by timestamp cursor, ranked search, stats headline and single-turn resolve —
-        the seam is four read methods, and the component never learns where the data lives.
+        Paging works by timestamp cursor. The interface is four read methods; the component does
+        not know where the data lives.
       </p>
     </div>
   </section>
@@ -283,67 +325,69 @@
   <!-- ======================================================= Features -->
   <section id="features" class="section">
     <div class="wrap">
-      <p class="section__kicker reveal">Why this library</p>
-      <h2 class="section__title reveal">Built like a product, packaged like a library</h2>
+      <p class="section__kicker reveal">Overview</p>
+      <h2 class="section__title reveal">What's in the library</h2>
+      <p class="stats-line reveal">
+        23+ event kinds · 7 entry points · 379 green specs · zero Angular imports in
+        <code>core</code> · Apache-2.0
+      </p>
       <div class="cards">
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--orange"></span>23+ event kinds</h3>
+          <h3><span class="card__dot card__dot--orange"></span>Event kinds</h3>
           <p>
-            One append-only wire grammar from <code>message.user</code> to
-            <code>workbench.debug</code>: tool bursts, watchdog waits, orchestrator decisions,
-            needs-input, artifacts, token metrics, task &amp; run markers, trace links.
+            One append-only event format covers messages, tool bursts, watchdog waits,
+            orchestrator decisions, needs-input, artifacts, token metrics, task and run markers,
+            and trace links.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--blue"></span>Zero-Angular core</h3>
+          <h3><span class="card__dot card__dot--blue"></span>Framework-free core</h3>
           <p>
-            <code>&#64;coding-agent/chat/core</code> is pure TypeScript: the
-            <code>ConversationEvent</code> contract plus <code>projectConversation()</code> —
-            importable by backends, SSR and tests with zero renderer weight.
+            <code>&#64;coding-agent/chat/core</code> is plain TypeScript: the
+            <code>ConversationEvent</code> contract plus <code>projectConversation()</code>.
+            Backends, SSR code and tests can import it without Angular.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--purple"></span>7 entry points</h3>
+          <h3><span class="card__dot card__dot--purple"></span>Entry points</h3>
           <p>
-            Pay only for what you render: <code>core</code>, <code>markdown</code>,
-            <code>conversation</code>, <code>composer</code>, <code>history</code>,
-            <code>shared</code> — and the root with <code>provideCodingAgentChat()</code>.
+            <code>core</code>, <code>markdown</code>, <code>conversation</code>,
+            <code>composer</code>, <code>history</code> and <code>shared</code>, plus the root
+            entry with <code>provideCodingAgentChat()</code>. Import only what you render.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--green"></span>Seams, not couplings</h3>
+          <h3><span class="card__dot card__dot--green"></span>Host integration points</h3>
           <p>
-            Task-reference linking, image lightbox, history transport and deep-history confirm are
-            injection tokens with safe no-op defaults — the components work before you wire
-            anything.
+            Task linking, image lightbox, history transport and deep-history confirmation are
+            injection tokens. Each has a default, so nothing needs wiring to start.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--orange"></span>Drop-in studio theme</h3>
+          <h3><span class="card__dot card__dot--orange"></span>Theme</h3>
           <p>
-            One optional CSS file ships the whole look: dark by default, light via
-            <code>data-studio-theme="light"</code> on any parent. This page — including both demos —
-            runs on it.
+            One optional CSS file provides the look used on this page — dark by default, light by
+            setting <code>data-studio-theme="light"</code> on any parent element.
           </p>
         </article>
         <article class="card reveal">
           <h3><span class="card__dot card__dot--blue"></span>Zoneless &amp; OnPush</h3>
           <p>
-            Signal-first components, strict templates, partial-Ivy dist. The demos on this page run
-            without Zone.js — change detection is driven entirely by signals.
+            Signal-based components with strict templates, shipped as a partial-Ivy package. This
+            page runs without Zone.js.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--green"></span>379 green specs</h3>
+          <h3><span class="card__dot card__dot--green"></span>Tests</h3>
           <p>
-            246 component specs run against the <b>built</b> package (the same partial-Ivy output
-            you install) plus 133 pure kernel specs on the projection and markdown utils.
+            246 component specs run against the <b>built</b> package — the same output you install
+            — plus 133 specs for the projection and markdown utilities.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--purple"></span>Apache-2.0</h3>
+          <h3><span class="card__dot card__dot--purple"></span>License</h3>
           <p>
-            Permissive license, no strings attached — same as its backend counterpart
+            Apache-2.0, the same license as the backend counterpart
             <a
               href="https://github.com/RobertMischke/coding-agent-runner"
               target="_blank"
@@ -360,7 +404,7 @@
   <section id="docs" class="section section--alt">
     <div class="wrap">
       <p class="section__kicker reveal">Documentation</p>
-      <h2 class="section__title reveal">From install to first conversation</h2>
+      <h2 class="section__title reveal">Getting started</h2>
 
       <div class="docs-grid">
         <div class="docs-step reveal">
@@ -379,8 +423,8 @@
 
       <h3 class="docs-sub reveal" id="entry-points">Entry points</h3>
       <p class="section__lead reveal">
-        Six secondary entry points keep the dependency graph honest — importing the wire contract
-        never drags in the renderer.
+        Six secondary entry points separate the parts. Importing the wire contract does not pull
+        in the renderer.
       </p>
       <div class="table-scroll reveal">
         <table class="entry-table">
@@ -401,7 +445,7 @@
             </tr>
             <tr>
               <td><code>&#64;coding-agent/chat/markdown</code></td>
-              <td><code>&lt;cac-markdown&gt;</code> + markdown utils + task-reference seam</td>
+              <td><code>&lt;cac-markdown&gt;</code> + markdown utils + task-reference token</td>
             </tr>
             <tr>
               <td><code>&#64;coding-agent/chat/conversation</code></td>
@@ -428,7 +472,12 @@
         </table>
       </div>
 
-      <h3 class="docs-sub reveal" id="seams">Host seams — every one defaults to a safe no-op</h3>
+      <h3 class="docs-sub reveal" id="seams">Host integration points</h3>
+      <p class="section__lead reveal">
+        Each integration point has a default, so nothing is required to start: task keys render as
+        plain text, images do not zoom, the history list is empty, deep history loads without a
+        prompt.
+      </p>
       <div class="seams">
         <div class="seam reveal">
           <h4>
@@ -437,7 +486,7 @@
           </h4>
           <p>
             Supplies task references for markdown auto-linking and handles navigation when one is
-            clicked. Default: task keys render unlinked.
+            clicked. Default: task keys render as plain text.
           </p>
         </div>
         <div class="seam reveal">
@@ -465,15 +514,15 @@
             <code>CHAT_HISTORY_CONFIRM</code>
             <span class="seam__entry">history</span>
           </h4>
-          <p>Guard prompt before loading an entire deep history. Default: auto-confirm.</p>
+          <p>Confirmation prompt before loading an entire deep history. Default: auto-confirm.</p>
         </div>
       </div>
       <div class="docs-two">
         <div class="reveal">
-          <site-code [code]="snippetSeamProvide" label="app.config.ts — root seams" />
+          <site-code [code]="snippetSeamProvide" label="app.config.ts — root tokens" />
         </div>
         <div class="reveal">
-          <site-code [code]="snippetSeamHistory" label="app.config.ts — history seams" />
+          <site-code [code]="snippetSeamHistory" label="app.config.ts — history tokens" />
         </div>
       </div>
       <div class="docs-two">
@@ -487,9 +536,9 @@
 
       <h3 class="docs-sub reveal" id="theming">Theming</h3>
       <p class="section__lead reveal">
-        The studio look ships as one optional stylesheet in the package. Import it, and flip a
-        single attribute for light mode — exactly what the theme toggle on the live demo above
-        does.
+        The theme is one optional stylesheet in the package. Import it and set
+        <code>data-studio-theme="light"</code> on a parent element for light mode — that is what
+        the theme toggle in the demo does.
       </p>
       <div class="docs-theme reveal">
         <site-code [code]="snippetTheme" label="styles.scss" />
@@ -504,7 +553,7 @@
     <div>
       <p class="site-footer__brand">&#64;coding-agent/<b>chat</b></p>
       <p class="site-footer__note">
-        Apache-2.0 · built as the frontend counterpart to
+        Apache-2.0 · the frontend counterpart to
         <a
           href="https://robertmischke.github.io/coding-agent-runner/"
           target="_blank"

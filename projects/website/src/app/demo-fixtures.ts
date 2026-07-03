@@ -206,16 +206,22 @@ export interface ReplayStep {
   readonly holdMs: number;
 }
 
+/**
+ * Replay pacing: long-running agent work should *feel* like work, so text
+ * events hold 1.5–3s before the next one lands. Only tool bursts may follow
+ * their announcing message a bit faster (~1.4s) — that mirrors a real run,
+ * where the agent starts its tools right after stating the plan.
+ */
 export const DEMO_REPLAY_STEPS: readonly ReplayStep[] = [
-  { event: runStart, holdMs: 700 },
-  { event: userAsk, holdMs: 1500 },
-  { event: agentPlan, holdMs: 1700 },
-  { event: exploreBurst, holdMs: 1900 },
-  { event: agentFindings, holdMs: 1700 },
-  { event: editBurst, holdMs: 1900 },
+  { event: runStart, holdMs: 1500 },
+  { event: userAsk, holdMs: 2600 },
+  { event: agentPlan, holdMs: 1400 }, // tool burst follows quickly
+  { event: exploreBurst, holdMs: 2800 },
+  { event: agentFindings, holdMs: 1400 }, // tool burst follows quickly
+  { event: editBurst, holdMs: 3000 },
   { event: agentAnswer, holdMs: 2400 },
-  { event: tokenMetric, holdMs: 900 },
-  { event: runComplete, holdMs: 1100 },
+  { event: tokenMetric, holdMs: 1500 },
+  { event: runComplete, holdMs: 1800 },
   { event: decision, holdMs: 0 },
 ];
 
@@ -434,20 +440,28 @@ const bFinalDecision: OrchestratorDecisionEvent = {
   rawRange: nextRangeB(5),
 };
 
-/** The right-hand demo: a debugging story with a failure, a retry, a fix. */
-export const DEMO_CONVERSATION_B: readonly ConversationEvent[] = [
-  bRunStart,
-  bUserAsk,
-  bAgentPlan,
-  bFailBurst,
-  bWatchdog,
-  bRetryDecision,
-  bAgentFindings,
-  bFixBurst,
-  bAgentAnswer,
-  bRunComplete,
-  bFinalDecision,
+/**
+ * The second demo replay: a debugging story with a failure, a watchdog wait
+ * and an orchestrator retry before the fix. Same pacing rules as run A.
+ */
+export const DEMO_REPLAY_STEPS_B: readonly ReplayStep[] = [
+  { event: bRunStart, holdMs: 1500 },
+  { event: bUserAsk, holdMs: 2600 },
+  { event: bAgentPlan, holdMs: 1400 }, // tool burst follows quickly
+  { event: bFailBurst, holdMs: 2900 },
+  { event: bWatchdog, holdMs: 2200 },
+  { event: bRetryDecision, holdMs: 2600 },
+  { event: bAgentFindings, holdMs: 1400 }, // tool burst follows quickly
+  { event: bFixBurst, holdMs: 3000 },
+  { event: bAgentAnswer, holdMs: 2400 },
+  { event: bRunComplete, holdMs: 1600 },
+  { event: bFinalDecision, holdMs: 0 },
 ];
+
+/** The full transcript of run B (used by specs and as a static fallback). */
+export const DEMO_CONVERSATION_B: readonly ConversationEvent[] = DEMO_REPLAY_STEPS_B.map(
+  (step) => step.event,
+);
 
 /* ======================================================================== *
  * Scripted composer replies — a submit in the "try it" frame streams back
@@ -458,7 +472,7 @@ export const DEMO_CONVERSATION_B: readonly ConversationEvent[] = [
 /** One streamed step of a scripted reply: the event plus the pause before it. */
 export interface DemoResponseStep {
   readonly event: ConversationEvent;
-  /** Milliseconds to wait before this event appears (0.5–2s pacing). */
+  /** Milliseconds to wait before this event appears (1.5–3s pacing). */
   readonly delayMs: number;
 }
 
@@ -600,9 +614,11 @@ export function demoAgentResponseSteps(userText: string): readonly DemoResponseS
     rawRange: range(3),
   };
 
+  // Same pacing rules as the replays: thinking gaps run 1.5–3s; the tool
+  // burst follows its announcing plan message slightly faster.
   return [
-    { event: plan, delayMs: 700 },
-    { event: burst, delayMs: 1400 },
-    { event: answer, delayMs: 1800 },
+    { event: plan, delayMs: 1800 },
+    { event: burst, delayMs: 1600 },
+    { event: answer, delayMs: 2800 },
   ];
 }

@@ -10,8 +10,11 @@ This is an Angular CLI workspace (Angular 21.2, `ng-packagr`):
 | Project | Path | Purpose |
 |---|---|---|
 | `@coding-agent/chat` | [`projects/coding-agent-chat`](projects/coding-agent-chat) | the publishable library |
-| `conversation-lab` | [`projects/conversation-lab`](projects/conversation-lab) | demo / playground app |
-| `website` | [`projects/website`](projects/website) | public website (GitHub Pages) with live component demos |
+| `conversation-lab` | [`projects/conversation-lab`](projects/conversation-lab) | demo / playground app (dev server port 4201) |
+| `website` | [`projects/website`](projects/website) | public website (GitHub Pages) with live component demos (dev server port 4202) |
+
+Each app has a fixed dev-server port in `angular.json`, so both can run side
+by side (`npm run lab` → 4201, `npm run website` → 4202).
 
 ## Build
 
@@ -33,7 +36,7 @@ toggle flipping `data-studio-theme`.
 
 ```sh
 npm run build                    # build the library first — the demo consumes dist/
-npm run lab                      # ng serve conversation-lab → http://localhost:4200
+npm run lab                      # ng serve conversation-lab → http://localhost:4201
 npx ng build conversation-lab    # production build → dist/conversation-lab
 ```
 
@@ -47,7 +50,7 @@ the built `dist/` output and the packaged studio theme.
 
 ```sh
 npm run build                    # build the library first — the site consumes dist/
-npm run website                  # ng serve website → http://localhost:4200
+npm run website                  # ng serve website → http://localhost:4202
 npx ng build website             # production build → dist/website
 ```
 

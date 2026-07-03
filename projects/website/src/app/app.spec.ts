@@ -33,11 +33,11 @@ describe('App (website)', () => {
     expect(compiled.querySelector('.skeleton--history')).toBeTruthy();
   });
 
-  it('lays the two demo conversations out as a duo plus a solo composer frame', async () => {
+  it('stacks the two demo conversations vertically plus a solo composer frame', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('.demo-duo > .demo-frame').length).toBe(2);
+    expect(compiled.querySelectorAll('.demo-stack > .demo-frame').length).toBe(2);
     expect(compiled.querySelector('.demo-frame--solo')).toBeTruthy();
     expect(compiled.querySelectorAll('.demo-chip').length).toBe(3);
   });
@@ -75,7 +75,8 @@ describe('App (website)', () => {
       expect(app.composerEvents().length).toBe(1);
       expect(app.composerEvents()[0].kind).toBe('message.user');
       expect(app.composerBusy()).toBe(true);
-      vi.advanceTimersByTime(4500);
+      // Reply pacing is 1.8s + 1.6s + 2.8s = 6.2s of scripted "work".
+      vi.advanceTimersByTime(7000);
       const events = app.composerEvents();
       expect(events.length).toBe(4); // user + plan + burst + answer
       expect(events.some((e) => e.kind === 'toolBurst')).toBe(true);
@@ -102,7 +103,8 @@ describe('App (website)', () => {
       app.onComposerSubmit({ text: 'first ask' });
       app.onComposerSubmit({ text: 'second ask' });
       expect(app.composerEvents().filter((e) => e.kind === 'message.user').length).toBe(2);
-      vi.advanceTimersByTime(10000);
+      // Two queued replies at ~6.2s each stream strictly back to back.
+      vi.advanceTimersByTime(15000);
       const answers = app
         .composerEvents()
         .filter((e) => e.actor === 'Demo Agent' && e.kind === 'message.taskAgent');

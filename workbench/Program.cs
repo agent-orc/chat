@@ -46,8 +46,10 @@ const string CorsPolicy = "lab";
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://localhost:5055");
 
+// The lab serves on its fixed port 4201 (see angular.json); 4200 stays
+// allowed as a fallback for a manually chosen `ng serve --port 4200`.
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy => policy
-    .WithOrigins("http://localhost:4200")
+    .WithOrigins("http://localhost:4201", "http://localhost:4200")
     .AllowAnyHeader()
     .AllowAnyMethod()));
 
