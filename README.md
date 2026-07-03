@@ -11,6 +11,7 @@ This is an Angular CLI workspace (Angular 21.2, `ng-packagr`):
 |---|---|---|
 | `@coding-agent/chat` | [`projects/coding-agent-chat`](projects/coding-agent-chat) | the publishable library |
 | `conversation-lab` | [`projects/conversation-lab`](projects/conversation-lab) | demo / playground app |
+| `website` | [`projects/website`](projects/website) | public website (GitHub Pages) with live component demos |
 
 ## Build
 
@@ -35,6 +36,23 @@ npm run build                    # build the library first — the demo consumes
 npm run lab                      # ng serve conversation-lab → http://localhost:4200
 npx ng build conversation-lab    # production build → dist/conversation-lab
 ```
+
+## Website (GitHub Pages)
+
+The public site for the library — hero, an animated live replay of a
+conversation rendered by `<cac-conversation-view>` + `<cac-chat>`, a
+`<cac-project-chat-list>` history demo over an in-memory
+`PROJECT_CHAT_DATA_SOURCE`, feature grid and docs. Like the lab it consumes
+the built `dist/` output and the packaged studio theme.
+
+```sh
+npm run build                    # build the library first — the site consumes dist/
+npm run website                  # ng serve website → http://localhost:4200
+npx ng build website             # production build → dist/website
+```
+
+Deployed automatically by [`.github/workflows/pages.yml`](.github/workflows/pages.yml)
+on every push to `main` (base href `/coding-agent-chat/`, SPA `404.html` fallback).
 
 ## Develop against the library (watch)
 

@@ -1,0 +1,6 @@
+/* All site chrome lives in the global stylesheet (src/styles.scss) so the
+ * page shares one design system with the studio theme tokens. */
+:host {
+  display: block;
+  min-height: 100vh;
+}

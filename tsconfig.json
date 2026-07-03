@@ -52,6 +52,12 @@
     },
     {
       "path": "./projects/conversation-lab/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/website/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/website/tsconfig.spec.json"
     }
   ]
 }

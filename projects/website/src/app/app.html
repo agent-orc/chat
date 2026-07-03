@@ -1,0 +1,420 @@
+<!-- ======================================================= Sticky nav -->
+<nav class="site-nav" aria-label="Site">
+  <div class="wrap site-nav__row">
+    <a class="site-nav__brand" href="#top">
+      <span class="site-nav__logo" aria-hidden="true"></span>
+      <span>&#64;coding-agent/<b>chat</b></span>
+    </a>
+    <div class="site-nav__links">
+      <a href="#demo" [class.is-active]="activeSection() === 'demo'">Live demo</a>
+      <a href="#history" [class.is-active]="activeSection() === 'history'">History</a>
+      <a href="#features" [class.is-active]="activeSection() === 'features'">Features</a>
+      <a href="#docs" [class.is-active]="activeSection() === 'docs'">Docs</a>
+      <span class="site-nav__sep" aria-hidden="true"></span>
+      <a
+        class="site-nav__ext"
+        href="https://github.com/RobertMischke/coding-agent-chat"
+        target="_blank"
+        rel="noopener"
+      >
+        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+          />
+        </svg>
+        <span class="site-nav__ext-label">GitHub</span>
+      </a>
+      <a
+        class="site-nav__ext"
+        href="https://www.npmjs.com/package/@coding-agent/chat"
+        target="_blank"
+        rel="noopener"
+      >
+        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+          <path fill="currentColor" d="M0 0v16h16V0H0Zm13 13h-2V5H8v8H3V3h10v10Z" />
+        </svg>
+        <span class="site-nav__ext-label">npm</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ======================================================= Hero -->
+<header class="hero" id="top">
+  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="hero__grid" aria-hidden="true"></div>
+  <div class="wrap hero__inner">
+    <p class="hero__badge reveal">Angular 21 · zoneless · Apache-2.0</p>
+    <h1 class="hero__title reveal">
+      The Angular chat UI for <br /><span class="grad">coding agents</span>
+    </h1>
+    <p class="hero__tag reveal">
+      The frontend counterpart to
+      <a href="https://github.com/RobertMischke/coding-agent-runner" target="_blank" rel="noopener"
+        >coding-agent-runner</a
+      >: the runner produces the server-side event stream — <b>&#64;coding-agent/chat</b> renders it
+      as a fully grouped, progressively-disclosed conversation.
+    </p>
+    <div class="hero__install reveal">
+      <site-code [code]="heroInstall" lang="sh" />
+    </div>
+    <div class="hero__actions reveal">
+      <a class="btn btn--primary" href="#demo">See it live ↓</a>
+      <a
+        class="btn btn--ghost"
+        href="https://github.com/RobertMischke/coding-agent-chat"
+        target="_blank"
+        rel="noopener"
+        >Star on GitHub</a
+      >
+      <a
+        class="btn btn--ghost"
+        href="https://www.npmjs.com/package/@coding-agent/chat"
+        target="_blank"
+        rel="noopener"
+        >View on npm</a
+      >
+    </div>
+    <dl class="hero__stats reveal">
+      <div><dt>23+</dt><dd>event kinds</dd></div>
+      <div><dt>7</dt><dd>entry points</dd></div>
+      <div><dt>379</dt><dd>green specs</dd></div>
+      <div><dt>0</dt><dd>Angular imports in <code>core</code></dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+  <!-- ======================================================= Live demo -->
+  <section id="demo" class="section">
+    <div class="wrap">
+      <p class="section__kicker reveal">Live demo — real components, no screenshots</p>
+      <h2 class="section__title reveal">Watch a run become a conversation</h2>
+      <p class="section__lead reveal">
+        Everything below is rendered by the library itself: a
+        <code>&lt;cac-conversation-view&gt;</code> replaying one run — user ask, agent plan, tool
+        bursts, a markdown answer with code, run marker, orchestrator sign-off — plus a
+        <code>&lt;cac-chat&gt;</code> composer that appends your turns locally.
+      </p>
+
+      <div class="demo-frame reveal" [attr.data-studio-theme]="demoTheme()">
+        <div class="demo-frame__bar">
+          <button type="button" class="demo-btn demo-btn--accent" (click)="play()">
+            @if (playing()) {
+              ◼ Restart
+            } @else if (hasPlayed()) {
+              ↺ Replay
+            } @else {
+              ▶ Play
+            }
+          </button>
+          <span class="demo-frame__progress" aria-live="polite">
+            @if (playing()) {
+              streaming event {{ shownSteps() }} / {{ totalSteps }} …
+            } @else if (hasPlayed()) {
+              {{ shownSteps() }} / {{ totalSteps }} events
+            } @else {
+              scroll or press play to start the replay
+            }
+          </span>
+          <button type="button" class="demo-btn" (click)="toggleDemoTheme()">
+            {{ demoTheme() === 'dark' ? '☀ Light preview' : '☾ Dark preview' }}
+          </button>
+        </div>
+        <div class="demo-frame__view">
+          <cac-conversation-view [events]="demoEvents()" [isRunning]="playing()" />
+        </div>
+        <div class="demo-frame__composer">
+          <cac-chat
+            [messages]="[]"
+            placeholder="Steer the agent — Enter sends, Shift+Enter breaks the line"
+            emptyState="Your turn: submits append a user message to the conversation above."
+            submitLabel="Send"
+            bodyMaxHeight="8rem"
+            [allowAttachments]="false"
+            (submitMessage)="onComposerSubmit($event)"
+          />
+        </div>
+      </div>
+      <p class="section__foot reveal">
+        The transcript is a plain <code>ConversationEvent[]</code> — the same wire contract the
+        runner emits. Feed it your own events and the view does the grouping, folding and
+        progressive disclosure.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================= History demo -->
+  <section id="history" class="section section--alt">
+    <div class="wrap">
+      <p class="section__kicker reveal">Second surface — the /history entry point</p>
+      <h2 class="section__title reveal">A whole project’s chat, virtualised</h2>
+      <p class="section__lead reveal">
+        <code>&lt;cac-project-chat-list&gt;</code> renders a day of project history behind the
+        <code>PROJECT_CHAT_DATA_SOURCE</code> seam — here an in-memory implementation, in your app
+        an HTTP service. Try the search (e.g. <i>fuzzy</i>, <i>release</i>, <i>review</i>): hits
+        come back ranked, with snippet highlighting.
+      </p>
+      <div class="history-frame reveal">
+        <cac-project-chat-list class="history-frame__list" project="website-demo" />
+      </div>
+      <p class="section__foot reveal">
+        Scroll paging by timestamp cursor, ranked search, stats headline and single-turn resolve —
+        the seam is four read methods, and the component never learns where the data lives.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================= Features -->
+  <section id="features" class="section">
+    <div class="wrap">
+      <p class="section__kicker reveal">Why this library</p>
+      <h2 class="section__title reveal">Built like a product, packaged like a library</h2>
+      <div class="cards">
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--orange"></span>23+ event kinds</h3>
+          <p>
+            One append-only wire grammar from <code>message.user</code> to
+            <code>workbench.debug</code>: tool bursts, watchdog waits, orchestrator decisions,
+            needs-input, artifacts, token metrics, task &amp; run markers, trace links.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--blue"></span>Zero-Angular core</h3>
+          <p>
+            <code>&#64;coding-agent/chat/core</code> is pure TypeScript: the
+            <code>ConversationEvent</code> contract plus <code>projectConversation()</code> —
+            importable by backends, SSR and tests with zero renderer weight.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--purple"></span>7 entry points</h3>
+          <p>
+            Pay only for what you render: <code>core</code>, <code>markdown</code>,
+            <code>conversation</code>, <code>composer</code>, <code>history</code>,
+            <code>shared</code> — and the root with <code>provideCodingAgentChat()</code>.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--green"></span>Seams, not couplings</h3>
+          <p>
+            Task-reference linking, image lightbox, history transport and deep-history confirm are
+            injection tokens with safe no-op defaults — the components work before you wire
+            anything.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--orange"></span>Drop-in studio theme</h3>
+          <p>
+            One optional CSS file ships the whole look: dark by default, light via
+            <code>data-studio-theme="light"</code> on any parent. This page — including both demos —
+            runs on it.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--blue"></span>Zoneless &amp; OnPush</h3>
+          <p>
+            Signal-first components, strict templates, partial-Ivy dist. The demos on this page run
+            without Zone.js — change detection is driven entirely by signals.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--green"></span>379 green specs</h3>
+          <p>
+            246 component specs run against the <b>built</b> package (the same partial-Ivy output
+            you install) plus 133 pure kernel specs on the projection and markdown utils.
+          </p>
+        </article>
+        <article class="card reveal">
+          <h3><span class="card__dot card__dot--purple"></span>Apache-2.0</h3>
+          <p>
+            Permissive license, no strings attached — same as its backend counterpart
+            <a
+              href="https://github.com/RobertMischke/coding-agent-runner"
+              target="_blank"
+              rel="noopener"
+              >coding-agent-runner</a
+            >.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= Docs -->
+  <section id="docs" class="section section--alt">
+    <div class="wrap">
+      <p class="section__kicker reveal">Documentation</p>
+      <h2 class="section__title reveal">From install to first conversation</h2>
+
+      <div class="docs-grid">
+        <div class="docs-step reveal">
+          <h3><span class="docs-step__num">1</span>Install</h3>
+          <site-code [code]="snippetInstall" lang="sh" label="terminal" />
+        </div>
+        <div class="docs-step reveal">
+          <h3><span class="docs-step__num">2</span>Provide</h3>
+          <site-code [code]="snippetProvide" label="app.config.ts" />
+        </div>
+        <div class="docs-step reveal">
+          <h3><span class="docs-step__num">3</span>Render</h3>
+          <site-code [code]="snippetRender" label="run-view.ts" />
+        </div>
+      </div>
+
+      <h3 class="docs-sub reveal" id="entry-points">Entry points</h3>
+      <p class="section__lead reveal">
+        Six secondary entry points keep the dependency graph honest — importing the wire contract
+        never drags in the renderer.
+      </p>
+      <div class="table-scroll reveal">
+        <table class="entry-table">
+          <thead>
+            <tr>
+              <th>Import</th>
+              <th>Contents</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&#64;coding-agent/chat</code></td>
+              <td>everything + <code>provideCodingAgentChat()</code></td>
+            </tr>
+            <tr>
+              <td><code>&#64;coding-agent/chat/core</code></td>
+              <td>wire contract + projection + pure helpers (zero Angular)</td>
+            </tr>
+            <tr>
+              <td><code>&#64;coding-agent/chat/markdown</code></td>
+              <td><code>&lt;cac-markdown&gt;</code> + markdown utils + task-reference seam</td>
+            </tr>
+            <tr>
+              <td><code>&#64;coding-agent/chat/conversation</code></td>
+              <td><code>&lt;cac-conversation-view&gt;</code> + tool-burst chip + session card</td>
+            </tr>
+            <tr>
+              <td><code>&#64;coding-agent/chat/composer</code></td>
+              <td><code>&lt;cac-chat&gt;</code> composer + role badge + workforce/phase helpers</td>
+            </tr>
+            <tr>
+              <td><code>&#64;coding-agent/chat/history</code></td>
+              <td>
+                <code>&lt;cac-project-chat-list&gt;</code> virtualised history +
+                <code>&lt;cac-chat-row&gt;</code> + minimap rail + phase summary strip
+              </td>
+            </tr>
+            <tr>
+              <td><code>&#64;coding-agent/chat/shared</code></td>
+              <td>
+                <code>cacTooltip</code>, <code>cacStickToBottom</code>, lightbox directive + tokens
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="docs-sub reveal" id="seams">Host seams — every one defaults to a safe no-op</h3>
+      <div class="seams">
+        <div class="seam reveal">
+          <h4>
+            <code>CHAT_TASK_REFERENCE_PROVIDER</code>
+            <span class="seam__entry">markdown</span>
+          </h4>
+          <p>
+            Supplies task references for markdown auto-linking and handles navigation when one is
+            clicked. Default: task keys render unlinked.
+          </p>
+        </div>
+        <div class="seam reveal">
+          <h4>
+            <code>CHAT_MEDIA_LIGHTBOX</code>
+            <span class="seam__entry">shared</span>
+          </h4>
+          <p>
+            Owns the click-to-enlarge image overlay (modal stack, focus trap). Default: images do
+            not zoom.
+          </p>
+        </div>
+        <div class="seam reveal">
+          <h4>
+            <code>PROJECT_CHAT_DATA_SOURCE</code>
+            <span class="seam__entry">history</span>
+          </h4>
+          <p>
+            The scroll/search/stats/turn transport behind
+            <code>&lt;cac-project-chat-list&gt;</code>. Default: an empty history.
+          </p>
+        </div>
+        <div class="seam reveal">
+          <h4>
+            <code>CHAT_HISTORY_CONFIRM</code>
+            <span class="seam__entry">history</span>
+          </h4>
+          <p>Guard prompt before loading an entire deep history. Default: auto-confirm.</p>
+        </div>
+      </div>
+      <div class="docs-two">
+        <div class="reveal">
+          <site-code [code]="snippetSeamProvide" label="app.config.ts — root seams" />
+        </div>
+        <div class="reveal">
+          <site-code [code]="snippetSeamHistory" label="app.config.ts — history seams" />
+        </div>
+      </div>
+      <div class="docs-two">
+        <div class="reveal">
+          <site-code [code]="snippetDataSource" label="the data-source contract" />
+        </div>
+        <div class="reveal">
+          <site-code [code]="snippetCoreOnly" label="core only — no renderer" />
+        </div>
+      </div>
+
+      <h3 class="docs-sub reveal" id="theming">Theming</h3>
+      <p class="section__lead reveal">
+        The studio look ships as one optional stylesheet in the package. Import it, and flip a
+        single attribute for light mode — exactly what the theme toggle on the live demo above
+        does.
+      </p>
+      <div class="docs-theme reveal">
+        <site-code [code]="snippetTheme" label="styles.scss" />
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ======================================================= Footer -->
+<footer class="site-footer">
+  <div class="wrap site-footer__row">
+    <div>
+      <p class="site-footer__brand">&#64;coding-agent/<b>chat</b></p>
+      <p class="site-footer__note">
+        Apache-2.0 · built as the frontend counterpart to
+        <a
+          href="https://robertmischke.github.io/coding-agent-runner/"
+          target="_blank"
+          rel="noopener"
+          >coding-agent-runner</a
+        >
+      </p>
+    </div>
+    <div class="site-footer__links">
+      <a href="https://github.com/RobertMischke/coding-agent-chat" target="_blank" rel="noopener"
+        >GitHub</a
+      >
+      <a href="https://www.npmjs.com/package/@coding-agent/chat" target="_blank" rel="noopener"
+        >npm</a
+      >
+      <a
+        href="https://github.com/RobertMischke/coding-agent-chat/blob/main/LICENSE"
+        target="_blank"
+        rel="noopener"
+        >License</a
+      >
+      <a href="https://robertmischke.github.io/coding-agent-runner/" target="_blank" rel="noopener"
+        >coding-agent-runner ↗</a
+      >
+    </div>
+  </div>
+</footer>
