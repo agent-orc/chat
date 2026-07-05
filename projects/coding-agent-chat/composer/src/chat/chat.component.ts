@@ -20,14 +20,21 @@ import {
 import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
 import {
   mergeByTimestamp,
+  ChatContextUsage,
   ChatDraftAttachment,
   ChatEvent,
   ChatMessage,
+  ChatModelControl,
+  ChatModelSelection,
+  ChatPermissionControl,
   ChatRole,
   ChatSubmitEvent,
   ChatToolbarItem,
 } from '@coding-agent/chat/core';
 import { RoleBadgeComponent } from '../role-badge/role-badge.component';
+import { ModelSelectorComponent } from '../model-selector/model-selector.component';
+import { PermissionSelectComponent } from '../permission-select/permission-select.component';
+import { ContextRingComponent } from '../context-ring/context-ring.component';
 import {
   groupIntoPhases,
   groupIntoSuperPhases,
@@ -106,7 +113,7 @@ const COLLAPSE_LINE_THRESHOLD = 24;
 @Component({
   selector: 'cac-chat',
   standalone: true,
-  imports: [FormsModule, RoleBadgeComponent, MarkdownImageLightboxDirective, MarkdownViewComponent, TooltipDirective],
+  imports: [FormsModule, RoleBadgeComponent, MarkdownImageLightboxDirective, MarkdownViewComponent, TooltipDirective, ModelSelectorComponent, PermissionSelectComponent, ContextRingComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
@@ -179,6 +186,44 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
    * and routes the click in-app rather than via a new browser tab.
    */
   readonly eventAction = output<{ eventId: string }>();
+
+  // ── Built-in composer-footer controls ──────────────────────────────────
+  // Policy: show-by-default. Each control renders in the composer footer as
+  // soon as the host supplies its data (the model catalog comes from the
+  // backend), and can be turned off per control via the matching `show*`
+  // flag. Hosts that supply nothing (e.g. a plain chat) see no footer.
+
+  /** Model / CLI / thinking selector config. Non-null shows the selector. */
+  readonly modelControl = input<ChatModelControl | null>(null);
+  /** Turn the model selector off even when {@link modelControl} is provided. */
+  readonly showModelControl = input<boolean>(true);
+  /** Permission-mode select config. Non-empty options show the control. */
+  readonly permissionControl = input<ChatPermissionControl | null>(null);
+  /** Turn the permission select off even when {@link permissionControl} is provided. */
+  readonly showPermissionControl = input<boolean>(true);
+  /** Context-window usage snapshot. Non-null shows the context ring. */
+  readonly contextUsage = input<ChatContextUsage | null>(null);
+  /** True while the host is capturing a fresh context snapshot. */
+  readonly contextBusy = input<boolean>(false);
+  /** Turn the context ring off even when {@link contextUsage} is provided. */
+  readonly showContextRing = input<boolean>(true);
+
+  /** Atomic model/CLI/thinking commit from the built-in selector. */
+  readonly modelCommit = output<ChatModelSelection>();
+  /** The built-in selector asks the host to (re)load a CLI's catalog. */
+  readonly modelCatalogRequested = output<string>();
+  /** The built-in selector's explicit Refresh affordance. */
+  readonly modelRefreshRequested = output<string>();
+  /** The built-in context ring asks the host to capture a fresh snapshot. */
+  readonly contextRefreshRequested = output<void>();
+  /** The built-in permission select's chosen mode id. */
+  readonly permissionChange = output<string>();
+
+  readonly showModelSelector = computed<boolean>(() => this.showModelControl() && this.modelControl() !== null);
+  readonly showPermissionSelect = computed<boolean>(
+    () => this.showPermissionControl() && (this.permissionControl()?.options?.length ?? 0) > 0,
+  );
+  readonly showContextIndicator = computed<boolean>(() => this.showContextRing() && this.contextUsage() !== null);
 
   readonly drafts = signal<ChatDraftAttachment[]>([]);
   readonly attachmentError = signal<string | null>(null);

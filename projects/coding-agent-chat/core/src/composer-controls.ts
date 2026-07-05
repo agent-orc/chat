@@ -39,6 +39,40 @@ export interface ChatModelSelection {
   thinkingLevel: string | null;
 }
 
+/**
+ * Host-supplied configuration that lights up the built-in model selector in
+ * the `<cac-chat>` composer footer. Providing this object shows the control
+ * (the policy is show-by-default whenever the data is present); the host
+ * feeds the catalog (models come from the backend) and answers the
+ * `modelCatalogRequested` / `modelRefreshRequested` outputs. Omit (null) to
+ * hide the selector.
+ */
+export interface ChatModelControl {
+  /** Selectable CLIs; omit for a model-only picker with no CLI row. */
+  cliOptions?: readonly ChatCliOption[];
+  cliType?: string | null;
+  model?: string | null;
+  thinkingLevel?: string | null;
+  /** Catalog for the CLI the host was last asked about via modelCatalogRequested. */
+  catalog?: readonly ChatModelOption[];
+  catalogLoading?: boolean;
+  catalogError?: string | null;
+  /** Suppress the picker (e.g. a run is in flight). */
+  disabled?: boolean;
+  disabledReason?: string | null;
+}
+
+/**
+ * Host-supplied configuration for the built-in permission select in the
+ * composer footer. Providing options shows the control; omit (null) to hide.
+ */
+export interface ChatPermissionControl {
+  options: readonly ChatPermissionOption[];
+  value?: string | null;
+  disabled?: boolean;
+  disabledReason?: string | null;
+}
+
 /** One permission / sandbox mode offered by the permission select. */
 export interface ChatPermissionOption {
   id: string;

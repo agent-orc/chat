@@ -257,16 +257,47 @@
           </div>
         </div>
 
-        <!-- Composer footer: projection slots for the composer controls
-             (model selector, permission select, context ring). The row only
-             renders chrome when a host projects something into it; hosts
-             that don't use the slots see no change. -->
+        <!-- Composer footer. Built-in controls (permission select, model
+             selector, context ring) render as soon as the host supplies each
+             one's data — the show-by-default policy — and each can be turned
+             off via its show* input. The [chat-foot-start]/[chat-foot-end]
+             projection slots remain for extra host-specific affordances. The
+             row collapses entirely when nothing is present. -->
         <div class="chat__composer-foot" data-testid="chat-composer-foot">
           <div class="chat__composer-foot-start">
+            @if (showPermissionSelect()) {
+              <cac-permission-select
+                [options]="permissionControl()!.options"
+                [value]="permissionControl()!.value ?? null"
+                [disabled]="permissionControl()!.disabled ?? disabled()"
+                [disabledReason]="permissionControl()!.disabledReason ?? null"
+                (valueChange)="permissionChange.emit($event)" />
+            }
             <ng-content select="[chat-foot-start]"></ng-content>
           </div>
           <div class="chat__composer-foot-end">
             <ng-content select="[chat-foot-end]"></ng-content>
+            @if (showModelSelector()) {
+              <cac-model-selector
+                [cliOptions]="modelControl()!.cliOptions ?? []"
+                [cliType]="modelControl()!.cliType ?? null"
+                [model]="modelControl()!.model ?? null"
+                [thinkingLevel]="modelControl()!.thinkingLevel ?? null"
+                [models]="modelControl()!.catalog ?? []"
+                [catalogLoading]="modelControl()!.catalogLoading ?? false"
+                [catalogError]="modelControl()!.catalogError ?? null"
+                [disabled]="modelControl()!.disabled ?? disabled()"
+                [disabledReason]="modelControl()!.disabledReason ?? null"
+                (commit)="modelCommit.emit($event)"
+                (catalogRequested)="modelCatalogRequested.emit($event)"
+                (refreshRequested)="modelRefreshRequested.emit($event)" />
+            }
+            @if (showContextIndicator()) {
+              <cac-context-ring
+                [usage]="contextUsage()"
+                [busy]="contextBusy()"
+                (refreshRequested)="contextRefreshRequested.emit()" />
+            }
           </div>
         </div>
       </form>

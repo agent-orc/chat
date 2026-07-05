@@ -164,7 +164,15 @@
       submitLabel="Send"
       bodyMaxHeight="10rem"
       [allowAttachments]="false"
+      [modelControl]="labModelControl()"
+      [permissionControl]="labPermission()"
+      [contextUsage]="labContext()"
+      [contextBusy]="labContextBusy()"
       (submitMessage)="onComposerSubmit($event)"
+      (modelCommit)="onModelCommit($event)"
+      (modelCatalogRequested)="onModelCatalogRequested($event)"
+      (permissionChange)="onPermissionChange($event)"
+      (contextRefreshRequested)="onContextRefresh()"
     />
   </section>
 

@@ -6,7 +6,11 @@ import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type {
+  ChatContextUsage,
   ChatMessage,
+  ChatModelControl,
+  ChatModelSelection,
+  ChatPermissionControl,
   ChatSubmitEvent,
   ChatToolbarItem,
 } from '@coding-agent/chat/core';
@@ -235,6 +239,83 @@ describe('ChatComponent', () => {
     const fixture = await createChat({ contextLabel: 'conversation-lab · Live scenario' });
     expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim())
       .toBe('conversation-lab · Live scenario');
+  });
+
+  const MODEL_CONTROL: ChatModelControl = {
+    cliOptions: [{ id: 'claude', label: 'Claude Code', icon: '✳' }],
+    cliType: 'claude',
+    model: 'claude-sonnet-5',
+    catalog: [
+      { id: 'claude-sonnet-5', label: 'Claude Sonnet 5', isDefault: true },
+      { id: 'claude-opus-4-8', label: 'Claude Opus 4.8' },
+    ],
+  };
+  const PERMISSION_CONTROL: ChatPermissionControl = {
+    options: [
+      { id: 'yolo', label: 'YOLO', tone: 'warn' },
+      { id: 'read-only', label: 'Read-only' },
+    ],
+    value: 'yolo',
+  };
+  const CONTEXT_USAGE: ChatContextUsage = { usedTokens: 76_400, maxTokens: 200_000 };
+
+  it('shows the model selector by default once the host supplies its config', async () => {
+    const fixture = await createChat({ modelControl: MODEL_CONTROL });
+    expect(query(fixture, 'cac-model-selector')).toBeTruthy();
+    // The chip renders the current model label.
+    expect(query(fixture, '[data-testid="cac-model-selector-trigger"]')?.textContent)
+      .toContain('sonnet 5');
+  });
+
+  it('shows the context ring once the host supplies a usage snapshot', async () => {
+    const fixture = await createChat({ contextUsage: CONTEXT_USAGE });
+    expect(query(fixture, 'cac-context-ring')).toBeTruthy();
+    expect(query(fixture, '[data-testid="cac-context-ring-percent"]')?.textContent).toContain('38%');
+  });
+
+  it('shows the permission select once the host supplies options', async () => {
+    const fixture = await createChat({ permissionControl: PERMISSION_CONTROL });
+    expect(query(fixture, 'cac-permission-select')).toBeTruthy();
+  });
+
+  it('hides a control on demand even when its data is present', async () => {
+    const fixture = await createChat({
+      modelControl: MODEL_CONTROL,
+      showModelControl: false,
+      contextUsage: CONTEXT_USAGE,
+      showContextRing: false,
+      permissionControl: PERMISSION_CONTROL,
+      showPermissionControl: false,
+    });
+    expect(query(fixture, 'cac-model-selector')).toBeNull();
+    expect(query(fixture, 'cac-context-ring')).toBeNull();
+    expect(query(fixture, 'cac-permission-select')).toBeNull();
+    // With no controls and no projected footer content, the footer row collapses.
+    expect(query(fixture, '[data-testid="chat-composer-foot"] cac-model-selector')).toBeNull();
+  });
+
+  it('renders no footer controls for a plain chat (dataless host unaffected)', async () => {
+    const fixture = await createChat({ messages: [message('m1', 'user', 'hi')] });
+    expect(query(fixture, 'cac-model-selector')).toBeNull();
+    expect(query(fixture, 'cac-context-ring')).toBeNull();
+    expect(query(fixture, 'cac-permission-select')).toBeNull();
+  });
+
+  it('forwards the built-in selector commit up as modelCommit', async () => {
+    const fixture = await createChat({ modelControl: MODEL_CONTROL });
+    const commits: ChatModelSelection[] = [];
+    fixture.componentInstance.modelCommit.subscribe((c) => commits.push(c));
+    // Drive the embedded selector directly (its own picker flow is covered by
+    // the model-selector spec); assert cac-chat forwards the event.
+    const trigger = query<HTMLButtonElement>(fixture, '[data-testid="cac-model-selector-trigger"]')!;
+    trigger.click();
+    await fixture.whenStable();
+    // Pick a DIFFERENT model than the committed one so the selector auto-commits.
+    const pill = query<HTMLButtonElement>(fixture, '[data-testid="cac-model-selector-picker-model-claude-opus-4-8"]')!;
+    pill.click();
+    await fixture.whenStable();
+    expect(commits).toHaveLength(1);
+    expect(commits[0].model).toBe('claude-opus-4-8');
   });
 
   it('renders a notice message as a centered divider instead of a bubble', async () => {

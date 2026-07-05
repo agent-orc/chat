@@ -1,10 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import type {
+  ChatCliOption,
+  ChatContextUsage,
+  ChatModelControl,
+  ChatModelOption,
+  ChatModelSelection,
+  ChatPermissionControl,
   ChatSubmitEvent,
   CliOutputLine,
   ConversationEvent,
   RawLineRange,
 } from '@coding-agent/chat/core';
+import { shortModelLabel } from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
 import { ProjectChatListComponent } from '@coding-agent/chat/history';
@@ -293,6 +300,110 @@ export class App {
     }
     const line = index + 1; // RawLineRange is 1-based and inclusive.
     return line >= range.start && line <= range.end;
+  }
+
+  // ── Composer footer controls (show-by-default demo) ───────────────────────
+  // The library's <cac-chat> renders the model selector, permission select and
+  // context ring as soon as the host feeds each one's data — so the lab wires
+  // static demo data (a real host feeds the model catalog from the backend)
+  // and lets the user drive them. Turning a control off is a one-line
+  // [showModelControl]="false" etc. on <cac-chat>.
+
+  private readonly cliOptions: readonly ChatCliOption[] = [
+    { id: 'claude', label: 'Claude Code', icon: '✳' },
+    { id: 'codex', label: 'Codex', icon: '◆' },
+  ];
+  private readonly catalogByCli: Record<string, readonly ChatModelOption[]> = {
+    claude: [
+      { id: 'claude-sonnet-5', label: 'Claude Sonnet 5', isDefault: true, thinkingLevels: ['low', 'medium', 'high', 'xhigh', 'max'], defaultThinkingLevel: 'high' },
+      { id: 'claude-opus-4-8', label: 'Claude Opus 4.8', thinkingLevels: ['low', 'medium', 'high', 'xhigh', 'max'], defaultThinkingLevel: 'high' },
+      { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
+    ],
+    codex: [
+      { id: 'gpt-5-codex', label: 'GPT-5 Codex', isDefault: true },
+    ],
+  };
+
+  protected readonly labCli = signal<string>('claude');
+  protected readonly labModel = signal<string>('claude-sonnet-5');
+  protected readonly labThinking = signal<string | null>('high');
+  /** Which CLI the currently exposed catalog belongs to (answers catalogRequested). */
+  private readonly labCatalogCli = signal<string>('claude');
+
+  protected readonly labModelControl = computed<ChatModelControl>(() => ({
+    cliOptions: this.cliOptions,
+    cliType: this.labCli(),
+    model: this.labModel(),
+    thinkingLevel: this.labThinking(),
+    catalog: this.catalogByCli[this.labCatalogCli()] ?? [],
+  }));
+
+  protected readonly labPermission = signal<ChatPermissionControl>({
+    options: [
+      { id: 'yolo', label: 'YOLO', tone: 'warn', description: 'Skip every permission / sandbox / trust prompt.' },
+      { id: 'workspace-write', label: 'Workspace write', description: 'Auto-approve edits inside the workspace.' },
+      { id: 'read-only', label: 'Read-only', description: 'Inspect without mutating.' },
+      { id: 'custom', label: 'Custom (global config)', description: "Defer to the CLI's own global config." },
+    ],
+    value: 'yolo',
+  });
+
+  protected readonly labContext = signal<ChatContextUsage>({
+    usedTokens: 76_400,
+    maxTokens: 200_000,
+    sections: [
+      { label: 'System prompt', tokens: 3_100 },
+      { label: 'Tools & MCP', tokens: 18_200 },
+      { label: 'Messages', tokens: 55_100 },
+    ],
+    sourceLabel: 'via /context',
+    capturedAt: new Date().toISOString(),
+  });
+  protected readonly labContextBusy = signal(false);
+
+  protected onModelCatalogRequested(cli: string): void {
+    // Static demo: point the exposed catalog at the requested CLI's list.
+    this.labCatalogCli.set(cli);
+  }
+
+  protected onModelCommit(sel: ChatModelSelection): void {
+    const previous = this.labModel();
+    this.labCli.set(sel.cliType);
+    this.labModel.set(sel.model);
+    this.labThinking.set(sel.thinkingLevel);
+    // Surface the switch as a "Model changed" notice in the transcript, the
+    // same shape the projection produces from a real backend marker.
+    if (previous !== sel.model) {
+      this.appendModelChangeNotice(previous, sel.model);
+    }
+  }
+
+  protected onContextRefresh(): void {
+    // Simulate a fresh /context probe.
+    this.labContextBusy.set(true);
+    setTimeout(() => {
+      this.labContext.update((u) => ({ ...u, capturedAt: new Date().toISOString() }));
+      this.labContextBusy.set(false);
+    }, 350);
+  }
+
+  protected onPermissionChange(mode: string): void {
+    this.labPermission.update((p) => ({ ...p, value: mode }));
+  }
+
+  private appendModelChangeNotice(from: string, to: string): void {
+    const label = (id: string): string => (id.length === 0 ? 'CLI default' : shortModelLabel(id));
+    const event: ConversationEvent = {
+      id: `lab-model-change-${this.showcaseEvents().length}-${to}`,
+      kind: 'system.status',
+      timestamp: new Date().toISOString(),
+      rawRange: { source: 'conversation-lab', start: 1, end: 1 },
+      severity: 'info',
+      category: 'model-change',
+      label: 'Model changed',
+      explanation: `${label(from)} → ${label(to)}`,
+    };
+    this.showcaseEvents.update((list) => [...list, event]);
   }
 
   // ── Composer ──────────────────────────────────────────────────────────────
