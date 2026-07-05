@@ -21,6 +21,7 @@
 
 .lab-header__sub {
   margin: 4px 0 0;
+  max-width: 760px;
   font-size: 13px;
   color: var(--studio-fg-dim, #94a3b8);
 
@@ -46,6 +47,137 @@
     border-color: var(--studio-accent, #d97757);
   }
 }
+
+.lab-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+// ── Scenario picker ──────────────────────────────────────────────────────────
+
+.lab-scenarios {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.06));
+  border-radius: 12px;
+  background: var(--studio-surface, #1e1e2e);
+}
+
+.lab-scenarios__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lab-scenario-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border: 1px solid var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--studio-fg-dim, #94a3b8);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--studio-fg, #e2e8f0);
+    border-color: var(--studio-accent, #d97757);
+  }
+
+  &--active {
+    background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+    border-color: var(--studio-accent, #d97757);
+    color: var(--studio-fg-strong, #f8fafc);
+  }
+}
+
+// Kind badge colors ride the severity/status tokens so they flip with the
+// theme (the plain accent tokens are single-value across themes and would be
+// too faint on white).
+.lab-scenario-chip__kind {
+  padding: 1px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  &[data-kind='replay'] {
+    color: var(--severity-info, #89b4fa);
+  }
+
+  &[data-kind='live'] {
+    color: var(--studio-accent-success, #16a34a);
+  }
+
+  &[data-kind='events'] {
+    color: var(--severity-pending, #c4b5fd);
+  }
+}
+
+.lab-scenarios__detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.lab-scenarios__desc {
+  flex: 1 1 340px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.lab-scenarios__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.lab-scenarios__button {
+  padding: 6px 13px;
+  border: 1px solid var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  background: var(--studio-surface, #1e1e2e);
+  color: var(--studio-fg, #e2e8f0);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--studio-accent, #d97757);
+  }
+
+  &--primary {
+    background: var(--studio-accent, #d97757);
+    border-color: transparent;
+    color: var(--studio-on-accent, #1a1a1a);
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+  }
+}
+
+.lab-scenarios__progress {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--studio-fg-muted, #64748b);
+}
+
+// ── Layout ───────────────────────────────────────────────────────────────────
 
 .lab-columns {
   display: grid;
@@ -88,41 +220,7 @@
   min-height: 320px;
 }
 
-.lab-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: none;
-}
-
-.lab-mode {
-  display: inline-flex;
-  padding: 3px;
-  gap: 3px;
-  border: 1px solid var(--studio-border-strong, rgba(255, 255, 255, 0.1));
-  border-radius: 9px;
-  background: var(--studio-surface, #1e1e2e);
-}
-
-.lab-mode__option {
-  padding: 5px 12px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--studio-fg-dim, #94a3b8);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--studio-fg, #e2e8f0);
-  }
-
-  &--active {
-    background: var(--studio-bg-hover, rgba(255, 255, 255, 0.08));
-    color: var(--studio-fg-strong, #f8fafc);
-  }
-}
+// ── Live bar ─────────────────────────────────────────────────────────────────
 
 .lab-live-bar {
   display: flex;
@@ -150,7 +248,9 @@
     padding: 6px 10px;
     border: 1px solid var(--studio-border-strong, rgba(255, 255, 255, 0.1));
     border-radius: 7px;
-    background: var(--studio-bg, #14141f);
+    // --studio-bg-editor flips with the theme; the previously used --studio-bg
+    // token does not exist, which left dark inputs behind in light mode.
+    background: var(--studio-bg-editor, #14141f);
     color: var(--studio-fg, #e2e8f0);
     font: inherit;
     font-size: 13px;
@@ -174,7 +274,7 @@
 .lab-live-bar__start {
   background: var(--studio-accent, #d97757);
   border-color: transparent;
-  color: #fff;
+  color: var(--studio-on-accent, #1a1a1a);
 
   &:hover {
     filter: brightness(1.08);
@@ -186,8 +286,8 @@
   color: var(--studio-fg, #e2e8f0);
 
   &:hover {
-    border-color: #ef4444;
-    color: #ef4444;
+    border-color: var(--studio-accent-6, #ef4444);
+    color: var(--studio-accent-6, #ef4444);
   }
 }
 
@@ -210,15 +310,15 @@
   }
 
   &[data-state='connected'] .lab-live-bar__status-dot {
-    background: #22c55e;
+    background: var(--studio-accent-success, #22c55e);
   }
 
   &[data-state='connecting'] .lab-live-bar__status-dot {
-    background: #eab308;
+    background: var(--studio-accent-warn, #eab308);
   }
 
   &[data-state='error'] .lab-live-bar__status-dot {
-    background: #ef4444;
+    background: var(--studio-accent-6, #ef4444);
   }
 }
 
@@ -227,6 +327,59 @@
   font-size: 11px;
   color: var(--studio-fg-muted, #64748b);
 }
+
+.lab-live-bar__prompt {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+}
+
+.lab-live-bar__prompt-label {
+  flex: none;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--studio-fg-muted, #64748b);
+}
+
+.lab-live-bar__prompt code {
+  flex: 1 1 320px;
+  padding: 6px 10px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.06));
+  border-radius: 7px;
+  background: var(--studio-bg-editor, #14141f);
+  color: var(--studio-fg, #e2e8f0);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.lab-live-bar__follow-up {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  background: var(--studio-surface, #1e1e2e);
+  color: var(--studio-fg, #e2e8f0);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--studio-accent, #d97757);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
 
 .lab-toast {
   position: fixed;
@@ -238,7 +391,7 @@
   gap: 10px;
   max-width: 420px;
   padding: 12px 14px;
-  border: 1px solid rgba(239, 68, 68, 0.5);
+  border: 1px solid var(--studio-accent-6, rgba(239, 68, 68, 0.5));
   border-radius: 10px;
   background: var(--studio-surface, #1e1e2e);
   color: var(--studio-fg, #e2e8f0);

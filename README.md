@@ -23,20 +23,35 @@ npm install
 npm run build        # ng build coding-agent-chat → dist/coding-agent-chat
 ```
 
-## Conversation Lab (demo / playground)
+## Conversation Lab (scenario testbed)
 
-A small zoneless application that exercises the library end-to-end:
-`<cac-conversation-view>` over hand-built `ConversationEvent` fixtures
-(message groups, tool burst, run markers, orchestrator decision, image
-artifacts), a `<cac-chat>` composer whose submits append local user turns,
-and `<cac-project-chat-list>` backed by an in-memory
-`PROJECT_CHAT_DATA_SOURCE` implementation. The studio theme ships from the
-package CSS (`theme/cac-theme.css`, dark by default) with a dark/light
-toggle flipping `data-studio-theme`.
+The lab is the place to exercise the library against every interesting
+transcript shape. A scenario picker offers three kinds of scenarios
+(catalog: `projects/conversation-lab/src/app/lab-scenarios.ts`):
+
+- **Replay** — scripted `CliOutputLine` feeds played through the *same*
+  projection (`projectConversation`) the live mode uses: happy path,
+  failing test + retry, watchdog wait-loop/kill, needs-input, model switch
+  across runs, stderr crash, and a long 10-block run. Play them streamed
+  (line-by-line, simulating a live session) or instantly; composer submits
+  append real `user`-stream lines.
+- **Live** — preset prompts that drive a REAL coding-agent CLI (Claude
+  Code / Codex / Gemini) through the workbench host in `workbench/` (a .NET
+  Minimal API wrapping the CodingAgentRunner NuGet package, port 5055).
+  Each preset provokes a specific event shape (tool rows, failing command,
+  todo plan); "Szenario starten" tears down the previous session, so runs
+  stay reproducible. Agent runs execute in `workbench/sandbox/`.
+- **Fixture** — hand-built `ConversationEvent`s for renderer-only rows
+  (image artifacts, orchestrator decision with retry budget, token metric).
+
+The history panel is backed by an in-memory `PROJECT_CHAT_DATA_SOURCE`; the
+studio theme ships from the package CSS (`theme/cac-theme.css`, dark by
+default) with a dark/light toggle flipping `data-studio-theme`.
 
 ```sh
 npm run build                    # build the library first — the demo consumes dist/
 npm run lab                      # ng serve conversation-lab → http://localhost:4201
+npm run workbench                # .NET workbench host → http://localhost:5055 (live scenarios)
 npx ng build conversation-lab    # production build → dist/conversation-lab
 ```
 

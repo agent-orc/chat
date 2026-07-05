@@ -8,7 +8,7 @@
   border: 1px solid color-mix(in srgb, var(--role-accent) 45%, transparent);
   border-left: 3px solid var(--role-accent);
   border-radius: 3px;
-  color: #e2e8f0;
+  color: var(--studio-fg, #e2e8f0);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -33,7 +33,10 @@
 }
 
 .role-badge__label {
-  color: color-mix(in srgb, var(--role-accent) 80%, #e2e8f0);
+  // Mixing toward the theme foreground keeps the pastel accents legible on
+  // both themes: on dark the fg is itself light (stays pastel), on light the
+  // fg is near-black (darkens the label to readable contrast).
+  color: color-mix(in srgb, var(--role-accent) 50%, var(--studio-fg, #e2e8f0));
 }
 
 .role-badge--compact .role-badge__label {

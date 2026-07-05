@@ -186,7 +186,7 @@
   box-shadow: inset 2px 0 0 color-mix(in srgb, #6366f1 60%, transparent);
 }
 .conv__row--message[data-actor='message.user'] .msg__actor {
-  color: color-mix(in srgb, #818cf8 90%, currentColor);
+  color: color-mix(in srgb, var(--severity-info, #818cf8) 90%, currentColor);
 }
 
 .msg {
@@ -378,7 +378,7 @@
 /* Dezent rate-limit indicator: a single dot next to the time. The full
  * payload (window, status, resetsAt, ...) lives in the header tooltip. */
 .msg__rate-dot {
-  color: color-mix(in srgb, #f59e0b 70%, transparent);
+  color: color-mix(in srgb, var(--studio-accent-warn, #f59e0b) 70%, transparent);
   font-weight: 600;
   font-size: 11px;
   line-height: 1;
@@ -519,10 +519,10 @@
 .decision__trace:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
 
 /* Severity-driven accent: warnings amber, errors/escalations red. */
-.conv__row--decision[data-severity='warn'] { --decision-accent: #f59e0b; }
-.conv__row--decision[data-severity='error'] { --decision-accent: #ef4444; }
-.conv__row--decision[data-decision-type='escalate'] { --decision-accent: #ef4444; }
-.conv__row--decision[data-decision-type='accept'] { --decision-accent: #22c55e; }
+.conv__row--decision[data-severity='warn'] { --decision-accent: var(--studio-accent-warn, #f59e0b); }
+.conv__row--decision[data-severity='error'] { --decision-accent: var(--studio-accent-6, #ef4444); }
+.conv__row--decision[data-decision-type='escalate'] { --decision-accent: var(--studio-accent-6, #ef4444); }
+.conv__row--decision[data-decision-type='accept'] { --decision-accent: var(--studio-accent-success, #22c55e); }
 
 .conv__row--supervisor {
   gap: 6px;

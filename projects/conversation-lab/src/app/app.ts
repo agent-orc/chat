@@ -4,14 +4,20 @@ import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
 import { ProjectChatListComponent } from '@coding-agent/chat/history';
 
-import { LAB_CONVERSATION_EVENTS, userTurnEvent } from './lab-fixtures';
+import { userTurnEvent } from './lab-fixtures';
+import {
+  LAB_SCENARIOS,
+  findScenario,
+  type LabScenario,
+  type LabScenarioKind,
+  type LiveScenario,
+} from './lab-scenarios';
+import { ScenarioPlayer } from './scenario-player';
 import {
   WORKBENCH_CLI_TYPES,
   WorkbenchLiveSession,
   type WorkbenchCliType,
 } from './workbench-live';
-
-type LabMode = 'demo' | 'live';
 
 @Component({
   selector: 'app-root',
@@ -22,32 +28,60 @@ type LabMode = 'demo' | 'live';
 })
 export class App {
   protected readonly live = inject(WorkbenchLiveSession);
+  protected readonly player = inject(ScenarioPlayer);
 
   protected readonly theme = signal<'dark' | 'light'>('dark');
 
-  /** Demo | Workbench (live) — live renders a real CLI transcript. */
-  protected readonly mode = signal<LabMode>('demo');
+  /** The scenario catalog — the lab is the place to exercise each shape. */
+  protected readonly scenarios = LAB_SCENARIOS;
+  protected readonly selectedId = signal<string>(LAB_SCENARIOS[0].id);
+  protected readonly scenario = computed<LabScenario>(() => findScenario(this.selectedId()));
+
   protected readonly cliTypes = WORKBENCH_CLI_TYPES;
 
-  /** Local demo conversation state — composer submits append user turns here. */
-  protected readonly demoEvents = signal<readonly ConversationEvent[]>(LAB_CONVERSATION_EVENTS);
-
-  /** What the conversation view renders: fixtures (demo) or the projected live feed. */
-  protected readonly events = computed<readonly ConversationEvent[]>(() =>
-    this.mode() === 'live' ? this.live.events() : this.demoEvents()
+  /** Local state for the `events` showcase — composer submits append user turns. */
+  protected readonly showcaseEvents = signal<readonly ConversationEvent[]>(
+    LAB_SCENARIOS[0].kind === 'events' ? LAB_SCENARIOS[0].events : []
   );
 
-  protected readonly composerPlaceholder = computed(() =>
-    this.mode() === 'live'
-      ? 'Prompt an die echte CLI — die erste Nachricht startet die Session'
-      : 'Steer the agent — Enter sends, Shift+Enter breaks the line'
-  );
+  /** What the conversation view renders, depending on the scenario kind. */
+  protected readonly events = computed<readonly ConversationEvent[]>(() => {
+    switch (this.scenario().kind) {
+      case 'live':
+        return this.live.events();
+      case 'replay':
+        return this.player.events();
+      default:
+        return this.showcaseEvents();
+    }
+  });
 
-  protected readonly composerEmptyState = computed(() =>
-    this.mode() === 'live'
-      ? 'Live-Modus: Nachrichten gehen an den Workbench-Host und starten echte CLI-Runs.'
-      : 'Type below: submits append a user turn to the conversation above.'
-  );
+  protected readonly liveScenario = computed<LiveScenario | null>(() => {
+    const scenario = this.scenario();
+    return scenario.kind === 'live' ? scenario : null;
+  });
+
+  protected readonly composerPlaceholder = computed(() => {
+    switch (this.scenario().kind) {
+      case 'live':
+        return 'Prompt an die echte CLI — die erste Nachricht startet die Session';
+      case 'replay':
+        return 'Eigener User-Turn — wird als user-Zeile durch die Projektion geschickt';
+      default:
+        return 'Steer the agent — Enter sends, Shift+Enter breaks the line';
+    }
+  });
+
+  protected readonly composerEmptyState = computed(() => {
+    switch (this.scenario().kind) {
+      case 'live':
+        return 'Live-Modus: Nachrichten gehen an den Workbench-Host und starten echte CLI-Runs.';
+      case 'replay':
+        return 'Replay-Modus: Submits werden als rohe user-Zeilen projiziert — wie im Live-Betrieb.';
+      default:
+        return 'Type below: submits append a user turn to the conversation above.';
+    }
+  });
 
   protected toggleTheme(): void {
     const next = this.theme() === 'dark' ? 'light' : 'dark';
@@ -55,15 +89,36 @@ export class App {
     document.documentElement.setAttribute('data-studio-theme', next);
   }
 
-  protected setMode(mode: LabMode): void {
-    if (this.mode() === mode) {
+  protected selectScenario(id: string): void {
+    if (this.selectedId() === id) {
       return;
     }
-    this.mode.set(mode);
-    if (mode === 'demo') {
+    const previous = this.scenario();
+    this.selectedId.set(id);
+    const next = this.scenario();
+
+    if (previous.kind === 'live' && next.kind !== 'live') {
       void this.live.stop();
     }
+    if (next.kind === 'replay') {
+      this.player.load(next, 'instant');
+    } else if (next.kind === 'events') {
+      this.showcaseEvents.set(next.events);
+    }
   }
+
+  protected kindLabel(kind: LabScenarioKind): string {
+    switch (kind) {
+      case 'live':
+        return 'Live';
+      case 'replay':
+        return 'Replay';
+      default:
+        return 'Fixture';
+    }
+  }
+
+  // ── Live controls ─────────────────────────────────────────────────────────
 
   protected setWorkbenchUrl(value: string): void {
     this.live.baseUrl.set(value);
@@ -73,7 +128,7 @@ export class App {
     this.live.cliType.set(value as WorkbenchCliType);
   }
 
-  protected startLive(): void {
+  protected connectLive(): void {
     void this.live.connect();
   }
 
@@ -81,15 +136,50 @@ export class App {
     void this.live.stop();
   }
 
+  /**
+   * Run the selected live scenario reproducibly: tear down any previous
+   * session, health-check the workbench, then send the preset prompt as the
+   * first message of a FRESH session.
+   */
+  protected async startLiveScenario(): Promise<void> {
+    const scenario = this.liveScenario();
+    if (scenario === null) {
+      return;
+    }
+    if (scenario.cliType !== undefined) {
+      this.live.cliType.set(scenario.cliType);
+    }
+    await this.live.stop();
+    await this.live.connect();
+    if (this.live.connection() === 'connected') {
+      await this.live.submit(scenario.prompt);
+    }
+  }
+
+  /** Send the scenario's suggested follow-up — exercises the resume chain. */
+  protected sendFollowUp(): void {
+    const followUp = this.liveScenario()?.followUp;
+    if (followUp !== undefined && this.live.sessionId() !== null) {
+      void this.live.submit(followUp);
+    }
+  }
+
+  // ── Composer ──────────────────────────────────────────────────────────────
+
   protected onComposerSubmit(submit: ChatSubmitEvent): void {
     const text = submit.text.trim();
     if (text.length === 0) {
       return;
     }
-    if (this.mode() === 'live') {
-      void this.live.submit(text);
-      return;
+    switch (this.scenario().kind) {
+      case 'live':
+        void this.live.submit(text);
+        return;
+      case 'replay':
+        this.player.appendUserLine(text);
+        return;
+      default:
+        this.showcaseEvents.update((list) => [...list, userTurnEvent(text)]);
     }
-    this.demoEvents.update((list) => [...list, userTurnEvent(text)]);
   }
 }

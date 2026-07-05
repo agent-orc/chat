@@ -1,3 +1,5 @@
+// Colors ride the studio theme tokens (fallback = the dark default), so the
+// rows stay legible when the host flips `data-studio-theme="light"`.
 :host { display: block; }
 
 .chat-row {
@@ -6,10 +8,10 @@
   gap: 4px;
   padding: 8px 10px;
   margin: 6px 0;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.025));
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.05));
   border-radius: 8px;
-  color: #e2e8f0;
+  color: var(--studio-fg, #e2e8f0);
   transition: background 0.4s ease;
   contain: layout paint;
 }
@@ -21,8 +23,8 @@
 
 .chat-row--event {
   border-style: dashed;
-  background: rgba(255, 255, 255, 0.015);
-  color: #cbd5e1;
+  background: transparent;
+  color: var(--studio-fg-dim, #cbd5e1);
   font-size: 12px;
 }
 
@@ -36,11 +38,11 @@
   gap: 8px;
   align-items: baseline;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--studio-fg-dim, #94a3b8);
 }
 
 .chat-row__author {
-  color: #c4b5fd;
+  color: var(--severity-pending, #c4b5fd);
   font-weight: 600;
   text-transform: lowercase;
 }
@@ -48,7 +50,7 @@
 .chat-row__kind {
   font-family: ui-monospace, SFMono-Regular, monospace;
   font-size: 10px;
-  color: #64748b;
+  color: var(--studio-fg-muted, #64748b);
 }
 
 .chat-row__ts { margin-left: auto; }
@@ -62,7 +64,7 @@
 .chat-row__body :is(pre, code) {
   font-family: ui-monospace, SFMono-Regular, monospace;
   font-size: 12px;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--studio-bg-elevated, rgba(0, 0, 0, 0.4));
   padding: 1px 4px;
   border-radius: 4px;
 }

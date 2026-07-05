@@ -2,31 +2,12 @@
   <div class="lab-header__titles">
     <h1>Conversation Lab</h1>
     <p class="lab-header__sub">
-      Playground for the &#64;coding-agent/chat library — rendered against the built
-      <code>dist/</code> output (partial Ivy).
+      Szenario-Testbett für die &#64;coding-agent/chat library — gerendert gegen den gebauten
+      <code>dist/</code>-Output. Replay-Szenarien laufen durch dieselbe Projektion wie der
+      Live-Modus; Live-Szenarien treiben eine echte CLI über den Workbench-Host.
     </p>
   </div>
   <div class="lab-header__actions">
-    <div class="lab-mode" role="group" aria-label="Datenquelle">
-      <button
-        type="button"
-        class="lab-mode__option"
-        [class.lab-mode__option--active]="mode() === 'demo'"
-        data-testid="lab-mode-demo"
-        (click)="setMode('demo')"
-      >
-        Demo
-      </button>
-      <button
-        type="button"
-        class="lab-mode__option"
-        [class.lab-mode__option--active]="mode() === 'live'"
-        data-testid="lab-mode-live"
-        (click)="setMode('live')"
-      >
-        Workbench (live)
-      </button>
-    </div>
     <button
       type="button"
       class="lab-theme-toggle"
@@ -38,7 +19,60 @@
   </div>
 </header>
 
-@if (mode() === 'live') {
+<section class="lab-scenarios" aria-label="Szenario-Auswahl">
+  <div class="lab-scenarios__list" role="group" aria-label="Szenarien">
+    @for (s of scenarios; track s.id) {
+      <button
+        type="button"
+        class="lab-scenario-chip"
+        [class.lab-scenario-chip--active]="selectedId() === s.id"
+        [attr.data-testid]="'lab-scenario-' + s.id"
+        (click)="selectScenario(s.id)"
+      >
+        <span class="lab-scenario-chip__kind" [attr.data-kind]="s.kind">{{ kindLabel(s.kind) }}</span>
+        {{ s.title }}
+      </button>
+    }
+  </div>
+
+  <div class="lab-scenarios__detail">
+    <p class="lab-scenarios__desc" data-testid="lab-scenario-desc">{{ scenario().description }}</p>
+
+    @if (scenario().kind === 'replay') {
+      <div class="lab-scenarios__controls" role="group" aria-label="Replay-Steuerung">
+        <button
+          type="button"
+          class="lab-scenarios__button lab-scenarios__button--primary"
+          data-testid="lab-replay-stream"
+          (click)="player.replayStreamed()"
+        >
+          {{ player.playing() ? '⏵ läuft …' : '⏵ Gestreamt abspielen' }}
+        </button>
+        <button
+          type="button"
+          class="lab-scenarios__button"
+          data-testid="lab-replay-all"
+          (click)="player.showAll()"
+        >
+          Sofort einspielen
+        </button>
+        <button
+          type="button"
+          class="lab-scenarios__button"
+          data-testid="lab-replay-clear"
+          (click)="player.clear()"
+        >
+          Leeren
+        </button>
+        <span class="lab-scenarios__progress" data-testid="lab-replay-progress">
+          {{ player.progress().shown }}/{{ player.progress().total }} Zeilen
+        </span>
+      </div>
+    }
+  </div>
+</section>
+
+@if (scenario().kind === 'live') {
   <section class="lab-live-bar" aria-label="Workbench live controls">
     <label class="lab-live-bar__field">
       <span>Workbench-URL</span>
@@ -65,9 +99,9 @@
       type="button"
       class="lab-live-bar__start"
       data-testid="lab-live-start"
-      (click)="startLive()"
+      (click)="startLiveScenario()"
     >
-      Start
+      Szenario starten
     </button>
     @if (live.sessionId()) {
       <button
@@ -90,13 +124,31 @@
         <code class="lab-live-bar__session">{{ sid }}</code>
       }
     </span>
+
+    @if (liveScenario(); as ls) {
+      <div class="lab-live-bar__prompt">
+        <span class="lab-live-bar__prompt-label">Preset-Prompt</span>
+        <code data-testid="lab-live-prompt">{{ ls.prompt }}</code>
+        @if (ls.followUp; as followUp) {
+          <button
+            type="button"
+            class="lab-live-bar__follow-up"
+            data-testid="lab-live-follow-up"
+            [disabled]="!live.sessionId()"
+            (click)="sendFollowUp()"
+          >
+            Follow-up senden: „{{ followUp }}“
+          </button>
+        }
+      </div>
+    }
   </section>
 }
 
 <main class="lab-columns">
   <section class="lab-panel" aria-label="Conversation view and composer">
     <h2>
-      {{ mode() === 'live' ? 'Live conversation — real CLI via workbench' : 'Conversation view + composer' }}
+      {{ scenario().kind === 'live' ? 'Live conversation — real CLI via workbench' : 'Conversation view + composer' }}
     </h2>
     <div class="lab-panel__scroll">
       <cac-conversation-view [events]="events()" />
