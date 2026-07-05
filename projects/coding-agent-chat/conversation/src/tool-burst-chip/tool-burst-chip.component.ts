@@ -69,7 +69,7 @@ export class ToolBurstChipComponent {
   // prefix is recognizable once the row is open, not only on hover.
   readonly leadingGlyphLabel = computed(() => {
     const entry = glyphEntry(this.leadingIcon());
-    return entry ? `${entry.name} - ${entry.meaning}` : '';
+    return entry ? `${entry.name} — ${entry.meaning}` : '';
   });
 
   // A single instant-hover legend for the glyph column. The active glyph is
@@ -87,9 +87,6 @@ export class ToolBurstChipComponent {
       body: `<ul>${items}</ul>`
     };
   });
-
-  readonly fileCount = computed(() => this.event().files?.length ?? 0);
-  readonly artifactCount = computed(() => this.event().artifacts?.length ?? 0);
 
   readonly formattedDuration = computed(() => formatBurstDuration(this.event().durationMs ?? 0));
 
@@ -128,12 +125,13 @@ export class ToolBurstChipComponent {
       const familyFailures = Math.min(count, failuresLeft);
       failuresLeft -= familyFailures;
       const status: 'ok' | 'fail' = familyFailures > 0 ? 'fail' : 'ok';
+      // One status cell, no duplication: "ok", "ok ×3", "2 fail ×5".
       rows.push({
         family,
         target: sample,
         status,
-        statusLabel: status === 'fail' ? 'fail' : 'ok',
-        meta: count > 1 ? `x${count}${familyFailures > 0 ? ` - ${familyFailures} fail` : ''}` : (familyFailures > 0 ? '1 fail' : 'ok')
+        statusLabel: status === 'fail' ? `${familyFailures} fail` : 'ok',
+        meta: count > 1 ? `×${count}` : ''
       });
     }
     return rows;
@@ -148,17 +146,6 @@ export class ToolBurstChipComponent {
       case 'task': return 'task';
       case 'todo': return 'todo';
       default: return 'tool';
-    }
-  }
-
-  formatTime(iso: string): string {
-    if (!iso) return '';
-    try {
-      const d = new Date(iso);
-      if (Number.isNaN(d.getTime())) return '';
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    } catch {
-      return '';
     }
   }
 

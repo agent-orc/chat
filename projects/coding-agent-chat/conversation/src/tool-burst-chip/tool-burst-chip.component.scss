@@ -1,206 +1,230 @@
 :host { display: block; }
 
-// Tool bursts are accompanying info, not the main voice: keep the container
-// quiet so the agent prose around it stays dominant. Weight only steps up
-// once the row is opened on purpose.
+// Tool bursts are accompanying activity, not the main voice — and they should
+// be CALM. Three rules keep them that way:
+//   1. One shared left edge: the glyph sits in the same 15px gutter as the
+//      message bullets, summary text and the opened details align to the same
+//      column as message text.
+//   2. One text register per line: the summary is a single quiet sentence,
+//      the preview is its own subline — no mixed sizes/opacities inside a line.
+//   3. Dim once, never twice: containers stay at full currentColor; only leaf
+//      elements apply a single color-mix step (alpha stacking is what made
+//      earlier revisions unreadably faint).
 .burst {
-  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
-  border-radius: 8px;
-  background: color-mix(in srgb, currentColor 2.5%, transparent);
   font-family: var(--font-ui);
   font-size: 12.5px;
-  line-height: 1.45;
-  transition: border-color 120ms ease, background 120ms ease;
-}
-.burst--open {
-  border-color: color-mix(in srgb, currentColor 20%, transparent);
-  background: color-mix(in srgb, currentColor 4.5%, transparent);
-}
-.burst--error {
-  border-color: rgba(239, 68, 68, 0.55);
-  background: rgba(239, 68, 68, 0.08);
-}
-.burst--error.burst--open {
-  background: rgba(239, 68, 68, 0.12);
+  line-height: 1.5;
+  color: inherit;
 }
 
 .burst__row {
   width: 100%;
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
+  grid-template-columns: 15px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  column-gap: 8px;
+  padding: 4px 4px 4px 0;
   background: transparent;
   border: 0;
+  border-radius: 6px;
   color: inherit;
   cursor: pointer;
   text-align: left;
+  transition: background 120ms ease;
+  // Accordion header, not content: selectable text here only produces an
+  // unreadable highlight band; the details below stay copyable.
+  user-select: none;
 }
-.burst__row:hover { background: color-mix(in srgb, currentColor 8%, transparent); border-radius: 8px; }
+.burst__row:hover {
+  background: var(--studio-bg-hover, color-mix(in srgb, currentColor 5%, transparent));
+}
 .burst__row:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid var(--severity-info, #6366f1);
   outline-offset: -2px;
-  border-radius: 8px;
 }
 
-.burst__icon { font-size: 13px; line-height: 1; opacity: 0.7; cursor: help; }
-.burst__count { display: flex; gap: 8px; align-items: baseline; }
-.burst__count strong {
+// Gutter glyph: a plain mono letter in the bullet column — no badge box.
+// Carries the R/S/$/E/… legend on hover.
+.burst__icon {
+  justify-self: start;
+  padding-left: 2px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  color: color-mix(in srgb, currentColor 64%, transparent);
+  cursor: help;
+}
+.burst--error .burst__icon {
+  color: color-mix(in srgb, var(--studio-accent-6, #ef4444) 85%, currentColor);
+}
+
+// The whole summary is ONE line in one register: label, then the family
+// counts as quiet prose. Never wraps; overflow clips.
+.burst__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.burst__total {
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: color-mix(in srgb, currentColor 72%, transparent);
+  color: color-mix(in srgb, currentColor 92%, transparent);
 }
 .burst__fail {
   font-style: normal;
   font-weight: 700;
-  color: var(--studio-accent-6, #f87171);
   font-size: 11.5px;
+  color: color-mix(in srgb, var(--studio-accent-6, #f87171) 85%, currentColor);
 }
-// Single-line summary strip: chips never wrap, so a long burst stays one row
-// while collapsed. Overflow is clipped and the preview ellipsizes.
 .burst__families {
   display: flex;
   flex-wrap: nowrap;
-  gap: 5px;
-  align-items: center;
+  align-items: baseline;
   min-width: 0;
   overflow: hidden;
 }
-// All count chips share one quiet, theme-driven style. Family is already
-// conveyed by the leading glyph and the chip label, so the loud per-family
-// colors are dropped in favor of central currentColor tokens.
 .burst__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, currentColor 5%, transparent);
-  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
-  color: color-mix(in srgb, currentColor 72%, transparent);
-  font-size: 11px;
+  color: color-mix(in srgb, currentColor 76%, transparent);
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   flex: 0 0 auto;
 }
-.burst__chip--time { background: color-mix(in srgb, currentColor 3%, transparent); }
-.burst__chip--model {
-  background: color-mix(in srgb, currentColor 4%, transparent);
-  border-color: color-mix(in srgb, currentColor 10%, transparent);
-  color: color-mix(in srgb, currentColor 52%, transparent);
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
-  letter-spacing: 0.01em;
+.burst__chip + .burst__chip::before {
+  content: '·';
+  margin: 0 6px;
+  color: color-mix(in srgb, currentColor 38%, transparent);
 }
 
-// One-line gist of the burst, shown only while collapsed. Takes the leftover
-// width and truncates so the row height never grows.
+.burst__duration {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 66%, transparent);
+  white-space: nowrap;
+}
+.burst__caret {
+  font-size: 10.5px;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+// One-line gist of the burst on its own subline (collapsed only), aligned to
+// the summary text edge so the two lines read as title + subtitle.
 .burst__preview {
-  flex: 1 1 auto;
+  grid-column: 2 / -1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-top: 1px;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
   font-size: 11px;
-  color: color-mix(in srgb, currentColor 50%, transparent);
+  color: color-mix(in srgb, currentColor 55%, transparent);
 }
 
-.burst__caret {
-  font-size: 11px;
-  opacity: 0.65;
-  font-variant-numeric: tabular-nums;
-}
-
+// Opened details: an indented inset behind a 2px rail. The rail sits exactly
+// on the summary's text edge, so open state reads as "unfolded under the
+// line above", not as a separate card.
 .burst__details {
-  padding: 6px 10px 10px;
-  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  margin: 2px 4px 6px 15px;
+  padding: 9px 12px 11px;
+  border-left: 2px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, currentColor 3%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
+.burst--error .burst__details {
+  border-left-color: color-mix(in srgb, var(--studio-accent-6, #ef4444) 60%, transparent);
+}
+
+// Head: readable title (the written-out glyph meaning), quiet mono meta right.
 .burst__details-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0.65;
+  gap: 10px;
 }
-.burst__details-head code {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  opacity: 0.7;
-}
-// Written-out meaning of the leading glyph: readable (not the uppercased,
-// faded treatment of the rest of the head) so the row is decodable when open.
 .burst__details-glyph {
   margin-right: auto;
-  text-transform: none;
-  letter-spacing: 0;
-  opacity: 0.85;
   font-weight: 600;
+  color: color-mix(in srgb, currentColor 86%, transparent);
+}
+.burst__details-model,
+.burst__details-range {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: color-mix(in srgb, currentColor 56%, transparent);
+  white-space: nowrap;
 }
 
+// Per-family rollup: family, sample target, status. No zebra stripes, no
+// repeated timestamps — whitespace and the mono column carry the table.
 .burst__rows {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 .burst__detail-row {
   display: grid;
-  grid-template-columns: 64px 80px 1fr auto auto;
-  gap: 8px;
-  align-items: center;
-  padding: 3px 6px;
-  border-radius: 6px;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: baseline;
   font-size: 12px;
 }
-.burst__detail-row:nth-child(odd) {
-  background: color-mix(in srgb, currentColor 4%, transparent);
-}
-.burst__detail-row[data-status='fail'] {
-  background: rgba(239,68,68,0.10);
-}
-.burst__detail-time { font-variant-numeric: tabular-nums; opacity: 0.6; font-size: 11px; }
 .burst__detail-tool {
   font-family: var(--font-mono);
   font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: color-mix(in srgb, currentColor 62%, transparent);
 }
 .burst__detail-target {
   font-family: var(--font-mono);
   font-size: 11.5px;
+  color: color-mix(in srgb, currentColor 84%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.burst__detail-status { font-size: 11px; letter-spacing: 0.05em; }
-.burst__detail-row[data-status='ok'] .burst__detail-status { color: var(--studio-accent-success, #10b981); }
-.burst__detail-row[data-status='fail'] .burst__detail-status { color: var(--studio-accent-6, #f87171); }
-.burst__detail-meta { font-size: 11px; opacity: 0.6; }
+.burst__detail-status {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.burst__detail-status strong {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.burst__detail-row[data-status='ok'] .burst__detail-status strong {
+  color: color-mix(in srgb, var(--studio-accent-success, #10b981) 80%, currentColor);
+}
+.burst__detail-row[data-status='fail'] .burst__detail-status strong {
+  color: color-mix(in srgb, var(--studio-accent-6, #f87171) 85%, currentColor);
+}
+.burst__detail-meta {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+}
 
+// Tests / files / artifacts rollups: a headed list, no box of its own.
 .burst__sub {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 4px 6px;
-  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 6px;
+  gap: 4px;
 }
-.burst__sub header {
-  font-size: 11px;
-  letter-spacing: 0.05em;
+.burst__sub header,
+.burst__commands > header {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.6;
+  color: color-mix(in srgb, currentColor 58%, transparent);
 }
-.burst__sub ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.burst__sub ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
 .burst__sub li {
   display: flex;
   gap: 8px;
@@ -210,41 +234,31 @@
 .burst__sub li code {
   font-family: var(--font-mono);
   font-size: 11px;
+  color: color-mix(in srgb, currentColor 80%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.burst__sub li[data-status='pass'] strong { color: var(--studio-accent-success, #10b981); }
-.burst__sub li[data-status='fail'] strong { color: var(--studio-accent-6, #f87171); }
-.burst__sub li[data-status='unknown'] strong { color: var(--studio-fg-dim, #94a3b8); }
+.burst__sub li strong { font-weight: 600; letter-spacing: 0.03em; font-size: 11px; }
+.burst__sub li[data-status='pass'] strong { color: color-mix(in srgb, var(--studio-accent-success, #10b981) 80%, currentColor); }
+.burst__sub li[data-status='fail'] strong { color: color-mix(in srgb, var(--studio-accent-6, #f87171) 85%, currentColor); }
+.burst__sub li[data-status='unknown'] strong { color: color-mix(in srgb, currentColor 60%, transparent); }
 
 .burst__commands {
   display: grid;
   gap: 6px;
 }
-.burst__commands > header {
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
+// One command = its line + badges, then the output block. No card frame.
 .burst__command {
   display: grid;
-  gap: var(--studio-spacing-2, 8px);
-  padding: var(--studio-spacing-2, 8px);
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-  border-radius: 6px;
-  background: color-mix(in srgb, currentColor 3%, transparent);
+  gap: 5px;
   min-width: 0;
 }
-.burst__command[data-status='failed'] {
-  border-color: rgba(239, 68, 68, 0.45);
-  background: rgba(239, 68, 68, 0.08);
-}
+.burst__command + .burst__command { margin-top: 4px; }
 .burst__command-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: var(--studio-spacing-2, 8px);
-  align-items: center;
+  align-items: baseline;
 }
 .burst__command-text {
   min-width: 0;
@@ -253,27 +267,25 @@
   white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 11.5px;
+  color: color-mix(in srgb, currentColor 84%, transparent);
 }
 .burst__command-badge,
-.burst__command-time,
 .burst__command-truncated {
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
-  background: color-mix(in srgb, currentColor 8%, transparent);
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  color: color-mix(in srgb, currentColor 72%, transparent);
   font-size: 10.5px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .burst__command-truncated {
-  color: color-mix(in srgb, var(--studio-accent-warn, #f59e0b) 86%, currentColor);
-  border-color: color-mix(in srgb, #f59e0b 40%, transparent);
-  background: color-mix(in srgb, #f59e0b 10%, transparent);
+  color: color-mix(in srgb, var(--studio-accent-warn, #f59e0b) 85%, currentColor);
+  background: color-mix(in srgb, var(--studio-accent-warn, #f59e0b) 10%, transparent);
 }
 .burst__command[data-status='failed'] .burst__command-badge {
-  color: var(--studio-accent-6, #f87171);
-  border-color: rgba(248, 113, 113, 0.45);
-  background: rgba(248, 113, 113, 0.12);
+  color: color-mix(in srgb, var(--studio-accent-6, #f87171) 85%, currentColor);
+  background: color-mix(in srgb, var(--studio-accent-6, #f87171) 12%, transparent);
 }
 .burst__hits {
   list-style: none;
@@ -298,36 +310,39 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 1px 4px;
-  border: 1px solid color-mix(in srgb, #38bdf8 28%, transparent);
+  border: 0;
   border-radius: 4px;
-  background: color-mix(in srgb, #38bdf8 8%, transparent);
-  color: inherit;
+  background: color-mix(in srgb, var(--severity-info, #38bdf8) 10%, transparent);
+  color: color-mix(in srgb, var(--severity-info, #38bdf8) 78%, currentColor);
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 11px;
   text-align: left;
 }
 .burst__hit-path:hover {
-  background: color-mix(in srgb, #38bdf8 16%, transparent);
+  background: color-mix(in srgb, var(--severity-info, #38bdf8) 18%, transparent);
 }
 .burst__hit-text {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: 0.8;
+  color: color-mix(in srgb, currentColor 80%, transparent);
 }
+// Output block: the one intentionally "solid" surface in the burst — code
+// needs a backdrop. Drawn from theme tokens so it flips with light/dark.
 .burst__output {
   max-height: 240px;
   overflow: auto;
   margin: 0;
-  padding: var(--studio-spacing-2, 8px);
-  border-radius: 5px;
-  background: color-mix(in srgb, black 24%, transparent);
-  color: color-mix(in srgb, currentColor 86%, transparent);
+  padding: var(--studio-spacing-2, 8px) 10px;
+  border-radius: 6px;
+  border: 1px solid var(--studio-border, color-mix(in srgb, currentColor 10%, transparent));
+  background: var(--studio-bg-editor, color-mix(in srgb, currentColor 4%, transparent));
+  color: color-mix(in srgb, currentColor 88%, transparent);
   font-family: var(--font-mono);
   font-size: 11px;
-  line-height: 1.45;
+  line-height: 1.5;
   white-space: pre;
   max-width: 100%;
 }
@@ -335,7 +350,7 @@
   justify-self: start;
   border: 0;
   background: transparent;
-  color: color-mix(in srgb, currentColor 70%, transparent);
+  color: color-mix(in srgb, currentColor 68%, transparent);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
@@ -346,39 +361,29 @@
 .burst__output-toggle:hover { color: inherit; }
 .burst__output-empty {
   font-size: 11.5px;
-  color: color-mix(in srgb, currentColor 60%, transparent);
+  color: color-mix(in srgb, currentColor 62%, transparent);
 }
 
-/* Compact density: hide secondary chips first so the row stays one line. */
-.burst[data-density='compact'] .burst__chip--time,
-.burst[data-density='compact'] .burst__chip--file {
+/* Compact density: the subline goes first so the row stays a single line. */
+.burst[data-density='compact'] .burst__preview {
   display: none;
 }
 .burst[data-density='compact'] .burst__row {
-  grid-template-columns: auto auto 1fr auto;
-  padding: 4px 8px;
-  gap: 6px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   font-size: 11.5px;
 }
 
-/* Mobile collapse: drop the family chips strip; the header still
-   shows total + failure count, and the details panel still owns the
-   per-tool table. The summary strip carries family rollups elsewhere. */
+/* Mobile collapse: drop the family prose; the summary still shows total +
+   failure count, and the details panel still owns the per-tool table. */
 @media (max-width: 520px) {
-  .burst__row {
-    grid-template-columns: auto auto 1fr auto;
-  }
-  .burst__families .burst__chip:not(.burst__chip--art):not([data-family='__leading__']) {
+  .burst__families {
     display: none;
   }
   .burst__detail-row {
-    grid-template-columns: 1fr auto;
-    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
-  .burst__detail-time,
-  .burst__detail-tool,
-  .burst__detail-meta {
+  .burst__detail-tool {
     display: none;
   }
 }
-  

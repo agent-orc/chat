@@ -120,7 +120,7 @@
                     <cac-markdown class="msg__body" [source]="item.body" />
                     @if (item.attachments?.length) {
                       <ul class="msg__attachments" aria-label="Attachments">
-                        @for (a of item.attachments ?? []; track a) {
+                        @for (a of item.attachments; track a) {
                           <li><code>{{ a }}</code></li>
                         }
                       </ul>

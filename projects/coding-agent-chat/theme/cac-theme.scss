@@ -181,6 +181,16 @@
 }
 
 // -----------------------------------------------------------------------------
+// Text selection: a translucent info-blue wash instead of the UA's solid
+// highlight. The chat surfaces render secondary text with alpha — over a
+// solid dark selection block that text becomes unreadable; a translucent
+// wash keeps every text tone legible and flips with the theme token.
+// -----------------------------------------------------------------------------
+::selection {
+  background: color-mix(in srgb, var(--severity-info, #6da2f0) 30%, transparent);
+}
+
+// -----------------------------------------------------------------------------
 // Shared markdown / rich-text typography.
 //
 // Every surface that renders markdown applies `class="markdown-body"` (plus the

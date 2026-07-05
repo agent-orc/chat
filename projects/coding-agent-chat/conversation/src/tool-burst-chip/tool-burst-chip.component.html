@@ -14,55 +14,39 @@
           aria-hidden="true"
           [cacTooltip]="glyphTooltip()"
           tooltipPosition="right">{{ leadingIcon() }}</span>
-    <span class="burst__count">
-      <strong data-testid="tool-burst-total">Tools {{ event().count }}</strong>
+    <span class="burst__summary">
+      <strong class="burst__total" data-testid="tool-burst-total">Tools {{ event().count }}</strong>
       @if (failed()) {
         <em class="burst__fail" data-testid="tool-burst-failures">{{ event().failures }} failed</em>
       }
+      <span class="burst__families" data-testid="tool-burst-families">
+        @for (chip of familyChips(); track chip.family) {
+          <span class="burst__chip" [attr.data-family]="chip.family">
+            {{ chip.label }} {{ chip.count }}
+          </span>
+        }
+      </span>
     </span>
-    <span class="burst__families" data-testid="tool-burst-families">
-      @for (chip of familyChips(); track chip.family) {
-        <span class="burst__chip" [attr.data-family]="chip.family">
-          {{ chip.label }} {{ chip.count }}
-        </span>
-      }
-      @if (event().durationMs && event().durationMs! > 0) {
-        <span class="burst__chip burst__chip--time" data-testid="tool-burst-duration">
-          {{ formattedDuration() }}
-        </span>
-      }
-      @if (event().model) {
-        <span class="burst__chip burst__chip--model"
-              data-testid="tool-burst-model"
-              [cacTooltip]="'Generating model for this tool run'">
-          {{ event().model }}
-        </span>
-      }
-      @if (artifactCount() > 0) {
-        <span class="burst__chip burst__chip--art" data-testid="tool-burst-artifacts">
-          {{ artifactCount() }} artifact{{ artifactCount() === 1 ? '' : 's' }}
-        </span>
-      }
-      @if (fileCount() > 0) {
-        <span class="burst__chip burst__chip--file" data-testid="tool-burst-files">
-          {{ fileCount() }} file{{ fileCount() === 1 ? '' : 's' }}
-        </span>
-      }
-      @if (!open() && previewLine()) {
-        <span class="burst__preview" data-testid="tool-burst-preview">{{ previewLine() }}</span>
-      }
-    </span>
-    <span class="burst__caret" aria-hidden="true">{{ open() ? 'v' : '>' }}</span>
+    @if (event().durationMs && event().durationMs! > 0) {
+      <span class="burst__duration" data-testid="tool-burst-duration">{{ formattedDuration() }}</span>
+    }
+    <span class="burst__caret" aria-hidden="true">{{ open() ? '▾' : '▸' }}</span>
+    @if (!open() && previewLine()) {
+      <span class="burst__preview" data-testid="tool-burst-preview">{{ previewLine() }}</span>
+    }
   </button>
 
   @if (open()) {
     <section class="burst__details" data-testid="tool-burst-details">
       <header class="burst__details-head">
-        <span>Tool details</span>
-        @if (leadingGlyphLabel()) {
-          <span class="burst__details-glyph" data-testid="tool-burst-glyph-label">{{ leadingGlyphLabel() }}</span>
+        <span class="burst__details-glyph"
+              data-testid="tool-burst-glyph-label">{{ leadingGlyphLabel() || 'Tool details' }}</span>
+        @if (event().model) {
+          <code class="burst__details-model"
+                data-testid="tool-burst-model"
+                [cacTooltip]="'Generating model for this tool run'">{{ event().model }}</code>
         }
-        <code data-testid="tool-burst-range">
+        <code class="burst__details-range" data-testid="tool-burst-range">
           {{ event().rawRange.source }}:{{ event().rawRange.start }}-{{ event().rawRange.end }}
         </code>
       </header>
@@ -70,11 +54,14 @@
       <ul class="burst__rows" data-testid="tool-burst-table">
         @for (row of detailRows(); track row.family + row.target) {
           <li class="burst__detail-row" [attr.data-family]="row.family" [attr.data-status]="row.status">
-            <span class="burst__detail-time">{{ formatTime(event().timestamp) }}</span>
             <code class="burst__detail-tool">{{ familyLabel(row.family) }}</code>
             <span class="burst__detail-target">{{ row.target }}</span>
-            <strong class="burst__detail-status">{{ row.statusLabel }}</strong>
-            <span class="burst__detail-meta">{{ row.meta }}</span>
+            <span class="burst__detail-status">
+              <strong>{{ row.statusLabel }}</strong>
+              @if (row.meta) {
+                <span class="burst__detail-meta">{{ row.meta }}</span>
+              }
+            </span>
           </li>
         }
       </ul>
@@ -104,9 +91,6 @@
               <div class="burst__command-head">
                 <code class="burst__command-text" [cacTooltip]="cmd.command">{{ shortCommand(cmd.command) }}</code>
                 <span class="burst__command-badge" data-testid="tool-burst-command-exit">{{ statusLabel(cmd.status, cmd.exitCode) }}</span>
-                @if (formattedDuration()) {
-                  <span class="burst__command-time">{{ formattedDuration() }}</span>
-                }
                 @if (cmd.outputTruncated) {
                   <span class="burst__command-truncated" data-testid="tool-burst-command-truncated">truncated</span>
                 }
@@ -146,6 +130,17 @@
         </section>
       }
 
+      @if ((event().files?.length ?? 0) > 0) {
+        <section class="burst__sub" data-testid="tool-burst-files">
+          <header>Files</header>
+          <ul>
+            @for (file of event().files ?? []; track file) {
+              <li><code>{{ file }}</code></li>
+            }
+          </ul>
+        </section>
+      }
+
       @if ((event().artifacts?.length ?? 0) > 0) {
         <section class="burst__sub" data-testid="tool-burst-artifacts-list">
           <header>Artifacts</header>
@@ -159,4 +154,3 @@
     </section>
   }
 </article>
-  
