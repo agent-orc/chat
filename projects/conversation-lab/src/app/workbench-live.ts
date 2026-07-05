@@ -46,6 +46,31 @@ export class WorkbenchLiveSession {
   private eventSource: EventSource | null = null;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Raw stream lines as received — the projection input, for the host's Trace view. */
+  readonly rawLines = this.lines.asReadonly();
+
+  /**
+   * True while the CLI is working on a run — drives the conversation view's
+   * "Working" indicator. Derived from the stream itself: the host echoes the
+   * prompt as a `user` line the moment a run starts, and closes every run
+   * with a `[taskboard] Exited …` bookkeeping line (or a "Failed to start"
+   * stderr line when the CLI never came up). `sending` bridges the gap
+   * before the first echoed line arrives.
+   */
+  readonly running = computed<boolean>(() => {
+    if (this.sessionId() === null) {
+      return this.sending();
+    }
+    const lines = this.lines();
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i];
+      if (line.stream === 'system' && /^\[taskboard\] Exited\b/.test(line.text)) return false;
+      if (line.stream === 'stderr' && /^Failed to start\b/.test(line.text)) return false;
+      if (line.stream === 'user') return true;
+    }
+    return this.sending();
+  });
+
   /**
    * The live conversation: raw CliOutputLines projected into ConversationEvents
    * via the library's pure projection. The run-timeline / task inputs are
@@ -62,7 +87,7 @@ export class WorkbenchLiveSession {
       index: 1,
       intent: 'start',
       startedAt: lines[0].timestamp,
-      status: this.sending() ? 'running' : 'unknown',
+      status: this.running() ? 'running' : 'unknown',
       cli: this.cliType(),
       exitCode: null,
       durationSeconds: null,

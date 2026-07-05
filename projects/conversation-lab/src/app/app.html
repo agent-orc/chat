@@ -151,7 +151,10 @@
       {{ scenario().kind === 'live' ? 'Live conversation — real CLI via workbench' : 'Conversation view + composer' }}
     </h2>
     <div class="lab-panel__scroll">
-      <cac-conversation-view [events]="events()" />
+      <cac-conversation-view [events]="events()"
+                             [isRunning]="conversationRunning()"
+                             (openTrace)="openTrace($event)"
+                             (openVerboseDebug)="openTrace(null)" />
     </div>
     <cac-chat
       [messages]="[]"
@@ -175,4 +178,41 @@
     <span>{{ toast }}</span>
     <button type="button" aria-label="Meldung schließen" (click)="live.dismissError()">×</button>
   </div>
+}
+
+@if (traceOpen()) {
+  <aside class="lab-trace" role="dialog" aria-label="Trace — raw activity log" data-testid="lab-trace-panel">
+    <header class="lab-trace__head">
+      <strong>Trace</strong>
+      <span class="lab-trace__sub">Rohzeilen der Projektion</span>
+      @if (traceRange(); as range) {
+        <code class="lab-trace__range" data-testid="lab-trace-range">
+          {{ range.source }}:{{ range.start }}–{{ range.end }}
+        </code>
+      }
+      <button type="button"
+              class="lab-trace__close"
+              aria-label="Trace schließen"
+              data-testid="lab-trace-close"
+              (click)="closeTrace()">×</button>
+    </header>
+    @if (traceLines().length === 0) {
+      <p class="lab-trace__empty" data-testid="lab-trace-empty">
+        Keine Rohzeilen: Das Fixture-Szenario speist fertige Events ein, es gibt kein Activity-Log.
+        Replay- und Live-Szenarien führen hier ihre CLI-Zeilen.
+      </p>
+    } @else {
+      <ol class="lab-trace__lines" data-testid="lab-trace-lines">
+        @for (line of traceLines(); track $index) {
+          <li class="lab-trace__line"
+              [class.lab-trace__line--hit]="isTraceLineHit($index)"
+              [attr.data-stream]="line.stream">
+            <span class="lab-trace__num">{{ $index + 1 }}</span>
+            <span class="lab-trace__stream">{{ line.stream }}</span>
+            <span class="lab-trace__text">{{ line.text }}</span>
+          </li>
+        }
+      </ol>
+    }
+  </aside>
 }

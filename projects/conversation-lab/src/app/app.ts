@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import type { ChatSubmitEvent, ConversationEvent } from '@coding-agent/chat/core';
+import type {
+  ChatSubmitEvent,
+  CliOutputLine,
+  ConversationEvent,
+  RawLineRange,
+} from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
 import { ProjectChatListComponent } from '@coding-agent/chat/history';
@@ -12,12 +17,20 @@ import {
   type LabScenarioKind,
   type LiveScenario,
 } from './lab-scenarios';
-import { ScenarioPlayer } from './scenario-player';
+import { ScenarioPlayer, type ReplayMode } from './scenario-player';
 import {
   WORKBENCH_CLI_TYPES,
   WorkbenchLiveSession,
   type WorkbenchCliType,
 } from './workbench-live';
+
+/** Lab settings that survive a reload (F5): the last theme and scenario. */
+interface StoredLabSettings {
+  theme?: 'dark' | 'light';
+  scenarioId?: string;
+}
+
+const SETTINGS_STORAGE_KEY = 'conversation-lab.settings';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +44,60 @@ export class App {
   protected readonly player = inject(ScenarioPlayer);
 
   protected readonly theme = signal<'dark' | 'light'>('dark');
+
+  constructor() {
+    // Startup state comes from two sources: localStorage remembers the last
+    // session (theme + scenario survive F5), and URL params override it for
+    // shareable / scriptable deep links (?theme=light|dark, ?scenario=<id>,
+    // ?play=stream to start a replay as a timed stream).
+    const stored = this.readStoredSettings();
+    const params = new URLSearchParams(window.location.search);
+
+    const paramTheme = params.get('theme');
+    const theme = paramTheme === 'light' || paramTheme === 'dark' ? paramTheme : stored.theme;
+    if (theme === 'light' || theme === 'dark') {
+      this.theme.set(theme);
+      document.documentElement.setAttribute('data-studio-theme', theme);
+    }
+
+    const scenarioId = params.get('scenario') ?? stored.scenarioId;
+    if (typeof scenarioId === 'string' && LAB_SCENARIOS.some((s) => s.id === scenarioId)) {
+      this.selectedId.set(scenarioId);
+      this.activateScenario(params.get('play') === 'stream' ? 'stream' : 'instant');
+    }
+  }
+
+  /** Load the selected scenario into its surface (replay player / event list). */
+  private activateScenario(mode: ReplayMode): void {
+    const scenario = this.scenario();
+    if (scenario.kind === 'replay') {
+      this.player.load(scenario, mode);
+    } else if (scenario.kind === 'events') {
+      this.showcaseEvents.set(scenario.events);
+    }
+  }
+
+  // ── Settings persistence (survive F5) ─────────────────────────────────────
+
+  private readStoredSettings(): StoredLabSettings {
+    try {
+      const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+      return raw === null ? {} : (JSON.parse(raw) as StoredLabSettings);
+    } catch {
+      return {};
+    }
+  }
+
+  private persistSettings(patch: StoredLabSettings): void {
+    try {
+      window.localStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify({ ...this.readStoredSettings(), ...patch })
+      );
+    } catch {
+      // Storage unavailable (e.g. blocked) — the lab still works, it just forgets.
+    }
+  }
 
   /** The scenario catalog — the lab is the place to exercise each shape. */
   protected readonly scenarios = LAB_SCENARIOS;
@@ -61,6 +128,18 @@ export class App {
     return scenario.kind === 'live' ? scenario : null;
   });
 
+  /** Drives the view's "Working" indicator: replay = stream playing, live = CLI run active. */
+  protected readonly conversationRunning = computed<boolean>(() => {
+    switch (this.scenario().kind) {
+      case 'live':
+        return this.live.running();
+      case 'replay':
+        return this.player.playing();
+      default:
+        return false;
+    }
+  });
+
   protected readonly composerPlaceholder = computed(() => {
     switch (this.scenario().kind) {
       case 'live':
@@ -87,6 +166,7 @@ export class App {
     const next = this.theme() === 'dark' ? 'light' : 'dark';
     this.theme.set(next);
     document.documentElement.setAttribute('data-studio-theme', next);
+    this.persistSettings({ theme: next });
   }
 
   protected selectScenario(id: string): void {
@@ -95,16 +175,12 @@ export class App {
     }
     const previous = this.scenario();
     this.selectedId.set(id);
-    const next = this.scenario();
+    this.persistSettings({ scenarioId: id });
 
-    if (previous.kind === 'live' && next.kind !== 'live') {
+    if (previous.kind === 'live' && this.scenario().kind !== 'live') {
       void this.live.stop();
     }
-    if (next.kind === 'replay') {
-      this.player.load(next, 'instant');
-    } else if (next.kind === 'events') {
-      this.showcaseEvents.set(next.events);
-    }
+    this.activateScenario('instant');
   }
 
   protected kindLabel(kind: LabScenarioKind): string {
@@ -162,6 +238,54 @@ export class App {
     if (followUp !== undefined && this.live.sessionId() !== null) {
       void this.live.submit(followUp);
     }
+  }
+
+  // ── Trace drawer ──────────────────────────────────────────────────────────
+
+  protected readonly traceOpen = signal(false);
+  protected readonly traceRange = signal<RawLineRange | null>(null);
+
+  /** Raw projection input of the active scenario — what the Trace drawer lists. */
+  protected readonly traceLines = computed<readonly CliOutputLine[]>(() => {
+    switch (this.scenario().kind) {
+      case 'live':
+        return this.live.rawLines();
+      case 'replay':
+        return this.player.visibleLines();
+      default:
+        // Fixture scenarios feed ready-made events; there is no activity log.
+        return [];
+    }
+  });
+
+  /**
+   * `openTrace` from the conversation view (header button emits null, row
+   * buttons emit their raw range). The Debug button opens the same raw view
+   * without a highlight — in the lab both map onto the projection input.
+   */
+  protected openTrace(range: RawLineRange | null): void {
+    this.traceRange.set(range);
+    this.traceOpen.set(true);
+    if (range !== null) {
+      // After the drawer renders, bring the highlighted range into view.
+      // (Optional call: jsdom in tests does not implement scrolling.)
+      setTimeout(() => {
+        document.querySelector('.lab-trace__line--hit')?.scrollIntoView?.({ block: 'center' });
+      });
+    }
+  }
+
+  protected closeTrace(): void {
+    this.traceOpen.set(false);
+  }
+
+  protected isTraceLineHit(index: number): boolean {
+    const range = this.traceRange();
+    if (range === null) {
+      return false;
+    }
+    const line = index + 1; // RawLineRange is 1-based and inclusive.
+    return line >= range.start && line <= range.end;
   }
 
   // ── Composer ──────────────────────────────────────────────────────────────

@@ -41,18 +41,30 @@ export class ScenarioPlayer {
     return { shown: this.shown(), total: scenario?.lines.length ?? 0 };
   });
 
+  /**
+   * The raw lines currently visible (scripted prefix + composer-appended) —
+   * the exact projection input, exposed so the host can render a Trace view.
+   */
+  readonly visibleLines = computed<readonly CliOutputLine[]>(() => {
+    const scenario = this.scenario();
+    if (scenario === null) {
+      return [];
+    }
+    return [...scenario.lines.slice(0, this.shown()), ...this.appended()];
+  });
+
   readonly events = computed<readonly ConversationEvent[]>(() => {
     const scenario = this.scenario();
     if (scenario === null) {
       return [];
     }
-    const lines = [...scenario.lines.slice(0, this.shown()), ...this.appended()];
+    const lines = this.visibleLines();
     if (lines.length === 0) {
       return [];
     }
     return projectConversation({
       source: `lab-scenario:${scenario.id}`,
-      lines,
+      lines: [...lines],
       runTimeline: scenario.runTimeline ?? this.stubTimeline(scenario, lines),
       task: this.stubTask(scenario),
     });

@@ -72,6 +72,9 @@ const toolBurst: ToolBurstEvent = {
   families: { read: 3, search: 2, edit: 1, command: 1 },
   failures: 0,
   durationMs: 5200,
+  // The showcase should exercise the OPEN state — it is the visually risky
+  // one (details table, tests, command output) and stays visible on load.
+  collapsedByDefault: false,
   files: ['src/app/settings/settings.component.ts', 'src/app/theme/theme.service.ts'],
   tests: [{ command: 'npx vitest run settings', status: 'pass' }],
   samples: {

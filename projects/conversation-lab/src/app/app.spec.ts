@@ -4,9 +4,15 @@ import { LAB_SCENARIOS } from './lab-scenarios';
 
 describe('App', () => {
   beforeEach(async () => {
+    window.localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [App],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+    document.documentElement.setAttribute('data-studio-theme', 'dark');
   });
 
   it('should create the app', () => {
@@ -60,5 +66,81 @@ describe('App', () => {
 
     expect(compiled.querySelector('[data-testid="lab-live-start"]')).toBeTruthy();
     expect(compiled.querySelector('[data-testid="lab-live-prompt"]')?.textContent).toContain('Begrüßung');
+  });
+
+  it('opens the trace drawer with the raw replay lines from the conversation Trace button', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    compiled.querySelector<HTMLButtonElement>('[data-testid="lab-scenario-happy-path"]')!.click();
+    await fixture.whenStable();
+
+    compiled.querySelector<HTMLButtonElement>('[data-testid="conversation-open-trace"]')!.click();
+    await fixture.whenStable();
+
+    expect(compiled.querySelector('[data-testid="lab-trace-panel"]')).toBeTruthy();
+    // Replay scenarios list their CliOutputLines verbatim.
+    const lines = compiled.querySelectorAll('[data-testid="lab-trace-lines"] .lab-trace__line');
+    expect(lines.length).toBeGreaterThan(0);
+
+    compiled.querySelector<HTMLButtonElement>('[data-testid="lab-trace-close"]')!.click();
+    await fixture.whenStable();
+    expect(compiled.querySelector('[data-testid="lab-trace-panel"]')).toBeNull();
+  });
+
+  it('explains the missing activity log when tracing a fixture scenario', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    // Default scenario is the events showcase — no raw lines behind it.
+    compiled.querySelector<HTMLButtonElement>('[data-testid="conversation-open-trace"]')!.click();
+    await fixture.whenStable();
+
+    expect(compiled.querySelector('[data-testid="lab-trace-empty"]')).toBeTruthy();
+  });
+
+  it('applies ?scenario= and ?theme= deep links on startup', async () => {
+    const originalUrl = window.location.href;
+    window.history.replaceState(null, '', '/?scenario=happy-path&theme=light');
+    try {
+      const fixture = TestBed.createComponent(App);
+      await fixture.whenStable();
+      const compiled = fixture.nativeElement as HTMLElement;
+
+      expect(compiled.querySelector('[data-testid="lab-replay-stream"]')).toBeTruthy();
+      // Instant load: every scripted line is already shown (N/N, N > 0).
+      const progress = compiled.querySelector('[data-testid="lab-replay-progress"]')?.textContent ?? '';
+      const match = progress.match(/(\d+)\/(\d+)/);
+      expect(match).toBeTruthy();
+      expect(match![1]).toBe(match![2]);
+      expect(Number(match![1])).toBeGreaterThan(0);
+      expect(document.documentElement.getAttribute('data-studio-theme')).toBe('light');
+    } finally {
+      window.history.replaceState(null, '', originalUrl);
+      document.documentElement.setAttribute('data-studio-theme', 'dark');
+    }
+  });
+
+  it('remembers the last theme and scenario across a reload (localStorage)', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    compiled.querySelector<HTMLButtonElement>('[data-testid="lab-scenario-happy-path"]')!.click();
+    compiled.querySelector<HTMLButtonElement>('[data-testid="lab-theme-toggle"]')!.click();
+    await fixture.whenStable();
+
+    // A fresh component instance stands in for F5: both settings restore.
+    const reloaded = TestBed.createComponent(App);
+    await reloaded.whenStable();
+    const recompiled = reloaded.nativeElement as HTMLElement;
+
+    expect(
+      recompiled.querySelector('.lab-scenario-chip--active')?.textContent
+    ).toContain('Happy Path');
+    expect(recompiled.querySelector('[data-testid="lab-replay-stream"]')).toBeTruthy();
+    expect(document.documentElement.getAttribute('data-studio-theme')).toBe('light');
   });
 });
