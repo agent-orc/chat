@@ -71,6 +71,13 @@ describe('ChatComponent', () => {
     expect(query(fixture, '[data-testid="chat-msg-user"]')).toBeNull();
   });
 
+  it('renders no body strip at all when there are no messages and emptyState is blank', async () => {
+    const fixture = await createChat({ emptyState: '' });
+
+    expect(query(fixture, '[data-testid="chat-empty"]')).toBeNull();
+    expect(query(fixture, '[data-testid="chat-body"]')).toBeNull();
+  });
+
   it('renders the message list with role-specific rows and a role badge for agent turns', async () => {
     const fixture = await createChat({
       messages: [
@@ -228,5 +235,22 @@ describe('ChatComponent', () => {
     const fixture = await createChat({ contextLabel: 'conversation-lab · Live scenario' });
     expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim())
       .toBe('conversation-lab · Live scenario');
+  });
+
+  it('renders a notice message as a centered divider instead of a bubble', async () => {
+    const fixture = await createChat({
+      messages: [
+        message('m1', 'user', 'hi'),
+        {
+          ...message('n1', 'system', 'Model changed: Sonnet 5 → Opus 4.8'),
+          presentation: 'notice' as const,
+        },
+      ],
+    });
+    const notice = query(fixture, '[data-testid="chat-notice"]');
+    expect(notice).toBeTruthy();
+    expect(notice?.textContent).toContain('Model changed: Sonnet 5 → Opus 4.8');
+    // The notice replaces the bubble — no system-role article for this turn.
+    expect(query(fixture, '[data-testid="chat-msg-system"]')).toBeNull();
   });
 });

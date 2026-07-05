@@ -72,23 +72,30 @@
                     <span class="msg__count"
                           data-testid="conversation-message-count">{{ row.items.length }} events</span>
                   }
-                  <time class="msg__time"
-                        data-testid="conversation-message-time"
-                        [cacTooltip]="groupTimeTooltip(row)">{{ formatGroupTime(row) }}</time>
-                  @if (row.model) {
-                    <span class="msg__model"
-                          data-testid="conversation-message-model"
-                          [cacTooltip]="'Generating model for this output'">{{ row.model }}</span>
-                  }
-                  @if (row.meta.sessionIdFull) {
-                    <span class="msg__session"
-                          data-testid="conversation-message-session">session {{ formatSessionIdShort(row.meta.sessionIdFull) }}</span>
-                  }
-                  @if (row.meta.rateLimitText) {
-                    <span class="msg__rate-dot"
-                          data-testid="conversation-message-rate-limit"
-                          aria-hidden="true">·</span>
-                  }
+                  <span class="msg__head-meta">
+                    @if (row.model) {
+                      <span class="msg__model"
+                            data-testid="conversation-message-model"
+                            [cacTooltip]="'Generating model for this output'">{{ row.model }}</span>
+                    }
+                    @if (row.thinking) {
+                      <span class="msg__thinking"
+                            data-testid="conversation-message-thinking"
+                            [cacTooltip]="'Thinking level this run was started with'">think {{ row.thinking }}</span>
+                    }
+                    @if (row.meta.sessionIdFull) {
+                      <span class="msg__session"
+                            data-testid="conversation-message-session">session {{ formatSessionIdShort(row.meta.sessionIdFull) }}</span>
+                    }
+                    @if (row.meta.rateLimitText) {
+                      <span class="msg__rate-dot"
+                            data-testid="conversation-message-rate-limit"
+                            aria-hidden="true">·</span>
+                    }
+                    <time class="msg__time"
+                          data-testid="conversation-message-time"
+                          [cacTooltip]="groupTimeTooltip(row)">{{ formatGroupTime(row) }}</time>
+                  </span>
                 </header>
               }
               <ol class="msg__items" data-testid="conversation-message-items">
@@ -352,16 +359,28 @@
         }
       }
     </ol>
+    <!-- Persistent live region: it must exist BEFORE a status appears, or
+         screen readers never announce the transition. The visual strip below
+         stays decorative. -->
+    <span class="conv__sr-status" role="status">
+      @if (statusKind(); as status) {
+        {{ status === 'working' ? 'Working — agent is active on this task.' : 'Queued — will run on the next pickup.' }}
+      }
+    </span>
     @if (statusKind(); as status) {
       <div class="conv__status"
            [attr.data-status]="status"
-           [attr.data-testid]="'conversation-status-' + status"
-           role="status">
-        <span class="conv__status-pulse" aria-hidden="true"></span>
-        <span class="conv__status-title">{{ status === 'working' ? 'Working' : 'Queued' }}</span>
-        <span class="conv__status-detail">
-          {{ status === 'working' ? 'Agent is active on this task.' : 'Will run on the next pickup.' }}
-        </span>
+           [attr.data-testid]="'conversation-status-' + status">
+        <div class="conv__status-text">
+          <span class="conv__status-title">{{ status === 'working' ? 'Working' : 'Queued' }}</span>
+          <span class="conv__status-detail">
+            {{ status === 'working' ? 'Agent is active on this task.' : 'Will run on the next pickup.' }}
+          </span>
+        </div>
+        <cac-pixel-progress class="conv__status-scene"
+                            [state]="status"
+                            [model]="activeModel()"
+                            [thinking]="activeThinking()" />
       </div>
     }
     @if (!stick.stuck()) {

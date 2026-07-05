@@ -384,6 +384,17 @@ describe('projectConversation', () => {
     expect(events.some((e) => probe(e).body?.includes('[taskboard]'))).toBe(false);
   });
 
+  it('reads the per-run thinking level from the [taskboard] Started marker', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: taskboardStartedFragment('claude-opus-4-8')
+    });
+    // Same attribution lifecycle as the model: the Started marker names
+    // thinkingLevel=high (see fixture), and the run's agent turn carries it.
+    expect(events[0].kind).toBe('message.taskAgent');
+    expect(events[0].thinkingLevel).toBe('high');
+  });
+
   it('attributes the model per output across a mid-task model switch', () => {
     const events = projectConversation({
       source: SOURCE,

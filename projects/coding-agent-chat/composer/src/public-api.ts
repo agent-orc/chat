@@ -12,3 +12,6 @@ export * from './workforce-role';
 export * from './chat-phase';
 export * from './role-badge/role-badge.component';
 export * from './chat/chat.component';
+export * from './model-selector/model-selector.component';
+export * from './permission-select/permission-select.component';
+export * from './context-ring/context-ring.component';

@@ -100,11 +100,13 @@ export function projectConversation(
   let currentRun: RunContext = pickInitialRun(ctx.runTimeline ?? null);
   const runByLineIndex = buildRunIndex(ctx.lines, ctx.runTimeline ?? null);
   const seenParserDedupeKeys = new Set<string>();
-  // The generating model for the current run. Updated whenever a
-  // `[taskboard] Started ... model=` marker is seen so agent outputs in the
-  // run carry that run's model — which is what makes mid-task model switches
-  // (a continue / recovery run on a different model) render correctly.
+  // The generating model + thinking level for the current run. Updated
+  // whenever a `[taskboard] Started ... model=` marker is seen so agent
+  // outputs in the run carry that run's attribution — which is what makes
+  // mid-task model switches (a continue / recovery run on a different
+  // model) render correctly.
   let currentModel: string | null = null;
+  let currentThinking: string | null = null;
 
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
@@ -118,12 +120,13 @@ export function projectConversation(
     // buildConversationTurns view filters it the same way).
     const marker = readTaskboardMarker(group);
     if (marker?.model) currentModel = marker.model;
+    if (marker?.thinkingLevel) currentThinking = marker.thinkingLevel;
 
     const matchedRun = runByLineIndex.get(startLineIdx);
     if (matchedRun?.run && matchedRun.run.index !== currentRun?.run?.index) {
       currentRun = matchedRun;
       if (ctx.emitRunMarkers) {
-        events.push(toRunMarker(matchedRun, range, currentModel));
+        events.push(toRunMarker(matchedRun, range, currentModel, currentThinking));
       }
     }
 
@@ -154,12 +157,14 @@ export function projectConversation(
         start: range.start,
         end: Math.max(range.end, lastRange.end)
       };
-      events.push(toMergedToolBurst(burstGroups, mergedRange, currentRun?.run?.index, currentModel));
+      events.push(
+        toMergedToolBurst(burstGroups, mergedRange, currentRun?.run?.index, currentModel, currentThinking)
+      );
       i = lastIdx;
       continue;
     }
 
-    const ev = projectGroup(group, range, currentRun, seenParserDedupeKeys, currentModel);
+    const ev = projectGroup(group, range, currentRun, seenParserDedupeKeys, currentModel, currentThinking);
     if (ev) events.push(...ev);
   }
 
@@ -207,7 +212,8 @@ function projectGroup(
   range: RawLineRange,
   currentRun: RunContext,
   seenParserDedupeKeys: Set<string>,
-  model: string | null
+  model: string | null,
+  thinkingLevel: string | null
 ): ConversationEvent[] | null {
   const firstLine = group.lines[0];
   if (!firstLine) return null;
@@ -400,6 +406,7 @@ function projectGroup(
         timestamp: ts,
         runId,
         model,
+        thinkingLevel,
         rawRange: range,
         actor: 'Agent',
         body: sentinel.strippedBody
@@ -484,6 +491,7 @@ function projectGroup(
         timestamp: ts,
         runId,
         model,
+        thinkingLevel,
         rawRange: range,
         severity: 'error',
         actor: 'Agent',
@@ -500,6 +508,7 @@ function projectGroup(
       timestamp: ts,
       runId,
       model,
+      thinkingLevel,
       rawRange: range,
       actor: 'Agent',
       body: joinGroupBody(group)
@@ -559,7 +568,8 @@ function toMergedToolBurst(
   members: readonly BurstMember[],
   range: RawLineRange,
   runId: number | undefined,
-  model: string | null
+  model: string | null,
+  thinkingLevel: string | null
 ) {
   const families: Partial<Record<ToolFamily, number>> = {};
   const samples: Record<string, string | undefined> = {};
@@ -608,6 +618,7 @@ function toMergedToolBurst(
     timestamp: members[0].group.lines[0].timestamp,
     runId,
     model,
+    thinkingLevel,
     rawRange: range,
     severity: failures > 0 ? ('error' as const) : ('info' as const),
     count,
@@ -1006,13 +1017,16 @@ function joinGroupBody(group: ActivityLogGroup): string {
  * segment is only present on the Started line; exit markers yield `model: null`
  * and leave the running model unchanged.
  */
-function readTaskboardMarker(group: ActivityLogGroup): { model: string | null } | null {
+function readTaskboardMarker(
+  group: ActivityLogGroup
+): { model: string | null; thinkingLevel: string | null } | null {
   const first = group.lines[0];
   if (!first || first.stream !== 'system') return null;
   const text = first.text ?? '';
   if (!/^\s*\[taskboard\]/i.test(text)) return null;
   const m = /\bmodel=([^\s,]+)/i.exec(text);
-  return { model: m ? m[1] : null };
+  const think = /\bthinkingLevel=([^\s,]+)/i.exec(text);
+  return { model: m ? m[1] : null, thinkingLevel: think ? think[1] : null };
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -1140,7 +1154,12 @@ function toVisualPreview(
   };
 }
 
-function toRunMarker(matched: RunContext, range: RawLineRange, model: string | null) {
+function toRunMarker(
+  matched: RunContext,
+  range: RawLineRange,
+  model: string | null,
+  thinkingLevel: string | null
+) {
   const run = matched.run!;
   return {
     id: `${range.source}:run:${run.index}`,
@@ -1148,6 +1167,7 @@ function toRunMarker(matched: RunContext, range: RawLineRange, model: string | n
     timestamp: run.startedAt,
     runId: run.index,
     model,
+    thinkingLevel,
     rawRange: range,
     marker: run.intent,
     cli: run.cli,

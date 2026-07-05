@@ -136,6 +136,13 @@ interface ConversationEventBase {
    * record per line).
    */
   model?: string | null;
+  /**
+   * Thinking level the run was started with (e.g. `high`), when the per-run
+   * `[taskboard] Started ... thinkingLevel=` marker names one. Same
+   * attribution lifecycle as {@link model}: per run, tracks mid-task
+   * switches, undefined when the log does not record it.
+   */
+  thinkingLevel?: string | null;
   /** Job id when the host has cross-task context (project side sheet). */
   jobId?: string;
   /** Back-reference to raw log lines. Required so Trace stays one click away. */

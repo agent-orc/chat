@@ -1,6 +1,7 @@
 :host { display: block; }
 
 .conv {
+  position: relative; /* anchors the hidden .conv__sr-status live region */
   display: flex;
   flex-direction: column;
   gap: var(--studio-row-gap, 3px);
@@ -73,50 +74,51 @@
   font-size: 12.5px;
 }
 
-/* Working / queued status: a slim inline pill with a pulse dot rather than a
- * full-width banner — present but light, in keeping with the flowing feed. */
+/* Visually hidden but always-present live region for the working/queued
+ * announcement. Absolutely positioned, so the flex column's row gap never
+ * reserves a slot for it. */
+.conv__sr-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Working / queued status: a full-width strip hosting the pixel-progress
+ * diorama — label block left, the animated scene filling the rest. Still a
+ * light tinted band, in keeping with the flowing feed. */
 .conv__status {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  align-self: flex-start;
-  gap: var(--studio-spacing-2, 8px);
+  gap: 12px;
   margin: 2px 8px;
   padding: 4px 12px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--severity-pending, #a78bfa) 12%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--severity-pending, #a78bfa) 10%, transparent);
   color: inherit;
   font-size: 12px;
 }
 
 .conv__status[data-status='working'] {
-  background: color-mix(in srgb, var(--severity-info, #38bdf8) 12%, transparent);
+  background: color-mix(in srgb, var(--severity-info, #38bdf8) 8%, transparent);
 }
 
-.conv__status-pulse {
-  width: 8px;
-  height: 8px;
+.conv__status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   flex: 0 0 auto;
-  border-radius: 999px;
-  background: var(--severity-pending, #a78bfa);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--severity-pending, #a78bfa) 40%, transparent);
-  animation: conv-status-pulse 1.4s ease-out infinite;
-}
-
-.conv__status[data-status='working'] .conv__status-pulse {
-  background: var(--severity-info, #38bdf8);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--severity-info, #38bdf8) 40%, transparent);
 }
 
 .conv__status-title { font-weight: 700; }
 .conv__status-detail { color: color-mix(in srgb, currentColor 66%, transparent); font-size: 11.5px; }
 
-@keyframes conv-status-pulse {
-  70% {
-    box-shadow: 0 0 0 7px transparent;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
+.conv__status-scene {
+  flex: 1 1 auto;
+  min-width: 60px;
+  align-self: center;
 }
 
 /* One continuous thread. The host supplies the surface; rows separate by
@@ -241,11 +243,21 @@
   font-size: 11px;
   color: color-mix(in srgb, currentColor 62%, transparent);
 }
-.msg__time {
+/* Right-aligned head metadata block: model · thinking · session · time.
+ * The time is the LAST element so every header ends flush at the same right
+ * edge (bündig), regardless of which optional chips a row carries. */
+.msg__head-meta {
   margin-left: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+.msg__time {
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   color: color-mix(in srgb, currentColor 68%, transparent);
+  white-space: nowrap;
 }
 
 /* Head metadata (event count, session, model): plain quiet text next to the
@@ -263,7 +275,8 @@
   color: color-mix(in srgb, currentColor 64%, transparent);
   letter-spacing: 0.01em;
 }
-.msg__model {
+.msg__model,
+.msg__thinking {
   font-size: 10.5px;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
   color: color-mix(in srgb, currentColor 64%, transparent);

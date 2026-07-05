@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
 import { ToolBurstChipComponent } from '../tool-burst-chip/tool-burst-chip.component';
 import { ConversationSessionCardComponent } from '../conversation-session-card/conversation-session-card.component';
+import { PixelProgressComponent } from '../pixel-progress/pixel-progress.component';
 import {
   StickToBottomDirective,
   TooltipDirective,
@@ -68,6 +69,8 @@ interface MessageGroupRow {
    * not name a model (user turns, orchestrator decisions, aspect reviews).
    */
   model: string | null;
+  /** Thinking level of the run (`thinkingLevel=` on the same marker), if named. */
+  thinking: string | null;
   /**
    * True when this group's actor differs from the previous role-bearing row,
    * so the actor header should be shown. Consecutive same-actor groups (a tool
@@ -204,6 +207,7 @@ function classifyMessageBody(body: string): ClassifiedBody {
     MarkdownViewComponent,
     ToolBurstChipComponent,
     ConversationSessionCardComponent,
+    PixelProgressComponent,
     TooltipDirective,
     StickToBottomDirective,
   ],
@@ -313,6 +317,7 @@ export class ConversationViewComponent {
       actor: MessageEvent['kind'],
       ts: string,
       model: string | null,
+      thinking: string | null,
     ): MessageGroupRow => {
       const current = cell.open;
       // Same actor *and* same model stays in the bubble. A mid-run model switch
@@ -328,6 +333,7 @@ export class ConversationViewComponent {
         lastTs: ts,
         items: [],
         model,
+        thinking,
         showHeader: true,
         meta: {
           sessionIdShort: lastSeenSessionId ? shortenSessionId(lastSeenSessionId) : undefined,
@@ -413,7 +419,7 @@ export class ConversationViewComponent {
           closeGroup();
         }
 
-        const group = ensureGroup(m.kind, ts, m.model ?? null);
+        const group = ensureGroup(m.kind, ts, m.model ?? null, m.thinkingLevel ?? null);
 
         const body = classified.payload !== undefined ? classified.payload : m.body;
         // task_started with no payload is pure bookkeeping — its timing
@@ -513,6 +519,24 @@ export class ConversationViewComponent {
     if (this.queuedFollowUp()) return 'queued';
     return null;
   });
+
+  /**
+   * Model / thinking level of the most recent event that names one — the
+   * best in-band proxy for "what's generating right now". Drives the
+   * pixel-progress scene's build material (a stronger model lays bigger,
+   * differently-coloured blocks), so a mid-run model switch shows up live.
+   */
+  readonly activeModel = computed<string | null>(() => this.latestAttr('model'));
+  readonly activeThinking = computed<string | null>(() => this.latestAttr('thinkingLevel'));
+
+  private latestAttr(key: 'model' | 'thinkingLevel'): string | null {
+    const events = this.events();
+    for (let i = events.length - 1; i >= 0; i--) {
+      const value = (events[i] as unknown as { [k: string]: unknown })[key];
+      if (typeof value === 'string' && value.length > 0) return value;
+    }
+    return null;
+  }
 
   trackByEvent = (_: number, row: RenderRow): string => row.id;
 

@@ -1,0 +1,113 @@
+/* Chip + upward popover, sibling of cac-model-selector in the composer
+   footer. Warn tone (e.g. bypass modes) renders in the warning palette so
+   elevated permission states stay visible at a glance. */
+
+:host {
+  position: relative;
+  display: inline-flex;
+}
+
+.permission-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.12));
+  background: transparent;
+  color: var(--studio-fg-dim, #94a3b8);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.permission-select:hover:not(:disabled) {
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.06));
+}
+.permission-select--warn {
+  color: var(--studio-accent-warn, #e0a458);
+  border-color: color-mix(in srgb, var(--studio-accent-warn, #e0a458) 45%, transparent);
+  background: color-mix(in srgb, var(--studio-accent-warn, #e0a458) 10%, transparent);
+}
+.permission-select--open {
+  border-color: var(--studio-accent, #d97757);
+}
+.permission-select--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.permission-select__icon { font-size: 12px; }
+.permission-select__caret {
+  font-size: 9px;
+  color: var(--studio-fg-muted, #64748b);
+}
+
+.permission-picker__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  background: transparent;
+}
+
+.permission-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 260px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.12));
+  background: var(--studio-bg-elevated, #1f2430);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+}
+.permission-picker__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--studio-fg-muted, #64748b);
+  font-weight: 600;
+}
+.permission-picker__options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.permission-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--studio-fg-dim, #94a3b8);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.permission-picker__option:hover {
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.06));
+}
+.permission-picker__option--active {
+  border-color: var(--studio-accent, #d97757);
+  color: var(--studio-fg, #e2e8f0);
+  background: color-mix(in srgb, var(--studio-accent, #d97757) 8%, transparent);
+}
+.permission-picker__option--warn .permission-picker__option-label {
+  color: var(--studio-accent-warn, #e0a458);
+}
+.permission-picker__option-label { font-weight: 550; }
+.permission-picker__option-desc {
+  font-size: 11.5px;
+  color: var(--studio-fg-muted, #64748b);
+  line-height: 1.4;
+}

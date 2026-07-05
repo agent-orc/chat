@@ -1,0 +1,84 @@
+<button type="button"
+        #triggerBtn
+        class="context-ring"
+        [class.context-ring--warn]="warn()"
+        [class.context-ring--busy]="busy()"
+        [attr.data-testid]="triggerTestid()"
+        [attr.aria-label]="tooltip()"
+        [attr.aria-haspopup]="'dialog'"
+        [attr.aria-expanded]="popoverOpen()"
+        [cacTooltip]="tooltip()"
+        (click)="togglePopover($event)">
+  <svg class="context-ring__svg" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+    <circle class="context-ring__track" cx="9" cy="9" r="7" fill="none" stroke-width="2.5"></circle>
+    <circle class="context-ring__fill"
+            cx="9" cy="9" r="7" fill="none" stroke-width="2.5" stroke-linecap="round"
+            [attr.stroke-dasharray]="dash() + ' ' + circumference"
+            transform="rotate(-90 9 9)"></circle>
+  </svg>
+  <span class="context-ring__pct" data-testid="cac-context-ring-percent">{{ percentLabel() }}</span>
+</button>
+
+@if (popoverOpen()) {
+  <div class="context-popover__backdrop"
+       [attr.data-testid]="popoverTestidPrefix() + '-backdrop'"
+       (mousedown)="onBackdropClick(); $event.preventDefault()"></div>
+  <div class="context-popover"
+       role="dialog"
+       aria-modal="false"
+       [attr.data-testid]="popoverTestidPrefix()"
+       aria-label="Context usage"
+       (mousedown)="$event.stopPropagation()">
+    <div class="context-popover__head">
+      <svg width="34" height="34" viewBox="0 0 18 18" aria-hidden="true">
+        <circle class="context-ring__track" cx="9" cy="9" r="7" fill="none" stroke-width="2.5"></circle>
+        <circle class="context-ring__fill"
+                [class.context-ring__fill--warn]="warn()"
+                cx="9" cy="9" r="7" fill="none" stroke-width="2.5" stroke-linecap="round"
+                [attr.stroke-dasharray]="dash() + ' ' + circumference"
+                transform="rotate(-90 9 9)"></circle>
+      </svg>
+      <div class="context-popover__title">
+        <strong [attr.data-testid]="popoverTestidPrefix() + '-title'">
+          @if (percent() !== null) {
+            Context — {{ percentLabel() }} used
+          } @else {
+            Context usage
+          }
+        </strong>
+        @if (usedLabel()) {
+          <span class="context-popover__tokens">{{ usedLabel() }}</span>
+        }
+      </div>
+    </div>
+
+    @if (sections().length > 0) {
+      <div class="context-popover__rows" [attr.data-testid]="popoverTestidPrefix() + '-sections'">
+        @for (s of sections(); track s.label) {
+          <div class="context-popover__row">
+            <span class="context-popover__row-label">{{ s.label }}</span>
+            <span class="context-popover__bar"><i [style.width.%]="s.widthPct"></i></span>
+            <span class="context-popover__row-tokens">{{ s.tokens }}</span>
+          </div>
+        }
+      </div>
+    } @else if (percent() === null && !busy()) {
+      <div class="context-popover__hint">No context snapshot yet.</div>
+    }
+
+    <div class="context-popover__foot">
+      <span class="context-popover__source">
+        @if (busy()) {
+          Refreshing…
+        } @else {
+          {{ footerLabel() }}
+        }
+      </span>
+      <button type="button"
+              class="context-popover__refresh"
+              [attr.data-testid]="popoverTestidPrefix() + '-refresh'"
+              [disabled]="busy()"
+              (click)="onRefreshClick()">⟳ Refresh</button>
+    </div>
+  </div>
+}

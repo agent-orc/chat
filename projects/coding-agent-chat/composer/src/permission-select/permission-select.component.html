@@ -1,0 +1,48 @@
+<button type="button"
+        #triggerBtn
+        class="permission-select"
+        [class.permission-select--warn]="warnTone()"
+        [class.permission-select--open]="pickerOpen()"
+        [class.permission-select--disabled]="disabled()"
+        [attr.data-testid]="triggerTestid()"
+        [attr.aria-label]="eyebrow() + ': ' + chipLabel()"
+        [attr.aria-haspopup]="'dialog'"
+        [attr.aria-expanded]="pickerOpen()"
+        [cacTooltip]="tooltip()"
+        [disabled]="disabled()"
+        (click)="openPicker($event)">
+  <span class="permission-select__icon" aria-hidden="true">⛨</span>
+  <span class="permission-select__label">{{ chipLabel() }}</span>
+  <span class="permission-select__caret" aria-hidden="true">▾</span>
+</button>
+
+@if (pickerOpen()) {
+  <div class="permission-picker__backdrop"
+       [attr.data-testid]="pickerTestidPrefix() + '-backdrop'"
+       (mousedown)="onBackdropClick(); $event.preventDefault()"></div>
+  <div class="permission-picker"
+       role="dialog"
+       aria-modal="false"
+       [attr.data-testid]="pickerTestidPrefix()"
+       [attr.aria-label]="eyebrow()"
+       (mousedown)="$event.stopPropagation()">
+    <div class="permission-picker__eyebrow">{{ eyebrow() }}</div>
+    <div class="permission-picker__options" role="radiogroup" [attr.aria-label]="eyebrow()">
+      @for (opt of options(); track opt.id) {
+        <button type="button"
+                class="permission-picker__option"
+                [class.permission-picker__option--active]="value() === opt.id"
+                [class.permission-picker__option--warn]="opt.tone === 'warn'"
+                role="radio"
+                [attr.aria-checked]="value() === opt.id"
+                [attr.data-testid]="pickerTestidPrefix() + '-option-' + opt.id"
+                (click)="onOptionClick(opt.id)">
+          <span class="permission-picker__option-label">{{ opt.label }}</span>
+          @if (opt.description) {
+            <span class="permission-picker__option-desc">{{ opt.description }}</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+}

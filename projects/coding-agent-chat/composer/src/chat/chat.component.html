@@ -1,4 +1,7 @@
     <div class="chat" [class.chat--embedded]="variant() === 'embedded'">
+      <!-- No content and no empty-state text → no body at all: an empty
+           framed strip above the composer helps nobody. -->
+      @if (rendered().length > 0 || emptyState()) {
       <div #body
            class="chat__body"
            [style.max-height]="bodyMaxHeight()"
@@ -12,7 +15,9 @@
         }
 
         @if (rendered().length === 0) {
-          <div class="chat__empty" data-testid="chat-empty">{{ emptyState() }}</div>
+          @if (emptyState()) {
+            <div class="chat__empty" data-testid="chat-empty">{{ emptyState() }}</div>
+          }
         } @else {
           @if (virtualised() && topSpacerPx() > 0) {
             <div class="chat__spacer chat__spacer--top"
@@ -22,6 +27,15 @@
           @for (item of windowedItems(); track item.id) {
             @switch (item.kind) {
               @case ('message') {
+                @if (item.message.presentation === 'notice') {
+                  <!-- Meta notice (e.g. "Model changed: Sonnet 5 → Opus 4.8"):
+                       a centered divider line in the chronology, not a bubble. -->
+                  <div class="chat__notice"
+                       data-testid="chat-notice"
+                       [attr.data-turn-id]="item.message.id">
+                    <span class="chat__notice-text">{{ item.message.text }}</span>
+                  </div>
+                } @else {
                 <article class="chat__msg"
                          [class.chat__msg--user]="item.message.role === 'user'"
                          [class.chat__msg--agent]="item.message.role === 'agent'"
@@ -76,6 +90,7 @@
                     <div class="chat__msg-error">{{ item.message.error }}</div>
                   }
                 </article>
+                }
               }
               @case ('event') {
                 <article class="chat__event"
@@ -136,6 +151,7 @@
           }
         }
       </div>
+      }
 
       <!-- Generic projection slot for host-specific content rendered
            directly above the composer (e.g. orchestrator side sheet's
@@ -238,6 +254,19 @@
                     [disabled]="disabled() || !canSend()">
               {{ pending() ? '…' : submitLabel() }}
             </button>
+          </div>
+        </div>
+
+        <!-- Composer footer: projection slots for the composer controls
+             (model selector, permission select, context ring). The row only
+             renders chrome when a host projects something into it; hosts
+             that don't use the slots see no change. -->
+        <div class="chat__composer-foot" data-testid="chat-composer-foot">
+          <div class="chat__composer-foot-start">
+            <ng-content select="[chat-foot-start]"></ng-content>
+          </div>
+          <div class="chat__composer-foot-end">
+            <ng-content select="[chat-foot-end]"></ng-content>
           </div>
         </div>
       </form>

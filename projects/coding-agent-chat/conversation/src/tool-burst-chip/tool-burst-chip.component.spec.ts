@@ -43,7 +43,7 @@ describe('ToolBurstChipComponent', () => {
     const fixture = await render(burstEvent({ count: 4, families: { read: 3, edit: 1 } }));
     const el: HTMLElement = fixture.nativeElement;
 
-    expect(el.querySelector('[data-testid="tool-burst-icon"]')?.textContent?.trim()).toBe('R');
+    expect(el.querySelector('[data-testid="tool-burst-icon"]')?.textContent?.trim()).toBe('📖');
     expect(el.querySelector('[data-testid="tool-burst-count"]')?.textContent?.trim()).toBe('4');
   });
 
@@ -53,7 +53,7 @@ describe('ToolBurstChipComponent', () => {
     );
     const el: HTMLElement = fixture.nativeElement;
 
-    expect(el.querySelector('[data-testid="tool-burst-icon"]')?.textContent?.trim()).toBe('$');
+    expect(el.querySelector('[data-testid="tool-burst-icon"]')?.textContent?.trim()).toBe('💻');
     expect(
       el.querySelector('[data-testid="tool-burst-duration"]')?.textContent?.trim(),
     ).toBe('1m 5s');
@@ -65,7 +65,7 @@ describe('ToolBurstChipComponent', () => {
     );
     const el: HTMLElement = fixture.nativeElement;
 
-    expect(el.querySelector('[data-testid="tool-burst-icon"]')?.textContent?.trim()).toBe('!');
+    expect(el.querySelector('[data-testid="tool-burst-icon"]')?.textContent?.trim()).toBe('❌');
     expect(
       el.querySelector('[data-testid="tool-burst-failures"]')?.textContent,
     ).toContain('2 failed');

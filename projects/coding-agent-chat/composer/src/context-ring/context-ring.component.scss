@@ -1,0 +1,152 @@
+/* Compact ring + popover. Sits in the composer footer next to the model
+   selector; the popover opens upward. */
+
+:host {
+  position: relative;
+  display: inline-flex;
+}
+
+.context-ring {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--studio-fg-muted, #64748b);
+  font: inherit;
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  line-height: 1;
+  cursor: pointer;
+}
+.context-ring:hover {
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.06));
+}
+.context-ring--busy { opacity: 0.6; }
+.context-ring__svg { display: block; }
+.context-ring__track {
+  stroke: var(--studio-border, rgba(255, 255, 255, 0.15));
+}
+.context-ring__fill {
+  stroke: var(--studio-accent, #d97757);
+}
+.context-ring--warn .context-ring__fill,
+.context-ring__fill--warn {
+  stroke: var(--studio-accent-warn, #e0a458);
+}
+.context-ring--warn .context-ring__pct {
+  color: var(--studio-accent-warn, #e0a458);
+}
+
+.context-popover__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  background: transparent;
+}
+
+.context-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 300px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.12));
+  background: var(--studio-bg-elevated, #1f2430);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+}
+.context-popover__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.context-popover__title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.context-popover__title strong {
+  font-size: 13px;
+  color: var(--studio-fg, #e2e8f0);
+  font-weight: 600;
+}
+.context-popover__tokens {
+  font-size: 11px;
+  color: var(--studio-fg-muted, #64748b);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+}
+
+.context-popover__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.context-popover__row {
+  display: grid;
+  grid-template-columns: 110px 1fr 56px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+.context-popover__row-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.context-popover__bar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--studio-border, rgba(255, 255, 255, 0.12));
+  overflow: hidden;
+}
+.context-popover__bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--studio-accent, #d97757);
+}
+.context-popover__row-tokens {
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  color: var(--studio-fg-muted, #64748b);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.context-popover__hint {
+  font-size: 12px;
+  color: var(--studio-fg-muted, #64748b);
+}
+
+.context-popover__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--studio-fg-muted, #64748b);
+}
+.context-popover__refresh {
+  background: transparent;
+  border: none;
+  color: var(--studio-accent, #d97757);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+.context-popover__refresh:hover:not(:disabled) {
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.06));
+}
+.context-popover__refresh:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -58,15 +58,15 @@ export class ToolBurstChipComponent {
   });
 
   readonly leadingIcon = computed(() => {
-    if (this.failed()) return '!';
+    if (this.failed()) return '❌';
     const top = this.familyChips()[0];
-    if (!top) return 'T';
+    if (!top) return '🔧';
     return iconFor(top.family);
   });
 
   // Written-out meaning of the current row's glyph, e.g. "Read - Dateien
-  // gelesen". Used in the expanded detail head so the cryptic one-letter
-  // prefix is recognizable once the row is open, not only on hover.
+  // gelesen". Used in the expanded detail head so the emoji glyph is
+  // recognizable by name once the row is open, not only on hover.
   readonly leadingGlyphLabel = computed(() => {
     const entry = glyphEntry(this.leadingIcon());
     return entry ? `${entry.name} — ${entry.meaning}` : '';
@@ -74,7 +74,7 @@ export class ToolBurstChipComponent {
 
   // A single instant-hover legend for the glyph column. The active glyph is
   // emphasized, but the full key is always shown so any row decodes the
-  // whole alphabet (R/S/$/E/A/D/T/!), not just its own letter.
+  // whole alphabet, not just its own icon.
   readonly glyphTooltip = computed<StructuredTooltip>(() => {
     const active = this.leadingIcon();
     const items = GLYPH_LEGEND.map((e) => {
@@ -204,13 +204,13 @@ const COMMAND_OUTPUT_PREVIEW_LINES = 24;
 
 function iconFor(family: ToolFamily): string {
   switch (family) {
-    case 'read': return 'R';
-    case 'search': return 'S';
-    case 'command': return '$';
-    case 'edit': return 'E';
-    case 'task': return 'A';
-    case 'todo': return 'D';
-    default: return 'T';
+    case 'read': return '📖';
+    case 'search': return '🔍';
+    case 'command': return '💻';
+    case 'edit': return '📝';
+    case 'task': return '🤖';
+    case 'todo': return '📋';
+    default: return '🔧';
   }
 }
 
@@ -220,17 +220,17 @@ interface GlyphLegendEntry {
   meaning: string;
 }
 
-// Complete key for the one-letter tool prefixes rendered in `.burst__icon`.
-// Order mirrors the family order used elsewhere, with the failure marker last.
+// Complete key for the per-family emoji rendered in `.burst__icon`. Order
+// mirrors the family order used elsewhere, with the failure marker last.
 const GLYPH_LEGEND: readonly GlyphLegendEntry[] = [
-  { glyph: 'R', name: 'Read', meaning: 'Dateien gelesen' },
-  { glyph: 'S', name: 'Search', meaning: 'Suche / grep' },
-  { glyph: '$', name: 'Shell', meaning: 'Kommando ausgefuehrt' },
-  { glyph: 'E', name: 'Edit', meaning: 'Dateien geaendert' },
-  { glyph: 'A', name: 'Task', meaning: 'Unteraufgabe / Agent' },
-  { glyph: 'D', name: 'Todo', meaning: 'Aufgabenliste' },
-  { glyph: 'T', name: 'Tool', meaning: 'Sonstiges Werkzeug' },
-  { glyph: '!', name: 'Fehler', meaning: 'Tool-Aufruf fehlgeschlagen' }
+  { glyph: '📖', name: 'Read', meaning: 'Dateien gelesen' },
+  { glyph: '🔍', name: 'Search', meaning: 'Suche / grep' },
+  { glyph: '💻', name: 'Shell', meaning: 'Kommando ausgeführt' },
+  { glyph: '📝', name: 'Edit', meaning: 'Dateien geändert' },
+  { glyph: '🤖', name: 'Task', meaning: 'Unteraufgabe / Agent' },
+  { glyph: '📋', name: 'Todo', meaning: 'Aufgabenliste' },
+  { glyph: '🔧', name: 'Tool', meaning: 'Sonstiges Werkzeug' },
+  { glyph: '❌', name: 'Fehler', meaning: 'Tool-Aufruf fehlgeschlagen' }
 ];
 
 function glyphEntry(glyph: string): GlyphLegendEntry | undefined {

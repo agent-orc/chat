@@ -38,6 +38,13 @@ export interface ChatMessage {
   pending?: boolean;
   /** When set, the message bubble shows an inline error footer. */
   error?: string;
+  /**
+   * `bubble` (default) renders the normal chat bubble. `notice` renders a
+   * centered divider line instead — for meta events that belong in the
+   * chronology but are not conversation turns, e.g. "Model changed:
+   * Sonnet 5 → Opus 4.8". Notice text is rendered as plain text.
+   */
+  presentation?: 'bubble' | 'notice';
 }
 
 export interface ChatDraftAttachment {

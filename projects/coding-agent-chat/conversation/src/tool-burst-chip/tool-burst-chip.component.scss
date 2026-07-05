@@ -43,19 +43,14 @@
   outline-offset: -2px;
 }
 
-// Gutter glyph: a plain mono letter in the bullet column — no badge box.
-// Carries the R/S/$/E/… legend on hover.
+// Gutter glyph: the dominant-family emoji in the bullet column — no badge
+// box, the icon itself carries the color. Full legend on hover.
 .burst__icon {
   justify-self: start;
-  padding-left: 2px;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
-  font-size: 11px;
-  font-weight: 700;
-  color: color-mix(in srgb, currentColor 64%, transparent);
+  padding-left: 1px;
+  font-size: 13px;
+  line-height: 1;
   cursor: help;
-}
-.burst--error .burst__icon {
-  color: color-mix(in srgb, var(--studio-accent-6, #ef4444) 85%, currentColor);
 }
 
 // The whole summary is ONE line in one register: label, then the family
@@ -101,21 +96,17 @@
   color: color-mix(in srgb, currentColor 60%, transparent);
 }
 
-// Opened details: an indented inset behind a 2px rail. The rail sits exactly
-// on the summary's text edge, so open state reads as "unfolded under the
-// line above", not as a separate card.
+// Opened details: flush with the collapsed row's left edge — no rail, no
+// indent, so the panel gets the full row width for code/output instead of
+// giving it up to a decorative left margin.
 .burst__details {
-  margin: 2px 4px 6px 15px;
+  margin: 2px 4px 6px 0;
   padding: 9px 12px 11px;
-  border-left: 2px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 0 8px 8px 0;
+  border-radius: 8px;
   background: color-mix(in srgb, currentColor 3%, transparent);
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-.burst--error .burst__details {
-  border-left-color: color-mix(in srgb, var(--studio-accent-6, #ef4444) 60%, transparent);
 }
 
 // Head: readable title (the written-out glyph meaning), quiet mono meta right.
@@ -308,9 +299,12 @@
 }
 // Output block: the one intentionally "solid" surface in the burst — code
 // needs a backdrop. Drawn from theme tokens so it flips with light/dark.
+// Wraps rather than scrolling horizontally — a long single-line command or
+// stack frame should still read without a side-scroll.
 .burst__output {
   max-height: 240px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin: 0;
   padding: var(--studio-spacing-2, 8px) 10px;
   border-radius: 6px;
@@ -320,7 +314,8 @@
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1.5;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   max-width: 100%;
 }
 .burst__output-toggle {

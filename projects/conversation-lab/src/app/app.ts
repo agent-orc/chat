@@ -151,17 +151,6 @@ export class App {
     }
   });
 
-  protected readonly composerEmptyState = computed(() => {
-    switch (this.scenario().kind) {
-      case 'live':
-        return 'Live-Modus: Nachrichten gehen an den Workbench-Host und starten echte CLI-Runs.';
-      case 'replay':
-        return 'Replay-Modus: Submits werden als rohe user-Zeilen projiziert — wie im Live-Betrieb.';
-      default:
-        return 'Type below: submits append a user turn to the conversation above.';
-    }
-  });
-
   /**
    * "What this chat is about", fed into `cac-chat`'s optional `contextLabel`.
    * Fixture scenarios have no real project/task to bind to, so they get
