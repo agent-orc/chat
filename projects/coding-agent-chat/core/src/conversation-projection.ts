@@ -27,6 +27,7 @@ import {
   type ActivityLogGroup,
   type ActivityLogKind,
 } from './activity-log.parser';
+import { shortModelLabel } from './composer-controls';
 import type {
   ConversationEvent,
   ConversationEventSeverity,
@@ -130,7 +131,29 @@ export function projectConversation(
       }
     }
 
-    if (marker) continue;
+    if (marker) {
+      // Most `[taskboard]` markers are run bookkeeping and stay invisible,
+      // but an operator-driven model change is a timeline fact the reader
+      // should see — surface it as a status chip instead of dropping it.
+      const change = readModelChangeMarker(group);
+      if (change) {
+        events.push({
+          id: `${range.source}:${range.start}-${range.end}:model-change`,
+          kind: 'system.status',
+          timestamp: group.lines[0]?.timestamp ?? '',
+          runId: currentRun?.run?.index,
+          rawRange: range,
+          severity: 'info',
+          category: 'model-change',
+          label: 'Model changed',
+          explanation: `${modelChangeLabel(change.from)} → ${modelChangeLabel(change.to)}`
+        });
+        // Attribute subsequent outputs to the new model until the next run's
+        // Started marker re-asserts it.
+        if (change.to) currentModel = change.to === 'default' ? null : change.to;
+      }
+      continue;
+    }
 
     // Contiguous tool / failed-tool groups collapse into a single ToolBurst
     // event so the chat does not paint a wall of chips. The window stops at
@@ -1027,6 +1050,31 @@ function readTaskboardMarker(
   const m = /\bmodel=([^\s,]+)/i.exec(text);
   const think = /\bthinkingLevel=([^\s,]+)/i.exec(text);
   return { model: m ? m[1] : null, thinkingLevel: think ? think[1] : null };
+}
+
+/**
+ * Detect the operator-driven model-change marker the taskboard backend
+ * appends when the model is switched between runs
+ * (`[taskboard] Model changed from=<id|default> to=<id|default>`). Distinct
+ * from the `Started ... model=` attribution marker: this one is a
+ * user-visible timeline fact and surfaces as a `system.status` chip.
+ */
+function readModelChangeMarker(
+  group: ActivityLogGroup
+): { from: string | null; to: string | null } | null {
+  const first = group.lines[0];
+  if (!first || first.stream !== 'system') return null;
+  const text = first.text ?? '';
+  if (!/^\s*\[taskboard\]\s+Model changed\b/i.test(text)) return null;
+  const from = /\bfrom=([^\s,]+)/i.exec(text);
+  const to = /\bto=([^\s,]+)/i.exec(text);
+  return { from: from ? from[1] : null, to: to ? to[1] : null };
+}
+
+/** Human label for a model-change side: ids shorten, `default`/empty reads as CLI default. */
+function modelChangeLabel(id: string | null): string {
+  if (!id || id === 'default') return 'CLI default';
+  return shortModelLabel(id);
 }
 
 // ──────────────────────────────────────────────────────────────────────────

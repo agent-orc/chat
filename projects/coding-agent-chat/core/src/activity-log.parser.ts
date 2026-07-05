@@ -1,4 +1,5 @@
 import { CliOutputLine } from './projection-inputs';
+import { shortModelLabel } from './composer-controls';
 
 export type ActivityLogKind = 'read' | 'search' | 'command' | 'edit' | 'task' | 'todo' | 'error' | 'message' | 'orchestrator' | 'supervisor' | 'other';
 export type ActivityLogFilters = Record<ActivityLogKind, boolean>;
@@ -482,6 +483,32 @@ function isTaskboardRuntimeMarker(group: ActivityLogGroup): boolean {
 }
 
 /**
+ * The operator-driven model-change marker
+ * (`[taskboard] Model changed from=X to=Y`) is a `[taskboard]` system line
+ * like the run Started/exit markers, but unlike them it is a user-visible
+ * timeline fact — the conversation keeps it (as a `system` turn rendering
+ * "Model changed: X → Y") rather than dropping it as run bookkeeping. Mirrors
+ * the next-gen `projectConversation` `system.status` behaviour so both render
+ * paths surface the switch.
+ */
+function isModelChangeMarker(group: ActivityLogGroup): boolean {
+  if (group.lines.length === 0) return false;
+  const first = group.lines[0];
+  if (first.stream !== 'system') return false;
+  return /^\s*\[taskboard\]\s+Model changed\b/i.test(first.text ?? '');
+}
+
+/** Render a model-change marker group as "Model changed: <from> → <to>". */
+function formatModelChangeMarker(group: ActivityLogGroup): string {
+  const text = group.lines[0]?.text ?? '';
+  const from = /\bfrom=([^\s,]+)/i.exec(text)?.[1] ?? null;
+  const to = /\bto=([^\s,]+)/i.exec(text)?.[1] ?? null;
+  const label = (id: string | null): string =>
+    !id || id === 'default' ? 'CLI default' : shortModelLabel(id);
+  return `Model changed: ${label(from)} → ${label(to)}`;
+}
+
+/**
  * Watchdog meta lines arrive as orchestrator messages tagged
  * `[watchdog]` (legacy) or `[watchdog-warning]` / `[watchdog-timeout]`
  * (operator-friendly form). They drive the watchdog chip in the
@@ -509,7 +536,11 @@ function isCodexDebugFrame(group: ActivityLogGroup): boolean {
 export function buildConversationTurns(groups: ActivityLogGroup[]): ConversationTurn[] {
   const turns: ConversationTurn[] = [];
   const filtered = groups.filter((g) =>
-    !isTaskboardRuntimeMarker(g) && !isWatchdogMetaLine(g) && !isCodexDebugFrame(g)
+    // The model-change marker is a [taskboard] system line but is kept and
+    // rendered as a system turn; every other [taskboard] runtime marker is
+    // dropped (it lives in Trace only).
+    isModelChangeMarker(g) ||
+    (!isTaskboardRuntimeMarker(g) && !isWatchdogMetaLine(g) && !isCodexDebugFrame(g))
   );
   let i = 0;
   while (i < filtered.length) {
@@ -532,6 +563,7 @@ export function buildConversationTurns(groups: ActivityLogGroup[]): Conversation
 function roleFor(group: ActivityLogGroup): ConversationTurnKind {
   const isUser = group.lines.length > 0 && group.lines[0].stream === 'user';
   if (isUser) return 'user';
+  if (isModelChangeMarker(group)) return 'system';
   if (group.kind === 'supervisor'
     || (group.lines.length > 0 && group.lines[0].stream === 'supervisor')) return 'supervisor';
   if (group.kind === 'orchestrator'
@@ -585,6 +617,11 @@ function turnTextFromGroups(run: ActivityLogGroup[], kind: ConversationTurnKind)
   for (const group of run) {
     if (kind === 'user') {
       segments.push(group.title);
+      continue;
+    }
+    if (isModelChangeMarker(group)) {
+      // Render the clean label, never the raw "[taskboard] Model changed …".
+      segments.push(formatModelChangeMarker(group));
       continue;
     }
     // For agent / system turns, the model's text was emitted as a sequence of

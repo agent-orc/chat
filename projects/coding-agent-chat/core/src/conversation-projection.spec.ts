@@ -384,6 +384,28 @@ describe('projectConversation', () => {
     expect(events.some((e) => probe(e).body?.includes('[taskboard]'))).toBe(false);
   });
 
+  it('surfaces an operator model change as a system.status chip and re-attributes outputs', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [
+        line(
+          '[taskboard] Model changed from=claude-sonnet-4-6 to=claude-sonnet-5',
+          'system'
+        ),
+        line('Continuing with the migration plan.')
+      ]
+    });
+    const chip = events.find((e) => e.kind === 'system.status');
+    expect(chip).toBeDefined();
+    expect(probe(chip).category).toBe('model-change');
+    expect(probe(chip).label).toBe('Model changed');
+    expect(probe(chip).explanation).toBe('sonnet 4.6 → sonnet 5');
+    // No raw marker passthrough, and the following output carries the new model.
+    expect(events.some((e) => probe(e).body?.includes('[taskboard]'))).toBe(false);
+    const turn = events.find((e) => e.kind === 'message.taskAgent');
+    expect(turn?.model).toBe('claude-sonnet-5');
+  });
+
   it('reads the per-run thinking level from the [taskboard] Started marker', () => {
     const events = projectConversation({
       source: SOURCE,

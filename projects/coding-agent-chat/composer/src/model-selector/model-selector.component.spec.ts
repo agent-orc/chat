@@ -141,4 +141,33 @@ describe('ModelSelectorComponent', () => {
     open(fixture);
     expect(fixture.componentInstance.pickerOpen()).toBe(false);
   });
+
+  it('preserves an explicit "CLI default" (empty) selection when the catalog arrives late', async () => {
+    // Committed model is CLI default (empty) — opening must not flip the draft
+    // to the concrete catalog default when the host answers catalogRequested.
+    const fixture = await createSelector({ cliType: 'claude', model: '', models: [] });
+    open(fixture);
+    expect(fixture.componentInstance.draftModel()).toBe('');
+
+    // Host answers with a catalog whose default is a concrete model.
+    fixture.componentRef.setInput('models', MODELS);
+    await fixture.whenStable();
+
+    // The empty selection is pinned on open, so it survives the late answer.
+    expect(fixture.componentInstance.draftModel()).toBe('');
+    expect(fixture.componentInstance.hasChanges()).toBe(false);
+  });
+
+  it('auto-selects the catalog default after a CLI switch (unpinned draft)', async () => {
+    const fixture = await createSelector();
+    open(fixture);
+    fixture.componentInstance.onCliPillClick('codex');
+    // Host answers for codex with a default model.
+    fixture.componentRef.setInput('models', [
+      { id: 'gpt-5-codex', label: 'GPT-5 Codex', isDefault: true },
+    ] satisfies ChatModelOption[]);
+    await fixture.whenStable();
+    // A CLI switch resets the draft, so the new CLI's default fills in.
+    expect(fixture.componentInstance.draftModel()).toBe('gpt-5-codex');
+  });
 });

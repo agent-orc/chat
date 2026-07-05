@@ -278,6 +278,25 @@ describe('buildConversationTurns', () => {
     expect(turns[0].text).toContain('Hello, working on it now.');
   });
 
+  it('keeps the [taskboard] Model changed marker as a clean system turn', () => {
+    const groups = parseActivityLog([
+      line('[taskboard] Started claude CLI (PID 1), model=claude-sonnet-4-6', 'system'),
+      line('First reply.', 'stdout'),
+      line('[taskboard] Model changed from=claude-sonnet-4-6 to=claude-sonnet-5', 'system'),
+      line('Second reply on the new model.', 'stdout')
+    ]);
+    const turns = buildConversationTurns(groups);
+
+    // The Started marker is dropped; the Model-changed marker survives as a
+    // system turn rendered with the friendly label (no raw [taskboard] text).
+    const sys = turns.find((t) => t.kind === 'system');
+    expect(sys).toBeDefined();
+    expect(sys!.text).toBe('Model changed: sonnet 4.6 → sonnet 5');
+    expect(sys!.text).not.toContain('[taskboard]');
+    // Both agent replies still render.
+    expect(turns.filter((t) => t.kind === 'agent')).toHaveLength(2);
+  });
+
   it('treats unattached errors as system turns so they are not buried', () => {
     const groups = parseActivityLog([
       line('Build started.'),

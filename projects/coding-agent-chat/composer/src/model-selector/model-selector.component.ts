@@ -87,6 +87,14 @@ export class ModelSelectorComponent {
   readonly draftModel = signal<string>('');
   readonly draftThinkingLevel = signal<string | null>(null);
   private readonly draftModels = signal<readonly ChatModelOption[]>([]);
+  /**
+   * True while `draftModel` reflects a deliberate value a late catalog answer
+   * must not overwrite — the committed value on open (including `''` = CLI
+   * default), or an explicit user pick. Only a CLI switch (which resets the
+   * draft) clears it, so the catalog default is auto-selected exactly once,
+   * for the freshly chosen CLI, and never clobbers a pinned choice.
+   */
+  private readonly draftModelPinned = signal<boolean>(true);
 
   private readonly triggerBtnRef = viewChild<ElementRef<HTMLButtonElement>>('triggerBtn');
 
@@ -171,6 +179,7 @@ export class ModelSelectorComponent {
     const currentModel = (this.model() ?? '').trim();
     this.draftCliType.set(currentCli);
     this.draftModel.set(currentModel);
+    this.draftModelPinned.set(true);
     this.draftModels.set(this.selectableModels(this.models()));
     this.draftThinkingLevel.set(this.normalizeThinkingLevel(currentModel, this.thinkingLevel()));
     this.pickerOpen.set(true);
@@ -188,6 +197,8 @@ export class ModelSelectorComponent {
       this.draftModels.set([]);
       this.draftModel.set('');
       this.draftThinkingLevel.set(null);
+      // Draft was reset for the new CLI — let its catalog default fill in.
+      this.draftModelPinned.set(false);
     }
     this.catalogRequested.emit(id);
   }
@@ -200,6 +211,7 @@ export class ModelSelectorComponent {
   onModelPillClick(modelId: string): void {
     const previous = this.draftThinkingLevel();
     this.draftModel.set(modelId);
+    this.draftModelPinned.set(true);
     this.draftThinkingLevel.set(this.normalizeThinkingLevel(modelId, previous));
     if (this.draftCliType() === this.cliType()) {
       this.onDoneClick();
@@ -208,6 +220,7 @@ export class ModelSelectorComponent {
 
   onDefaultModelClick(): void {
     this.draftModel.set('');
+    this.draftModelPinned.set(true);
     this.draftThinkingLevel.set(null);
     if (this.draftCliType() === this.cliType()) {
       this.onDoneClick();
@@ -282,8 +295,14 @@ export class ModelSelectorComponent {
     const selectable = this.selectableModels(models);
     this.draftModels.set(selectable);
     const current = this.draftModel();
-    const stillValid = current.length > 0 && selectable.some((m) => m.id === current);
-    if (stillValid) {
+    // `''` means "CLI default" — always a valid selection, never a
+    // "nothing picked yet" placeholder. A concrete id is valid only while
+    // the catalog still lists it.
+    const stillValid = current === '' || selectable.some((m) => m.id === current);
+    // A pinned, still-valid draft is what the user is deliberately looking at
+    // (the committed value on open, or an explicit pick). Preserve it — a late
+    // catalog answer must not silently change what Done will commit.
+    if (this.draftModelPinned() && stillValid) {
       this.draftThinkingLevel.set(this.normalizeThinkingLevel(current, this.draftThinkingLevel()));
       return;
     }
