@@ -108,10 +108,6 @@
                     @if (item.target) {
                       <span class="msg__target">→ {{ item.target }}</span>
                     }
-                    <time class="msg__item-time"
-                          data-testid="conversation-message-item-time"
-                          [attr.datetime]="item.timestamp"
-                          [cacTooltip]="formatDateTime(item.timestamp)">{{ formatTime(item.timestamp) }}</time>
                     <cac-markdown class="msg__body" [source]="item.body" />
                     @if (item.attachments?.length) {
                       <ul class="msg__attachments" aria-label="Attachments">
