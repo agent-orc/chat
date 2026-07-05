@@ -9,7 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { TooltipDirective } from '@coding-agent/chat/shared';
+import { AnchoredPopoverDirective, TooltipDirective } from '@coding-agent/chat/shared';
 import { ChatContextUsage, formatTokenCount } from '@coding-agent/chat/core';
 
 /** Radius of the ring circles in the 18x18 viewBox — shared with the template. */
@@ -29,7 +29,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
   selector: 'cac-context-ring',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TooltipDirective],
+  imports: [TooltipDirective, AnchoredPopoverDirective],
   templateUrl: './context-ring.component.html',
   styleUrls: ['./context-ring.component.scss'],
 })

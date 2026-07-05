@@ -26,6 +26,8 @@
   <div class="model-picker"
        role="dialog"
        aria-modal="false"
+       [cacAnchoredPopover]="triggerBtn"
+       popoverAlign="left"
        [attr.data-testid]="pickerTestidPrefix()"
        [attr.aria-label]="eyebrow() + ': ' + draftHeaderText()"
        (mousedown)="$event.stopPropagation()">

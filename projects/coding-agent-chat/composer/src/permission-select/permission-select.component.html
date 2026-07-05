@@ -23,6 +23,8 @@
   <div class="permission-picker"
        role="dialog"
        aria-modal="false"
+       [cacAnchoredPopover]="triggerBtn"
+       popoverAlign="left"
        [attr.data-testid]="pickerTestidPrefix()"
        [attr.aria-label]="eyebrow()"
        (mousedown)="$event.stopPropagation()">

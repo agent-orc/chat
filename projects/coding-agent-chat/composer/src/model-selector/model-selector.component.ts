@@ -11,7 +11,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { TooltipDirective } from '@coding-agent/chat/shared';
+import { AnchoredPopoverDirective, TooltipDirective } from '@coding-agent/chat/shared';
 import {
   ChatCliOption,
   ChatModelOption,
@@ -38,7 +38,7 @@ import {
   selector: 'cac-model-selector',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TooltipDirective],
+  imports: [TooltipDirective, AnchoredPopoverDirective],
   templateUrl: './model-selector.component.html',
   styleUrls: ['./model-selector.component.scss'],
 })

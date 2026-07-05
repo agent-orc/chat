@@ -13,5 +13,6 @@ export * from './tooltip.types';
 export * from './tooltip.controller';
 export * from './tooltip.directive';
 export * from './stick-to-bottom.directive';
+export * from './anchored-popover.directive';
 export * from './media-lightbox.token';
 export * from './markdown-image-lightbox.directive';

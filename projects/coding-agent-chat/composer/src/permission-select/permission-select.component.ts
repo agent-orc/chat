@@ -9,7 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { TooltipDirective } from '@coding-agent/chat/shared';
+import { AnchoredPopoverDirective, TooltipDirective } from '@coding-agent/chat/shared';
 import { ChatPermissionOption } from '@coding-agent/chat/core';
 
 /**
@@ -25,7 +25,7 @@ import { ChatPermissionOption } from '@coding-agent/chat/core';
   selector: 'cac-permission-select',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TooltipDirective],
+  imports: [TooltipDirective, AnchoredPopoverDirective],
   templateUrl: './permission-select.component.html',
   styleUrls: ['./permission-select.component.scss'],
 })

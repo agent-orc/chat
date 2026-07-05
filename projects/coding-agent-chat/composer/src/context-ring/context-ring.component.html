@@ -26,6 +26,8 @@
   <div class="context-popover"
        role="dialog"
        aria-modal="false"
+       [cacAnchoredPopover]="triggerBtn"
+       popoverAlign="right"
        [attr.data-testid]="popoverTestidPrefix()"
        aria-label="Context usage"
        (mousedown)="$event.stopPropagation()">

@@ -52,9 +52,9 @@
 }
 
 .model-picker {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
+  /* Fixed against the viewport by cacAnchoredPopover so it is not clipped by
+     the composer's overflow-hidden .chat container. */
+  position: fixed;
   z-index: 40;
   min-width: 300px;
   max-width: 380px;
