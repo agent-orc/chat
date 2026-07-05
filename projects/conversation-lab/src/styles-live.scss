@@ -1,0 +1,5 @@
+/* Conversation Lab — global styles for the live-iteration mode
+ * (`npm run lab:live`): identical to styles.scss, but the studio theme comes
+ * from the library SOURCE instead of dist/, so theme edits hot-reload too. */
+@use '../../coding-agent-chat/theme/cac-theme';
+@use './base';

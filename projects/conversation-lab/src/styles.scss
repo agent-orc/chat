@@ -3,21 +3,8 @@
  * Pulls the packaged studio theme (dark default; light via
  * `data-studio-theme="light"` on <html>) from the BUILT library output in
  * dist/, exactly like a real consumer would import
- * '@coding-agent/chat/theme/cac-theme.css' from node_modules. */
+ * '@coding-agent/chat/theme/cac-theme.css' from node_modules.
+ * (`npm run lab:live` swaps this file for styles-live.scss, which uses the
+ * theme SOURCE so edits hot-reload.) */
 @use '../../../dist/coding-agent-chat/theme/cac-theme.css';
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-ui, system-ui, sans-serif);
-  background: var(--studio-bg-surface, #0f0f1a);
-  color: var(--studio-fg, #e2e8f0);
-}
+@use './base';

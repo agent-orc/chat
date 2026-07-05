@@ -1,0 +1,19 @@
+/* Conversation Lab — shared global base rules (used by both styles.scss and
+ * styles-live.scss; the two entry files differ only in WHERE the studio theme
+ * comes from: packaged dist/ vs. library source). */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  background: var(--studio-bg-surface, #0f0f1a);
+  color: var(--studio-fg, #e2e8f0);
+}

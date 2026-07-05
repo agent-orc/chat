@@ -78,6 +78,13 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "live": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "tsConfig": "projects/conversation-lab/tsconfig.live.json",
+              "styles": ["projects/conversation-lab/src/styles-live.scss"]
             }
           },
           "defaultConfiguration": "production"
@@ -85,7 +92,18 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "port": 4201
+            "port": 4201,
+            "prebundle": {
+              "exclude": [
+                "@coding-agent/chat",
+                "@coding-agent/chat/core",
+                "@coding-agent/chat/shared",
+                "@coding-agent/chat/markdown",
+                "@coding-agent/chat/conversation",
+                "@coding-agent/chat/composer",
+                "@coding-agent/chat/history"
+              ]
+            }
           },
           "configurations": {
             "production": {
@@ -93,6 +111,9 @@
             },
             "development": {
               "buildTarget": "conversation-lab:build:development"
+            },
+            "live": {
+              "buildTarget": "conversation-lab:build:live"
             }
           },
           "defaultConfiguration": "development"
@@ -156,7 +177,18 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "port": 4202
+            "port": 4202,
+            "prebundle": {
+              "exclude": [
+                "@coding-agent/chat",
+                "@coding-agent/chat/core",
+                "@coding-agent/chat/shared",
+                "@coding-agent/chat/markdown",
+                "@coding-agent/chat/conversation",
+                "@coding-agent/chat/composer",
+                "@coding-agent/chat/history"
+              ]
+            }
           },
           "configurations": {
             "production": {

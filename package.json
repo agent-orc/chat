@@ -7,6 +7,7 @@
     "watch": "ng build coding-agent-chat --watch --configuration development",
     "pack": "npm pack ./dist/coding-agent-chat --pack-destination ./dist",
     "lab": "ng serve conversation-lab",
+    "lab:live": "ng serve conversation-lab --configuration live",
     "workbench": "dotnet run --project workbench",
     "website": "ng serve website",
     "test": "vitest run",
