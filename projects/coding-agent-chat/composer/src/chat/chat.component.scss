@@ -1,8 +1,12 @@
 /*
  * Chat surface — base styling shared between the project-level
- * orchestrator chat and the task-level chat panel. View encapsulation
- * is None so the selectors here also reach the projected `.markdown-
- * body` rendered into `.chat__msg-body`.
+ * orchestrator chat and the task-level chat panel. Encapsulation is the
+ * component default (Emulated): these selectors style the component's own
+ * template only, never a child component's internals. Markdown typography
+ * is applied through the global `.markdown-body` class
+ * (`src/styles/_markdown-body.scss`), which the template adds alongside
+ * `.chat__msg-body--markdown` — so nothing here relies on cross-boundary
+ * (None-encapsulation) styling.
  *
  * Design intent after the 2026-05-20 revamp:
  *  1. The conversation is the content. Metadata (role, timestamp) is
