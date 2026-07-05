@@ -700,6 +700,16 @@
   border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.06));
   white-space: nowrap;
 }
+/* "What this chat is about" chip — plain text, no chrome, so it reads as a
+   quiet caption rather than competing with the routing/status chip. */
+.chat__toolbar-context {
+  font-size: 11.5px;
+  color: var(--studio-fg-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40ch;
+}
 
 .chat__composer-row {
   display: flex;

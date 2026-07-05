@@ -15,25 +15,15 @@
           [cacTooltip]="glyphTooltip()"
           tooltipPosition="right">{{ leadingIcon() }}</span>
     <span class="burst__summary">
-      <strong class="burst__total" data-testid="tool-burst-total">Tools {{ event().count }}</strong>
+      <strong class="burst__count" data-testid="tool-burst-count">{{ event().count }}</strong>
       @if (failed()) {
         <em class="burst__fail" data-testid="tool-burst-failures">{{ event().failures }} failed</em>
       }
-      <span class="burst__families" data-testid="tool-burst-families">
-        @for (chip of familyChips(); track chip.family) {
-          <span class="burst__chip" [attr.data-family]="chip.family">
-            {{ chip.label }} {{ chip.count }}
-          </span>
-        }
-      </span>
     </span>
     @if (event().durationMs && event().durationMs! > 0) {
       <span class="burst__duration" data-testid="tool-burst-duration">{{ formattedDuration() }}</span>
     }
     <span class="burst__caret" aria-hidden="true">{{ open() ? '▾' : '▸' }}</span>
-    @if (!open() && previewLine()) {
-      <span class="burst__preview" data-testid="tool-burst-preview">{{ previewLine() }}</span>
-    }
   </button>
 
   @if (open()) {

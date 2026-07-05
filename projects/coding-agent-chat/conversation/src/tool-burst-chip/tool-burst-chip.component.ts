@@ -92,24 +92,6 @@ export class ToolBurstChipComponent {
 
   readonly commands = computed(() => this.event().commands ?? []);
 
-  // One-line gist of what the burst did, shown only while collapsed so a long
-  // tool-use reads as a single summary line. Prefers the first command, then a
-  // touched file, then a representative family sample.
-  readonly previewLine = computed(() => {
-    const event = this.event();
-    const command = (event.commands ?? [])[0]?.command?.trim();
-    if (command) return command;
-    const file = (event.files ?? [])[0];
-    if (file) return file;
-    const samples = event.samples ?? {};
-    const order: ToolFamily[] = ['search', 'read', 'edit', 'task', 'todo', 'command', 'other'];
-    for (const f of order) {
-      const sample = samples[f]?.trim();
-      if (sample) return sample;
-    }
-    return '';
-  });
-
   readonly detailRows = computed<DetailRow[]>(() => {
     const event = this.event();
     const families = event.families ?? {};

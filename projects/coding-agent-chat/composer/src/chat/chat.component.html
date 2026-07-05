@@ -173,6 +173,9 @@
         @if (toolbarVisible()) {
           <div class="chat__toolbar" data-testid="chat-toolbar">
             <div class="chat__toolbar-start">
+              @if (contextLabel(); as label) {
+                <span class="chat__toolbar-context" data-testid="chat-toolbar-context">{{ label }}</span>
+              }
               @for (item of toolbarStart(); track item.id) {
                 <button type="button"
                         class="chat__toolbar-btn"

@@ -129,12 +129,21 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
    * the textarea. Hosts plug in chat-surface-specific affordances
    * (e.g. `#` to reference a task, `@` to mention, fork to start a
    * new thread, search). Clicking emits `toolbarAction({id})`.
-   * Empty by default — the toolbar row only renders if either
-   * `toolbarStart`, `toolbarEnd`, or `routingLabel` is set.
+   * Empty by default — the toolbar row only renders if any of
+   * `toolbarStart`, `toolbarEnd`, `routingLabel` or `contextLabel` is set.
    */
   readonly toolbarStart = input<readonly ChatToolbarItem[]>([]);
   /** Right-side toolbar items (e.g. `/task` quick action). */
   readonly toolbarEnd = input<readonly ChatToolbarItem[]>([]);
+  /**
+   * Optional "what this chat is about" chip, left-aligned in the toolbar
+   * row — e.g. "acme-website · Fix login redirect". The chat does not
+   * interpret the string, so hosts are free to fold in whatever they have
+   * (project, task, ticket, branch…) or omit it entirely: null (the
+   * default) renders nothing, since not every host has a project/task to
+   * bind a chat to.
+   */
+  readonly contextLabel = input<string | null>(null);
   /**
    * Routing/status chip rendered right-aligned in the toolbar row,
    * e.g. "routing: Codex (Claude paused)". The chat does not interpret
@@ -527,6 +536,7 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   readonly toolbarVisible = computed<boolean>(() => {
     return this.toolbarStart().length > 0
       || this.toolbarEnd().length > 0
+      || this.contextLabel() !== null
       || this.routingLabel() !== null;
   });
 

@@ -190,12 +190,13 @@ describe('ChatComponent', () => {
     expect(query(fixture, '[data-testid="chat-drafts"]')).toBeNull();
   });
 
-  it('renders toolbar items plus routing label and emits toolbarAction on click', async () => {
+  it('renders toolbar items plus context and routing labels, and emits toolbarAction on click', async () => {
     const start: ChatToolbarItem[] = [{ id: 'ref', glyph: '#', label: 'Reference a task' }];
     const end: ChatToolbarItem[] = [{ id: 'slash', glyph: '/', label: 'Quick action', variant: 'pill' }];
     const fixture = await createChat({
       toolbarStart: start,
       toolbarEnd: end,
+      contextLabel: 'acme-website · Fix login redirect',
       routingLabel: 'routing: Codex',
     });
     const actions: { id: string }[] = [];
@@ -208,6 +209,8 @@ describe('ChatComponent', () => {
     expect(
       query(fixture, '[data-testid="chat-toolbar-slash"]')?.classList.contains('chat__toolbar-btn--pill')
     ).toBe(true);
+    expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim())
+      .toBe('acme-website · Fix login redirect');
     expect(query(fixture, '[data-testid="chat-toolbar-routing"]')?.textContent?.trim())
       .toBe('routing: Codex');
 
@@ -219,5 +222,11 @@ describe('ChatComponent', () => {
   it('hides the toolbar row entirely when no toolbar inputs are set', async () => {
     const fixture = await createChat();
     expect(query(fixture, '[data-testid="chat-toolbar"]')).toBeNull();
+  });
+
+  it('shows the toolbar row for contextLabel alone, with no other toolbar inputs', async () => {
+    const fixture = await createChat({ contextLabel: 'conversation-lab · Live scenario' });
+    expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim())
+      .toBe('conversation-lab · Live scenario');
   });
 });

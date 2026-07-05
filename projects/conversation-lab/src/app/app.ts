@@ -162,6 +162,24 @@ export class App {
     }
   });
 
+  /**
+   * "What this chat is about", fed into `cac-chat`'s optional `contextLabel`.
+   * Fixture scenarios have no real project/task to bind to, so they get
+   * null — the toolbar chip disappears entirely rather than showing a
+   * placeholder that doesn't mean anything.
+   */
+  protected readonly composerContextLabel = computed<string | null>(() => {
+    const scenario = this.scenario();
+    switch (scenario.kind) {
+      case 'live':
+        return `Workbench-Sandbox · ${scenario.title}`;
+      case 'replay':
+        return `conversation-lab · ${scenario.title}`;
+      default:
+        return null;
+    }
+  });
+
   protected toggleTheme(): void {
     const next = this.theme() === 'dark' ? 'light' : 'dark';
     this.theme.set(next);

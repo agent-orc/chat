@@ -5,8 +5,8 @@
 //   1. One shared left edge: the glyph sits in the same 15px gutter as the
 //      message bullets, summary text and the opened details align to the same
 //      column as message text.
-//   2. One text register per line: the summary is a single quiet sentence,
-//      the preview is its own subline — no mixed sizes/opacities inside a line.
+//   2. One text register per line: the summary is a single quiet sentence —
+//      no mixed sizes/opacities inside a line.
 //   3. Dim once, never twice: containers stay at full currentColor; only leaf
 //      elements apply a single color-mix step (alpha stacking is what made
 //      earlier revisions unreadably faint).
@@ -68,35 +68,26 @@
   overflow: hidden;
   white-space: nowrap;
 }
-.burst__total {
-  font-weight: 600;
-  letter-spacing: 0.01em;
+.burst__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
   color: color-mix(in srgb, currentColor 92%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 .burst__fail {
   font-style: normal;
   font-weight: 700;
   font-size: 11.5px;
   color: color-mix(in srgb, var(--studio-accent-6, #f87171) 85%, currentColor);
-}
-.burst__families {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: baseline;
-  min-width: 0;
-  overflow: hidden;
-}
-.burst__chip {
-  color: color-mix(in srgb, currentColor 76%, transparent);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  flex: 0 0 auto;
-}
-.burst__chip + .burst__chip::before {
-  content: '·';
-  margin: 0 6px;
-  color: color-mix(in srgb, currentColor 38%, transparent);
 }
 
 .burst__duration {
@@ -108,20 +99,6 @@
 .burst__caret {
   font-size: 10.5px;
   color: color-mix(in srgb, currentColor 60%, transparent);
-}
-
-// One-line gist of the burst on its own subline (collapsed only), aligned to
-// the summary text edge so the two lines read as title + subtitle.
-.burst__preview {
-  grid-column: 2 / -1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-top: 1px;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
-  font-size: 11px;
-  color: color-mix(in srgb, currentColor 55%, transparent);
 }
 
 // Opened details: an indented inset behind a 2px rail. The rail sits exactly
@@ -364,22 +341,15 @@
   color: color-mix(in srgb, currentColor 62%, transparent);
 }
 
-/* Compact density: the subline goes first so the row stays a single line. */
-.burst[data-density='compact'] .burst__preview {
-  display: none;
-}
+/* Compact density: a touch tighter, still a single line. */
 .burst[data-density='compact'] .burst__row {
   padding-top: 2px;
   padding-bottom: 2px;
   font-size: 11.5px;
 }
 
-/* Mobile collapse: drop the family prose; the summary still shows total +
-   failure count, and the details panel still owns the per-tool table. */
+/* Mobile collapse: the details panel still owns the per-tool table. */
 @media (max-width: 520px) {
-  .burst__families {
-    display: none;
-  }
   .burst__detail-row {
     grid-template-columns: minmax(0, 1fr) auto;
   }
