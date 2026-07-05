@@ -1,0 +1,16 @@
+<div class="plan" [class.plan--done]="allDone()" data-testid="plan-checklist">
+  <header class="plan__head">
+    <span class="plan__title">Plan</span>
+    <span class="plan__progress" data-testid="plan-progress">{{ doneCount() }}/{{ items().length }}</span>
+  </header>
+  <ul class="plan__items">
+    @for (item of items(); track item.id) {
+      <li class="plan__item"
+          [attr.data-status]="item.status"
+          [attr.data-testid]="'plan-item'">
+        <span class="plan__check" aria-hidden="true">{{ glyph(item.status) }}</span>
+        <span class="plan__label">{{ item.title }}</span>
+      </li>
+    }
+  </ul>
+</div>

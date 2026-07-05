@@ -12,3 +12,4 @@ export * from './conversation-view/conversation-view.component';
 export * from './tool-burst-chip/tool-burst-chip.component';
 export * from './conversation-session-card/conversation-session-card.component';
 export * from './pixel-progress/pixel-progress.component';
+export * from './plan-checklist/plan-checklist.component';

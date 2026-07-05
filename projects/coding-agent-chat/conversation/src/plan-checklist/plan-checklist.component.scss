@@ -1,0 +1,97 @@
+:host { display: block; }
+
+/* The plan reads as a calm inset card behind a soft accent rail — a tracked
+ * milestone, not a tool burst. All colors resolve through theme tokens with
+ * dark fallbacks so it flips cleanly with the studio light/dark theme. */
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px 9px;
+  border-radius: 8px;
+  border-left: 2px solid color-mix(in srgb, var(--studio-accent, #d97757) 55%, transparent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--studio-accent, #d97757) 6%, transparent);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  color: inherit;
+  width: 100%;
+}
+.plan--done {
+  border-left-color: color-mix(in srgb, var(--studio-accent-success, #22c55e) 60%, transparent);
+  background: color-mix(in srgb, var(--studio-accent-success, #22c55e) 7%, transparent);
+}
+
+.plan__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.plan__title {
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+.plan__progress {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.plan__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.plan__item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 7px;
+  padding: 1.5px 0;
+}
+.plan__check {
+  justify-self: center;
+  font-size: 12px;
+  line-height: 1.3;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+.plan__label {
+  min-width: 0;
+  word-break: break-word;
+  color: color-mix(in srgb, currentColor 82%, transparent);
+}
+
+/* Status treatment: completed dims + strikes, in-progress is the loud one
+ * (accent, spinning glyph), pending stays quiet, cancelled greys right out. */
+.plan__item[data-status='completed'] .plan__check {
+  color: color-mix(in srgb, var(--studio-accent-success, #22c55e) 85%, currentColor);
+}
+.plan__item[data-status='completed'] .plan__label {
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+.plan__item[data-status='in_progress'] .plan__check {
+  color: var(--studio-accent, #d97757);
+  animation: plan-spin 1.6s linear infinite;
+}
+.plan__item[data-status='in_progress'] .plan__label {
+  color: inherit;
+  font-weight: 600;
+}
+.plan__item[data-status='cancelled'] .plan__check,
+.plan__item[data-status='cancelled'] .plan__label {
+  color: color-mix(in srgb, currentColor 40%, transparent);
+  text-decoration: line-through;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan__item[data-status='in_progress'] .plan__check { animation: none; }
+}
+
+@keyframes plan-spin {
+  to { transform: rotate(360deg); }
+}

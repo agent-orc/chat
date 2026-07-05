@@ -93,6 +93,7 @@ export type ConversationEventKind =
   | 'message.supportingAgent'
   // Activity-log edge cases (see activity-log-edge-cases.md)
   | 'toolBurst'
+  | 'plan.update'
   | 'supervisor.wait'
   | 'decision.orchestrator'
   | 'agent.needsInput'
@@ -191,6 +192,28 @@ export interface ToolBurstEvent extends ConversationEventBase {
   samples?: ToolBurstSamples;
   /** Shell / PowerShell executions with compact output previews. */
   commands?: readonly ToolCommandExecution[];
+}
+
+/** Status of a single plan / todo item, normalised across CLIs. */
+export type PlanItemStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+
+/** One entry in an agent task plan (Claude `TodoWrite`, Codex `update_plan`). */
+export interface PlanItem {
+  /** Stable id derived from the title, so an item keeps identity across snapshots. */
+  id: string;
+  title: string;
+  status: PlanItemStatus;
+}
+
+/**
+ * A snapshot of the agent's own task plan / todo list. The agent re-emits the
+ * WHOLE list each time it updates a status, so every `plan.update` is a full
+ * snapshot — the renderer coalesces consecutive snapshots of one run into a
+ * single live-updating checklist rather than stacking them.
+ */
+export interface PlanUpdateEvent extends ConversationEventBase {
+  kind: 'plan.update';
+  items: readonly PlanItem[];
 }
 
 export interface SupervisorWaitEvent extends ConversationEventBase {
@@ -490,6 +513,7 @@ export interface TraceLinkEvent extends ConversationEventBase {
 export type ConversationEvent =
   | MessageEvent
   | ToolBurstEvent
+  | PlanUpdateEvent
   | SupervisorWaitEvent
   | OrchestratorDecisionEvent
   | AgentNeedsInputEvent
@@ -516,6 +540,7 @@ export const CONVERSATION_EVENT_KINDS: readonly ConversationEventKind[] = [
   'message.supervisor',
   'message.supportingAgent',
   'toolBurst',
+  'plan.update',
   'supervisor.wait',
   'decision.orchestrator',
   'agent.needsInput',

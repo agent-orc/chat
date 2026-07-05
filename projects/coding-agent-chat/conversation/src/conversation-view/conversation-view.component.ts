@@ -4,6 +4,7 @@ import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
 import { ToolBurstChipComponent } from '../tool-burst-chip/tool-burst-chip.component';
 import { ConversationSessionCardComponent } from '../conversation-session-card/conversation-session-card.component';
 import { PixelProgressComponent } from '../pixel-progress/pixel-progress.component';
+import { PlanChecklistComponent } from '../plan-checklist/plan-checklist.component';
 import {
   StickToBottomDirective,
   TooltipDirective,
@@ -19,6 +20,7 @@ import type {
   MessageEvent,
   MetricTokenEvent,
   OrchestratorDecisionEvent,
+  PlanUpdateEvent,
   RawLineRange,
   RunMarkerEvent,
   SupervisorWaitEvent,
@@ -90,6 +92,7 @@ type RenderRow =
   | MessageGroupRow
   | SessionMetaRow
   | { kind: 'toolBurst'; id: string; event: ToolBurstEvent }
+  | { kind: 'planUpdate'; id: string; event: PlanUpdateEvent }
   | { kind: 'runMarker'; id: string; event: RunMarkerEvent }
   | { kind: 'taskMarker'; id: string; event: TaskMarkerEvent }
   | { kind: 'decision'; id: string; event: OrchestratorDecisionEvent }
@@ -208,6 +211,7 @@ function classifyMessageBody(body: string): ClassifiedBody {
     ToolBurstChipComponent,
     ConversationSessionCardComponent,
     PixelProgressComponent,
+    PlanChecklistComponent,
     TooltipDirective,
     StickToBottomDirective,
   ],
@@ -278,6 +282,20 @@ export class ConversationViewComponent {
     // mutation in another closure (a TS flow-analysis quirk we hit in a
     // previous revision).
     const cell: { open: MessageGroupRow | null } = { open: null };
+
+    // A run re-emits its whole plan on every change, so the stream carries
+    // many `plan.update` snapshots. Render only the LAST per run — a single
+    // live checklist that ticks items off in place — positioned at that
+    // latest snapshot, near the current activity. Earlier snapshots are
+    // dropped rather than stacked.
+    const renderablePlanIds = new Set<string>();
+    {
+      const lastByRun = new Map<string | number, string>();
+      for (const e of this.events()) {
+        if (e.kind === 'plan.update') lastByRun.set(e.runId ?? 'default', e.id);
+      }
+      for (const id of lastByRun.values()) renderablePlanIds.add(id);
+    }
     let lastSeenSessionId: string | undefined;
     let lastSeenSessionInitAt: string | undefined;
     let lastSeenRateLimit: string | undefined;
@@ -391,6 +409,17 @@ export class ConversationViewComponent {
         closeGroup();
         out.push({ kind: 'runMarker', id: m.id, event: m });
         lastRole = null;
+        continue;
+      }
+
+      // Plan snapshots: only the latest per run becomes a row (a live
+      // checklist). Earlier snapshots are skipped without breaking the thread.
+      if (e.kind === 'plan.update') {
+        if (renderablePlanIds.has(e.id)) {
+          closeGroup();
+          out.push({ kind: 'planUpdate', id: e.id, event: e as PlanUpdateEvent });
+          lastRole = null;
+        }
         continue;
       }
 

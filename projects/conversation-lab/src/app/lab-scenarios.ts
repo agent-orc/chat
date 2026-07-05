@@ -202,6 +202,29 @@ function longRunLines(): CliOutputLine[] {
   return script(entries, 1);
 }
 
+/** Claude-style TodoWrite plan: one list, re-emitted (a full snapshot) after
+ *  each step, so the checklist ticks items off in place. The `* Todo …` lines
+ *  match the workbench's PlanUpdated mapping, so replay == live. */
+const todoPlanLines = script([
+  ['Baue ein kleines CLI-Tool: Argument-Parsing, Hilfe-Text, Tests und README.', 'user'],
+  ['[taskboard] Started claude CLI (PID 5001), model=claude-sonnet-5, thinkingLevel=high', 'system'],
+  ['Ich lege zuerst einen Plan an und arbeite ihn dann Punkt für Punkt ab.'],
+  ['* Todo [in_progress] Argument-Parsing implementieren; [pending] Hilfe-Text ergänzen; [pending] Tests schreiben; [pending] README verfassen'],
+  ['* Edit src/cli.ts'],
+  ['  | argv-Parsing mit Flags -h/--help ergänzt'],
+  ['* Todo [completed] Argument-Parsing implementieren; [in_progress] Hilfe-Text ergänzen; [pending] Tests schreiben; [pending] README verfassen'],
+  ['* Edit src/help.ts'],
+  ['  | Hilfe-Text mit Beispielen'],
+  ['* Todo [completed] Argument-Parsing implementieren; [completed] Hilfe-Text ergänzen; [in_progress] Tests schreiben; [pending] README verfassen'],
+  ['* Run npx vitest run (shell)'],
+  ['  | ✓ 6 Tests grün'],
+  ['* Todo [completed] Argument-Parsing implementieren; [completed] Hilfe-Text ergänzen; [completed] Tests schreiben; [in_progress] README verfassen'],
+  ['* Edit README.md'],
+  ['  | Nutzung + Beispiele dokumentiert'],
+  ['* Todo [completed] Argument-Parsing implementieren; [completed] Hilfe-Text ergänzen; [completed] Tests schreiben; [completed] README verfassen'],
+  ['Alle vier Punkte erledigt: Parsing, Hilfe, Tests grün, README steht.'],
+]);
+
 // ── Catalog ───────────────────────────────────────────────────────────────────
 
 export const LAB_SCENARIOS: readonly LabScenario[] = [
@@ -288,6 +311,14 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
     lines: longRunLines(),
   },
   {
+    id: 'todo-plan',
+    kind: 'replay',
+    title: 'Todo-Plan (abgehakt)',
+    description:
+      'Claude-Stil TodoWrite: ein 4-Punkte-Plan wird angelegt und Schritt für Schritt abgehakt. Alle Snapshots bündeln sich zu EINER Checkliste, die sich in place aktualisiert — gestreamt abspielen, um das Abhaken live zu sehen.',
+    lines: todoPlanLines,
+  },
+  {
     id: 'live-smoke',
     kind: 'live',
     title: 'Live: Smoke-Test',
@@ -317,8 +348,9 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
     kind: 'live',
     title: 'Live: Todo-Plan',
     description:
-      'Der Agent arbeitet mit einer Todo-Liste. Erwartung: Todo-Zeilen (PlanUpdated) im Verlauf, während die Punkte abgearbeitet werden.',
-    prompt: 'Erstelle eine Todo-Liste mit drei Punkten für das Anlegen einer kleinen README in diesem Verzeichnis und arbeite dann alle Punkte ab.',
+      'Zwingt Claude, sein TodoWrite-Werkzeug zu nutzen: der Plan (PlanUpdated) wird als Live-Checkliste gerendert, die sich abhakt, während die Punkte erledigt werden.',
+    prompt:
+      'Nutze unbedingt dein TodoWrite-Werkzeug: lege zu Beginn einen Plan mit vier Punkten an, um im Arbeitsverzeichnis eine kleine README.md (Titel, kurze Beschreibung, ein Nutzungsbeispiel, eine Lizenzzeile) zu erstellen. Aktualisiere die Todo-Liste nach jedem Punkt (in_progress → completed) und erledige dann alle Punkte.',
   },
 ];
 

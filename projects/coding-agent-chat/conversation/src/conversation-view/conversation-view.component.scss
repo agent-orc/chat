@@ -397,6 +397,11 @@
 .conv__row--burst { width: 100%; padding: 2px 12px; }
 .conv__row--burst cac-tool-burst-chip { display: block; width: 100%; }
 
+/* Plan checklist host row — same content inset as the burst so the plan
+ * card lines up with the rest of the feed. */
+.conv__row--plan { width: 100%; padding: 3px 12px; }
+.conv__row--plan cac-plan-checklist { display: block; width: 100%; }
+
 /* Slim markers — quiet timeline text, no chrome. The row keeps full color;
  * each fragment dims exactly once. */
 .conv__row--marker {

@@ -31,6 +31,8 @@ import { shortModelLabel } from './composer-controls';
 import type {
   ConversationEvent,
   ConversationEventSeverity,
+  PlanItem,
+  PlanItemStatus,
   RawLineRange,
   ToolCommandExecution,
   ToolOutputHit,
@@ -155,6 +157,19 @@ export function projectConversation(
       continue;
     }
 
+    // The agent's own task plan (`* Todo [status] title; …`, from Claude's
+    // TodoWrite / Codex's update_plan) is a first-class row, not tool noise:
+    // parse the latest snapshot into a plan.update event and never fold it
+    // into a tool burst. Emitted before the burst logic so a todo group
+    // starts its own row; the burst lookahead below also stops at todos.
+    const planItems = readPlanUpdate(group);
+    if (planItems) {
+      events.push(
+        toPlanUpdate(planItems, range, currentRun?.run?.index, group.lines[0]?.timestamp ?? '', currentModel, currentThinking)
+      );
+      continue;
+    }
+
     // Contiguous tool / failed-tool groups collapse into a single ToolBurst
     // event so the chat does not paint a wall of chips. The window stops at
     // the first non-tool group; user / agent / orchestrator turns always
@@ -169,7 +184,9 @@ export function projectConversation(
       while (lookahead < groups.length) {
         const next = groups[lookahead];
         const nextFamily = classifyToolGroup(next);
-        if (!nextFamily) break;
+        // A todo group is a plan.update, not burst material — stop here so it
+        // becomes its own row on the next iteration.
+        if (!nextFamily || nextFamily === 'todo') break;
         burstGroups.push({ group: next, family: nextFamily });
         lookahead += 1;
       }
@@ -565,6 +582,75 @@ function classifyToolGroup(group: ActivityLogGroup): ToolFamily | null {
     return recoverToolFamilyFromErrorLine(firstLine.text);
   }
   return null;
+}
+
+/**
+ * If this group is a todo/plan group, parse its LATEST snapshot into plan
+ * items; otherwise null. Claude re-emits the whole list on every change, so a
+ * batched group carries several `* Todo …` lines — the last one wins.
+ */
+function readPlanUpdate(group: ActivityLogGroup): PlanItem[] | null {
+  if (classifyToolGroup(group) !== 'todo') return null;
+  let items: PlanItem[] | null = null;
+  for (const line of group.lines) {
+    const parsed = parseTodoLine(line.text ?? '');
+    if (parsed) items = parsed;
+  }
+  return items;
+}
+
+/** Parse `* Todo [status] title; [status] title; …` into plan items. */
+function parseTodoLine(text: string): PlanItem[] | null {
+  // Marker (`*` action / `x` failed) is optional; the verb `Todo` is required.
+  const m = /^[\sxX*]*Todo\b\s*(.*)$/.exec(text.trim());
+  if (!m) return null;
+  const body = m[1].trim();
+  if (!body) return [];
+  const items: PlanItem[] = [];
+  for (const part of body.split(/;\s+/)) {
+    const entry = part.trim();
+    if (!entry) continue;
+    const bracket = /^\[([^\]]*)\]\s*(.+)$/.exec(entry);
+    const title = (bracket ? bracket[2] : entry).trim();
+    if (!title) continue;
+    const status = bracket ? normalizePlanStatus(bracket[1]) : 'pending';
+    items.push({ id: planItemId(title), title, status });
+  }
+  return items;
+}
+
+/** Normalise a CLI-native status token onto the closed PlanItemStatus set. */
+function normalizePlanStatus(raw: string): PlanItemStatus {
+  const s = raw.trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (s === 'in_progress' || s === 'inprogress' || s === 'active' || s === 'running' || s === 'started') return 'in_progress';
+  if (s === 'completed' || s === 'complete' || s === 'done' || s === 'finished') return 'completed';
+  if (s === 'cancelled' || s === 'canceled' || s === 'skipped' || s === 'dropped') return 'cancelled';
+  return 'pending';
+}
+
+/** Stable id from the title so an item keeps identity across snapshots. */
+function planItemId(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'item';
+}
+
+function toPlanUpdate(
+  items: readonly PlanItem[],
+  range: RawLineRange,
+  runId: number | undefined,
+  timestamp: string,
+  model: string | null,
+  thinkingLevel: string | null
+): ConversationEvent {
+  return {
+    id: `${range.source}:${range.start}-${range.end}:plan`,
+    kind: 'plan.update',
+    timestamp,
+    runId,
+    model,
+    thinkingLevel,
+    rawRange: range,
+    items
+  };
 }
 
 function recoverToolFamilyFromErrorLine(text: string): ToolFamily | null {

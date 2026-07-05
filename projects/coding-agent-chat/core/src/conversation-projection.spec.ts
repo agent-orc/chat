@@ -158,6 +158,41 @@ describe('projectConversation', () => {
     }
   });
 
+  it('parses a `* Todo` snapshot into a plan.update event, not a tool burst', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [
+        line('* Todo [completed] Analyse the repo; [InProgress] Write the README; [pending] Add tests'),
+      ],
+    });
+    const plan = events.find((e) => e.kind === 'plan.update');
+    expect(plan).toBeDefined();
+    const items = (plan as unknown as { items: { title: string; status: string; id: string }[] }).items;
+    expect(items).toHaveLength(3);
+    expect(items[0]).toMatchObject({ title: 'Analyse the repo', status: 'completed' });
+    // Mixed casing (Codex/enum PascalCase) normalises onto the closed set.
+    expect(items[1]).toMatchObject({ title: 'Write the README', status: 'in_progress' });
+    expect(items[2]).toMatchObject({ title: 'Add tests', status: 'pending' });
+    expect(items[0].id).toBeTruthy();
+    // A todo line is a plan, never tool-burst noise.
+    expect(events.some((e) => e.kind === 'toolBurst')).toBe(false);
+  });
+
+  it('takes the latest snapshot when several `* Todo` frames are adjacent', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [
+        line('* Todo [in_progress] Step one; [pending] Step two'),
+        line('* Todo [completed] Step one; [in_progress] Step two'),
+      ],
+    });
+    const plans = events.filter((e) => e.kind === 'plan.update');
+    // Adjacent todo frames batch into one group; the newest state wins.
+    const latest = plans[plans.length - 1] as unknown as { items: { status: string }[] };
+    expect(latest.items[0].status).toBe('completed');
+    expect(latest.items[1].status).toBe('in_progress');
+  });
+
   it('projects Codex command executions as expandable command output inside the tool burst', () => {
     const events = projectConversation({
       source: SOURCE,

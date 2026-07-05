@@ -164,6 +164,12 @@
           }
         }
 
+        @case ('planUpdate') {
+          <li class="conv__row conv__row--plan" data-testid="conversation-plan-update">
+            <cac-plan-checklist [items]="row.event.items" />
+          </li>
+        }
+
         @case ('runMarker') {
           <li class="conv__row conv__row--marker conv__row--run"
               data-testid="conversation-run-marker"

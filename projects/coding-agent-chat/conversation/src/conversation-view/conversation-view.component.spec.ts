@@ -10,6 +10,8 @@ import type {
   ConversationEvent,
   MessageEvent,
   OrchestratorDecisionEvent,
+  PlanItem,
+  PlanUpdateEvent,
   RawLineRange,
   RunMarkerEvent,
   ToolBurstEvent,
@@ -55,6 +57,11 @@ function burst(overrides: Partial<Omit<ToolBurstEvent, 'kind'>> = {}): ToolBurst
     rawRange: RANGE,
     ...overrides,
   };
+}
+
+function planUpdate(items: PlanItem[]): PlanUpdateEvent {
+  seq += 1;
+  return { id: `plan-${seq}`, kind: 'plan.update', timestamp: nextTs(), items, rawRange: RANGE };
 }
 
 async function render(
@@ -135,6 +142,30 @@ describe('ConversationViewComponent', () => {
     fixture.componentRef.setInput('toolsVisible', false);
     await fixture.whenStable();
     expect(el.querySelector('[data-testid="conversation-tool-burst"]')).toBeNull();
+  });
+
+  it('coalesces plan snapshots into a single latest checklist row', async () => {
+    const fixture = await render([
+      msg('message.user', 'build the tool'),
+      planUpdate([
+        { id: 'a', title: 'One', status: 'in_progress' },
+        { id: 'b', title: 'Two', status: 'pending' },
+      ]),
+      burst(),
+      planUpdate([
+        { id: 'a', title: 'One', status: 'completed' },
+        { id: 'b', title: 'Two', status: 'in_progress' },
+      ]),
+    ]);
+    const el: HTMLElement = fixture.nativeElement;
+
+    // Both snapshots share a run → only the newest renders, in place.
+    const planRows = el.querySelectorAll('[data-testid="conversation-plan-update"]');
+    expect(planRows).toHaveLength(1);
+    const items = planRows[0].querySelectorAll('[data-testid="plan-item"]');
+    expect(items[0].getAttribute('data-status')).toBe('completed');
+    expect(items[1].getAttribute('data-status')).toBe('in_progress');
+    expect(planRows[0].querySelector('[data-testid="plan-progress"]')?.textContent?.trim()).toBe('1/2');
   });
 
   it('filters runMarker start rows but seeds the session id, and renders terminal run markers', async () => {
