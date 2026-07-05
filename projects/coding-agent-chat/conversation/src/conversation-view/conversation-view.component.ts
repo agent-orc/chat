@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, untracked, viewChild } from '@angular/core';
 
 import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
 import { ToolBurstChipComponent } from '../tool-burst-chip/tool-burst-chip.component';
@@ -233,6 +233,33 @@ export class ConversationViewComponent {
   // user clicks ("show more", "expand"), not on every signal pass.
   private readonly expandedGroups = signal<ReadonlySet<string>>(new Set());
   private readonly expandedItems = signal<ReadonlySet<string>>(new Set());
+
+  /** The stick-to-bottom directive on the scroll root (see the template). */
+  private readonly stick = viewChild(StickToBottomDirective);
+  private lastUserEventId: string | null = null;
+
+  constructor() {
+    // When the LOCAL user posts a turn, always bring it into view — even if
+    // they had scrolled up to read history. Agent output stays stick-gated
+    // (the directive only re-pins when already at the bottom), so following a
+    // long reply never yanks a reader who deliberately scrolled away; only the
+    // user's own new message forces the jump. Keyed on the latest user
+    // message's id so agent turns never trigger it.
+    effect(() => {
+      const events = this.events();
+      let userId: string | null = null;
+      for (let i = events.length - 1; i >= 0; i--) {
+        if (events[i].kind === 'message.user') {
+          userId = events[i].id;
+          break;
+        }
+      }
+      if (userId !== this.lastUserEventId) {
+        this.lastUserEventId = userId;
+        if (userId !== null) untracked(() => this.stick()?.scrollToBottom());
+      }
+    });
+  }
 
   /**
    * Whether tool-activity rows (tool bursts) are shown in the feed. Defaults

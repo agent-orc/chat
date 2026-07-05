@@ -284,9 +284,9 @@
   white-space: nowrap;
 }
 
-/* Coalesced items list. One <li> per notification; the bullet is a thin
- * role-tinted dot on the left. No separators between items — whitespace and
- * the bullets carry the rhythm. */
+/* Coalesced items list. One <li> per notification, stacked as plain prose —
+ * no leading bullet (each line is a message, not a list entry); whitespace
+ * alone carries the rhythm. */
 .msg__items {
   list-style: none;
   margin: 0;
@@ -296,18 +296,9 @@
 }
 .msg__item {
   position: relative;
-  padding: 2.5px 0 2.5px 15px;
+  padding: 2.5px 0;
   font-size: 12.5px;
   word-break: break-word;
-}
-.msg__item::before {
-  content: '•';
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  color: color-mix(in srgb, var(--role-accent) 55%, transparent);
-  font-size: 12px;
-  line-height: inherit;
 }
 
 /* Per-message timestamp: dezent, revealed on hover only. Each coalesced item
@@ -383,7 +374,7 @@
  * dezent link rather than a button so the bubble stays read-as-content. */
 .msg__more {
   list-style: none;
-  padding: 3px 0 0 15px;
+  padding: 3px 0 0;
   margin-top: 1px;
 }
 .msg__more-btn {

@@ -157,6 +157,25 @@ describe('StickToBottomDirective', () => {
     expect(scroller.scrollTop).toBe(300);
   });
 
+  it('holds the pin when growing content fires a scroll without an up-move (tool-burst expand)', async () => {
+    const { scroller, state, stick } = await setup();
+    flushFrames();
+    expect(stick.stuck()).toBe(true); // pinned: scrollTop 1000, distance 0
+
+    // Expanding a disclosure (tool burst / "show more") grows the content and
+    // the browser fires a scroll event as it reflows — but scrollTop does not
+    // move UP. This must NOT be read as the user scrolling away.
+    state.scrollHeight = 1600; // grew by 600; distance-from-bottom now 400 > 24
+    scroller.dispatchEvent(new Event('scroll'));
+    expect(stick.stuck()).toBe(true); // pin held (the reported bug: it released)
+
+    // Follow-up growth still re-pins to the new bottom, so auto-follow lives on.
+    triggerResize();
+    flushFrames();
+    expect(scroller.scrollTop).toBe(1600);
+    expect(stick.stuck()).toBe(true);
+  });
+
   it('re-sticks when the user scrolls back to within the threshold', async () => {
     const { scroller, stick } = await setup();
     flushFrames();

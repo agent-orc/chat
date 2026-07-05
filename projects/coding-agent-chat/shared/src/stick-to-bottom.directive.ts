@@ -57,6 +57,9 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
   private scrollFrame: number | null = null;
   private suppressScrollEvent = false;
   private editableFocused = false;
+  /** Last observed scrollTop — lets handleScroll tell a user up-scroll apart
+   *  from a content-growth reflow (which also moves the distance-from-bottom). */
+  private lastScrollTop = 0;
   private readonly onScroll = (): void => this.handleScroll();
   private readonly onFocusIn = (event: FocusEvent): void => this.handleFocusIn(event);
   private readonly onFocusOut = (): void => this.handleFocusOut();
@@ -110,7 +113,20 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
     const el = this.container;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    this._stuck.set(distanceFromBottom <= this.stickThreshold());
+    // Releasing the pin requires a deliberate UP scroll. Growing content — a
+    // streaming reply, or expanding/collapsing a tool burst — also fires a
+    // scroll event and widens distance-from-bottom, but it never moves
+    // scrollTop upward. Gating the release on an actual up-move is what stops
+    // a disclosure toggle from silently killing auto-follow (the reported bug:
+    // "open a tool use → it stops scrolling"). Reaching the bottom always
+    // re-sticks, so the user can resume following by scrolling back down.
+    const movedUp = el.scrollTop < this.lastScrollTop - 1;
+    this.lastScrollTop = el.scrollTop;
+    if (distanceFromBottom <= this.stickThreshold()) {
+      this._stuck.set(true);
+    } else if (movedUp) {
+      this._stuck.set(false);
+    }
   }
 
   private handleFocusIn(event: FocusEvent): void {
@@ -154,6 +170,9 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
       // and flip `stuck` off. Cleared on the next frame.
       this.suppressScrollEvent = true;
       el.scrollTop = el.scrollHeight;
+      // Move the baseline with the programmatic jump so the next genuine
+      // scroll is measured against the pinned position, not a stale one.
+      this.lastScrollTop = el.scrollTop;
       requestAnimationFrame(() => {
         this.suppressScrollEvent = false;
       });
