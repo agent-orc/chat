@@ -96,7 +96,7 @@ function run(partial: Partial<RunInfoLite> & Pick<RunInfoLite, 'index' | 'lineSt
 
 const happyPathLines = script([
   ['Bitte ergänze einen Dark/Light-Umschalter auf der Settings-Seite und decke ihn mit einem Spec ab.', 'user'],
-  ['[taskboard] Started claude CLI (PID 4711), model=claude-fable-5, thinkingLevel=high, session=lab-sess-1', 'system'],
+  ['[taskboard] Started claude CLI (PID 4711), model=claude-sonnet-5, thinkingLevel=high, session=lab-sess-1', 'system'],
   ['Ich schaue mir zuerst das Settings-Modul und den bestehenden Theme-Service an.'],
   ['* Read settings.component.ts'],
   ['  | src/app/settings/settings.component.ts'],
@@ -115,7 +115,7 @@ const happyPathLines = script([
 
 const testFailRetryLines = script([
   ['Führe die Playwright-Suite aus und fixe, was rot ist.', 'user'],
-  ['[taskboard] Started claude CLI (PID 4712), model=claude-fable-5, thinkingLevel=high', 'system'],
+  ['[taskboard] Started claude CLI (PID 4712), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ['* Run npx playwright test perf-frontend.spec.ts (shell)'],
   ['  | running playwright tests'],
   ['x Run npx playwright test perf-frontend.spec.ts (shell): exited with error 1'],
@@ -130,7 +130,7 @@ const testFailRetryLines = script([
 
 const watchdogWaitLines = script([
   ['Analysiere das gesamte Log-Verzeichnis und fasse die Fehlerklassen zusammen.', 'user'],
-  ['[taskboard] Started claude CLI (PID 4713), model=claude-fable-5, thinkingLevel=high', 'system'],
+  ['[taskboard] Started claude CLI (PID 4713), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ['* Read logs/2026-06-30.log'],
   ['  | 48.000 Zeilen'],
   ['[watchdog] Agent has been quiet for 30s', 'orchestrator'],
@@ -142,7 +142,7 @@ const watchdogWaitLines = script([
 
 const watchdogKillLines = script([
   ['Starte die Migration und warte auf das Ergebnis.', 'user'],
-  ['[taskboard] Started claude CLI (PID 4714), model=claude-fable-5, thinkingLevel=high', 'system'],
+  ['[taskboard] Started claude CLI (PID 4714), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ['* Run npm run migrate (shell)'],
   ['  | applying 14 migrations'],
   ['[watchdog] Agent has been quiet for 300s', 'orchestrator'],
@@ -152,7 +152,7 @@ const watchdogKillLines = script([
 
 const needsInputLines = script([
   ['Baue den Recovery-Test für den CLI-Wrapper.', 'user'],
-  ['[taskboard] Started claude CLI (PID 4715), model=claude-fable-5, thinkingLevel=high', 'system'],
+  ['[taskboard] Started claude CLI (PID 4715), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ['* Read cli-wrapper.ts'],
   ['  | src/runner/cli-wrapper.ts'],
   ['[[TASK_NEEDS_INPUT: which CLI should I target for the recovery test?]]', 'orchestrator'],
@@ -163,13 +163,13 @@ const modelSwitchLines = script([
   ['Implementiere das Model-Badge im Conversation-Header.', 'user'],
   ['[taskboard] Started codex CLI (PID 11), model=gpt-5-codex, thinkingLevel=high', 'system'],
   ['Erster Anlauf auf dem Startmodell — ich lege das Badge-Markup an.'],
-  ['[taskboard] Started claude CLI (PID 22), model=claude-fable-5, thinkingLevel=high', 'system'],
+  ['[taskboard] Started claude CLI (PID 22), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ['Recovery-Lauf auf dem gewechselten Modell — Badge liest jetzt das per-Run-Modell.'],
 ]);
 
 const stderrCrashLines = script([
   ['Starte den Dev-Server und prüfe die Startseite.', 'user'],
-  ['[taskboard] Started claude CLI (PID 4716), model=claude-fable-5, thinkingLevel=high', 'system'],
+  ['[taskboard] Started claude CLI (PID 4716), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ['* Run npm run dev (shell)'],
   ['  | starting dev server'],
   ["Error: Cannot find module 'esbuild'", 'stderr'],
@@ -181,7 +181,7 @@ const stderrCrashLines = script([
 function longRunLines(): CliOutputLine[] {
   const entries: ScriptEntry[] = [
     ['Refaktoriere alle zehn Feature-Module auf standalone Components.', 'user'],
-    ['[taskboard] Started claude CLI (PID 4717), model=claude-fable-5, thinkingLevel=high', 'system'],
+    ['[taskboard] Started claude CLI (PID 4717), model=claude-sonnet-5, thinkingLevel=high', 'system'],
   ];
   for (let block = 1; block <= 10; block += 1) {
     entries.push(

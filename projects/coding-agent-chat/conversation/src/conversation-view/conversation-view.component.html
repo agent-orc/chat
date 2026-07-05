@@ -76,7 +76,7 @@
                     @if (row.model) {
                       <span class="msg__model"
                             data-testid="conversation-message-model"
-                            [cacTooltip]="'Generating model for this output'">{{ row.model }}</span>
+                            [cacTooltip]="'Generating model: ' + row.model">{{ modelLabel(row.model) }}</span>
                     }
                     @if (row.thinking) {
                       <span class="msg__thinking"

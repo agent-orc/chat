@@ -10,7 +10,7 @@ import {
   TooltipDirective,
   type StructuredTooltip,
 } from '@coding-agent/chat/shared';
-import { parseRateLimit, type SessionCardData } from '@coding-agent/chat/core';
+import { parseRateLimit, shortModelLabel, type SessionCardData } from '@coding-agent/chat/core';
 import type {
   AgentNeedsInputEvent,
   ArtifactImageEvent,
@@ -592,6 +592,12 @@ export class ConversationViewComponent {
       if (typeof value === 'string' && value.length > 0) return value;
     }
     return null;
+  }
+
+  /** Short, human model label (e.g. "sonnet 5") — matches the composer chip;
+   *  the full id sits on the badge's tooltip. */
+  modelLabel(model: string | null): string {
+    return model ? shortModelLabel(model) : '';
   }
 
   trackByEvent = (_: number, row: RenderRow): string => row.id;
