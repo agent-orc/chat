@@ -86,6 +86,7 @@ app.MapPost("/api/sessions", async (StartSessionRequest request, WorkbenchSessio
     if (session is null)
         return Results.BadRequest(new { error });
 
+    session.SetPermissionMode(request.PermissionMode);
     var startError = await session.StartRunAsync(request.Prompt);
     if (startError is not null)
     {
@@ -104,6 +105,7 @@ app.MapPost("/api/sessions/{id}/messages", async (string id, PostMessageRequest 
     if (session.IsRunning)
         return Results.Conflict(new { error = "the agent is still working on the previous message" });
 
+    session.SetPermissionMode(request.PermissionMode);
     var error = await session.StartRunAsync(request.Text);
     return error is null
         ? Results.Accepted($"/api/sessions/{id}/stream", new { sessionId = id })
@@ -176,10 +178,10 @@ static async Task WriteSseAsync(HttpResponse response, OutputLineDto line, JsonS
 }
 
 /// <summary>Body of <c>POST /api/sessions</c>.</summary>
-sealed record StartSessionRequest(string? CliType, string? Workdir, string? Prompt);
+sealed record StartSessionRequest(string? CliType, string? Workdir, string? Prompt, string? PermissionMode);
 
 /// <summary>Body of <c>POST /api/sessions/{id}/messages</c>.</summary>
-sealed record PostMessageRequest(string? Text);
+sealed record PostMessageRequest(string? Text, string? PermissionMode);
 
 /// <summary>
 /// The wire shape of one streamed line — structurally identical to
@@ -269,6 +271,7 @@ sealed class WorkbenchSession
 
     private string? _cliSessionId;
     private string? _activeRunId;
+    private string? _permissionMode;
     private int _runSeq;
     private bool _closed;
 
@@ -286,11 +289,34 @@ sealed class WorkbenchSession
 
     public IReadOnlyList<string> RunIds { get { lock (_gate) return _runIds.ToArray(); } }
 
+    /// <summary>
+    /// Set the permission posture applied to the NEXT run. Maps the UI's mode
+    /// id onto a <see cref="CliPermissionModes"/> value; an unknown / null id
+    /// leaves it unset, which the runner normalizes to YOLO. This is what makes
+    /// the composer's Read-only chip actually restrict the CLI instead of every
+    /// run silently defaulting to full autonomy.
+    /// </summary>
+    public void SetPermissionMode(string? modeId)
+    {
+        var mapped = MapPermission(modeId);
+        lock (_gate) _permissionMode = mapped;
+    }
+
+    private static string? MapPermission(string? id) => id switch
+    {
+        "yolo" => CliPermissionModes.Yolo,
+        "workspace-write" => CliPermissionModes.WorkspaceWrite,
+        "read-only" => CliPermissionModes.ReadOnly,
+        "custom" => CliPermissionModes.Custom,
+        _ => null,
+    };
+
     /// <summary>Start the next one-shot run of this session (initial prompt or follow-up).</summary>
     public async Task<string?> StartRunAsync(string prompt)
     {
         string runId;
         string? resume;
+        string? permission;
         lock (_gate)
         {
             if (_closed) return "session is closed";
@@ -300,6 +326,7 @@ sealed class WorkbenchSession
             _activeRunId = runId;
             _runIds.Add(runId);
             resume = _cliSessionId;
+            permission = _permissionMode;
         }
         _registerRunId(runId, this);
 
@@ -318,6 +345,9 @@ sealed class WorkbenchSession
             // the resume chain: a clean per-run home would not contain the
             // session transcript the previous run wrote.
             ContextMode = CliContextModes.Shared,
+            // Permission posture from the composer (Read-only / Workspace write /
+            // …); null lets the runner apply its YOLO default.
+            PermissionMode = permission,
         });
 
         if (error is not null)

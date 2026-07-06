@@ -14,7 +14,6 @@ import type {
 import { shortModelLabel } from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
-import { ProjectChatListComponent } from '@coding-agent/chat/history';
 
 import { userTurnEvent } from './lab-fixtures';
 import {
@@ -41,7 +40,7 @@ const SETTINGS_STORAGE_KEY = 'conversation-lab.settings';
 
 @Component({
   selector: 'app-root',
-  imports: [ConversationViewComponent, ChatComponent, ProjectChatListComponent],
+  imports: [ConversationViewComponent, ChatComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -242,7 +241,7 @@ export class App {
     await this.live.stop();
     await this.live.connect();
     if (this.live.connection() === 'connected') {
-      await this.live.submit(scenario.prompt);
+      await this.live.submit(scenario.prompt, this.labPermission().value);
     }
   }
 
@@ -250,7 +249,7 @@ export class App {
   protected sendFollowUp(): void {
     const followUp = this.liveScenario()?.followUp;
     if (followUp !== undefined && this.live.sessionId() !== null) {
-      void this.live.submit(followUp);
+      void this.live.submit(followUp, this.labPermission().value);
     }
   }
 
@@ -415,7 +414,7 @@ export class App {
     }
     switch (this.scenario().kind) {
       case 'live':
-        void this.live.submit(text);
+        void this.live.submit(text, this.labPermission().value);
         return;
       case 'replay':
         this.player.appendUserLine(text);

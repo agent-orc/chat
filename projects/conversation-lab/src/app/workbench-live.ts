@@ -131,7 +131,7 @@ export class WorkbenchLiveSession {
    * Composer submit in live mode: the first message starts the session
    * (POST /api/sessions), every further one is a follow-up run.
    */
-  async submit(text: string): Promise<void> {
+  async submit(text: string, permissionMode?: string | null): Promise<void> {
     if (this.sending()) {
       this.toast('Der Agent arbeitet noch an der vorherigen Nachricht.');
       return;
@@ -140,9 +140,9 @@ export class WorkbenchLiveSession {
     try {
       const id = this.sessionId();
       if (id === null) {
-        await this.startSession(text);
+        await this.startSession(text, permissionMode);
       } else {
-        await this.postMessage(id, text);
+        await this.postMessage(id, text, permissionMode);
       }
     } catch (error) {
       this.toast(describeError(error));
@@ -173,11 +173,11 @@ export class WorkbenchLiveSession {
     this.error.set(null);
   }
 
-  private async startSession(prompt: string): Promise<void> {
+  private async startSession(prompt: string, permissionMode?: string | null): Promise<void> {
     const response = await fetch(`${this.normalizedBaseUrl()}/api/sessions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cliType: this.cliType(), prompt }),
+      body: JSON.stringify({ cliType: this.cliType(), prompt, permissionMode }),
     });
     if (!response.ok) {
       throw new Error(await errorBody(response, 'Session konnte nicht gestartet werden'));
@@ -187,11 +187,11 @@ export class WorkbenchLiveSession {
     this.openStream(body.sessionId);
   }
 
-  private async postMessage(id: string, text: string): Promise<void> {
+  private async postMessage(id: string, text: string, permissionMode?: string | null): Promise<void> {
     const response = await fetch(`${this.normalizedBaseUrl()}/api/sessions/${id}/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, permissionMode }),
     });
     if (response.status === 409) {
       throw new Error('Der Agent arbeitet noch — bitte warten, bis der aktuelle Lauf endet.');
