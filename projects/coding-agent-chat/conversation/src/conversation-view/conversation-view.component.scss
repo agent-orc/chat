@@ -324,6 +324,12 @@
 }
 .msg__body :first-child { margin-top: 0; }
 .msg__body :last-child { margin-bottom: 0; }
+/* Code blocks are no longer clamped (see isClampable) — cap tall ones so a
+   long file scrolls inside its own block instead of pushing the feed. */
+.msg__body pre {
+  max-height: 340px;
+  overflow: auto;
+}
 
 /* Progressive disclosure: long items clamp to two visual rows by default and
  * expose a per-item "expand" affordance. The expanded state lifts the clamp

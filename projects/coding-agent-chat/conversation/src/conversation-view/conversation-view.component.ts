@@ -151,6 +151,11 @@ function shortenSessionId(sessionId: string): string {
 
 function isClampable(body: string): boolean {
   if (!body) return false;
+  // A fenced code block is a self-contained, already-compact unit whose
+  // newlines are structural — clamping it to two rows is meaningless (and
+  // -webkit-line-clamp mangles the <pre> anyway), so the expand toggle just
+  // confuses. Long code scrolls inside its own block instead.
+  if (body.includes('```')) return false;
   if (body.length > ITEM_CLAMP_CHAR_LIMIT) return true;
   let nl = 0;
   for (let i = 0; i < body.length; i++) {
