@@ -126,6 +126,33 @@ describe('projectConversation', () => {
     expect(joined).toContain('host inventory');
   });
 
+  it('keeps a fenced code block with blank lines intact instead of splitting it', () => {
+    // A ``` fence whose body has blank lines used to split across message
+    // items — an empty code box, then the content leaking out as live
+    // markdown. The parser now folds the whole block into one group.
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [
+        line('Aktueller Inhalt:'),
+        line(''),
+        line('```markdown'),
+        line('# Sandbox'),
+        line(''),
+        line('A small folder for throwaway scripts.'),
+        line(''),
+        line('```')
+      ]
+    });
+    const joined = events
+      .filter((e) => e.kind === 'message.taskAgent')
+      .map((e) => probe(e).body)
+      .join('\n');
+    // Exactly one opening + one closing fence, with its body contiguous.
+    expect((joined.match(/```/g) ?? []).length).toBe(2);
+    expect(joined).toContain('```markdown\n# Sandbox');
+    expect(joined).toContain('A small folder for throwaway scripts.\n\n```');
+  });
+
   it('classifies an orchestrator reissue line as decision.orchestrator', () => {
     const events = projectConversation({ source: SOURCE, lines: orchestratorReissueFragment() });
     expect(events).toHaveLength(1);

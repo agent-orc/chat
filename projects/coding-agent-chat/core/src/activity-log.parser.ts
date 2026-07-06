@@ -36,9 +36,25 @@ export const defaultActivityLogFilters: ActivityLogFilters = {
 export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
   const groups: ActivityLogGroup[] = [];
   let current: ActivityLogGroup | null = null;
+  // True while inside a ``` fenced code block. Fenced content (blank lines,
+  // prose, even `*`-prefixed lines that look like tool markers) must stay in
+  // ONE group, or the block is rendered as separate items and the fence
+  // breaks — an empty code box plus its "content" leaking out as live markdown.
+  let inFence = false;
   const completedCodexCommandIds = collectCompletedCodexCommandIds(lines);
 
   for (const line of lines) {
+    if (inFence) {
+      // Agent stdout (and blank lines) belong to the open block; a switch to
+      // another stream (user / orchestrator) ends it and is handled normally.
+      if ((line.stream === 'stdout' || isBlank(line.text)) && current) {
+        current.lines.push(line);
+        if (isFenceLine(line.text)) inFence = false; // closing ```
+        continue;
+      }
+      inFence = false;
+    }
+
     // User follow-ups are persisted with stream='user' (see backend
     // TaskRunnerService.AppendUserPromptToCliLog). They are always their own
     // group — never folded into a preceding agent action — so the chat
@@ -135,6 +151,9 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
       if (line.stream === 'stderr' || /error|failed|exited with error/i.test(line.text)) {
         current.status = 'error';
       }
+      // An opening ``` fence rides in as a continuation (starts with a
+      // backtick) — from here, fold the block's body into this same group.
+      if (isFenceLine(line.text)) inFence = true;
       continue;
     }
 
@@ -151,6 +170,9 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
       collapsedByDefault: false
     };
     groups.push(current);
+    // A fence opening as its own message line (no preceding prose) also
+    // starts a block.
+    if (isFenceLine(line.text)) inFence = true;
   }
 
   return compressActivityGroups(groups);
@@ -1010,6 +1032,11 @@ function cleanContinuation(text: string): string {
 
 function isBlank(text: string): boolean {
   return text.trim().length === 0;
+}
+
+/** A line that opens or closes a ``` fenced code block. */
+function isFenceLine(text: string): boolean {
+  return /^\s*```/.test(text);
 }
 
 /**
