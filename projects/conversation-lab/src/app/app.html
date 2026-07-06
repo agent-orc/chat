@@ -175,17 +175,45 @@
       (contextRefreshRequested)="onContextRefresh()"
     />
   </section>
-
-  <section class="lab-panel" aria-label="Project chat history">
-    <h2>Project chat history — in-memory data source</h2>
-    <cac-project-chat-list class="lab-history" project="conversation-lab" />
-  </section>
 </main>
 
 @if (live.error(); as toast) {
   <div class="lab-toast" role="alert" data-testid="lab-live-toast">
     <span>{{ toast }}</span>
     <button type="button" aria-label="Meldung schließen" (click)="live.dismissError()">×</button>
+  </div>
+}
+
+@if (lightbox.current(); as image) {
+  <div class="lab-lightbox"
+       role="dialog"
+       aria-modal="true"
+       aria-label="Bildvorschau"
+       tabindex="-1"
+       data-testid="lab-lightbox"
+       (click)="lightbox.close()"
+       (keydown)="onLightboxKey($event)">
+    <button type="button"
+            class="lab-lightbox__close"
+            aria-label="Vorschau schließen"
+            (click)="lightbox.close()">×</button>
+    @if (lightbox.count() > 1) {
+      <button type="button"
+              class="lab-lightbox__nav lab-lightbox__nav--prev"
+              aria-label="Vorheriges Bild"
+              (click)="lightbox.prev(); $event.stopPropagation()">‹</button>
+      <button type="button"
+              class="lab-lightbox__nav lab-lightbox__nav--next"
+              aria-label="Nächstes Bild"
+              (click)="lightbox.next(); $event.stopPropagation()">›</button>
+      <span class="lab-lightbox__pos">{{ lightbox.position() }}</span>
+    }
+    <figure class="lab-lightbox__figure" (click)="$event.stopPropagation()">
+      <img class="lab-lightbox__img" [src]="image.src" [alt]="image.alt ?? ''" />
+      @if (image.alt) {
+        <figcaption class="lab-lightbox__caption">{{ image.alt }}</figcaption>
+      }
+    </figure>
   </div>
 }
 

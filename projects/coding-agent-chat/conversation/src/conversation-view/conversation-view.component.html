@@ -1,10 +1,14 @@
 <section class="conv"
          cacStickToBottom
          #stick="stickToBottom"
+         #scrollRoot
+         [class.conv--virtualised]="virtualised()"
+         [style.max-height]="virtualised() ? bodyMaxHeight() : null"
          [attr.data-variant]="variant()"
          [attr.data-running]="isRunning() ? 'true' : 'false'"
          [attr.data-stuck]="stick.stuck() ? 'true' : 'false'"
-         data-testid="conversation-view">
+         data-testid="conversation-view"
+         (scroll)="onScroll()">
   @if (showHeader()) {
     <header class="conv__head">
       <div class="conv__head-titles">
@@ -49,7 +53,12 @@
     </div>
   } @else {
     <ol class="conv__feed" data-testid="conversation-feed">
-      @for (row of rows(); track trackByEvent($index, row)) {
+      @if (virtualised() && topSpacerPx() > 0) {
+        <li class="conv__spacer" aria-hidden="true"
+            data-testid="conversation-spacer-top"
+            [style.height.px]="topSpacerPx()"></li>
+      }
+      @for (row of windowedRows(); track trackByEvent($index, row)) {
         @switch (row.kind) {
 
         @case ('messageGroup') {
@@ -108,7 +117,7 @@
                     @if (item.target) {
                       <span class="msg__target">→ {{ item.target }}</span>
                     }
-                    <cac-markdown class="msg__body" [source]="item.body" />
+                    <cac-markdown class="msg__body" cacMarkdownLightbox [source]="item.body" />
                     @if (item.attachments?.length) {
                       <ul class="msg__attachments" aria-label="Attachments">
                         @for (a of item.attachments; track a) {
@@ -327,11 +336,24 @@
         @case ('image') {
           <li class="conv__row conv__row--image"
               data-testid="conversation-artifact-image">
-            <figure class="image">
-              <span class="image__icon" aria-hidden="true">🖼</span>
-              <figcaption class="image__caption">{{ row.event.caption }}</figcaption>
-              <code class="image__path">{{ row.event.durablePath || row.event.sourcePath }}</code>
-            </figure>
+            @if (row.event.url) {
+              <figure class="image image--rendered" cacMarkdownLightbox>
+                <img class="image__img"
+                     data-testid="conversation-artifact-image-img"
+                     [src]="row.event.url"
+                     [alt]="row.event.caption"
+                     loading="lazy" />
+                @if (row.event.caption) {
+                  <figcaption class="image__caption">{{ row.event.caption }}</figcaption>
+                }
+              </figure>
+            } @else {
+              <figure class="image">
+                <span class="image__icon" aria-hidden="true">🖼</span>
+                <figcaption class="image__caption">{{ row.event.caption }}</figcaption>
+                <code class="image__path">{{ row.event.durablePath || row.event.sourcePath }}</code>
+              </figure>
+            }
           </li>
         }
 
@@ -359,6 +381,11 @@
           </li>
         }
         }
+      }
+      @if (virtualised() && bottomSpacerPx() > 0) {
+        <li class="conv__spacer" aria-hidden="true"
+            data-testid="conversation-spacer-bottom"
+            [style.height.px]="bottomSpacerPx()"></li>
       }
     </ol>
     <!-- Persistent live region: it must exist BEFORE a status appears, or

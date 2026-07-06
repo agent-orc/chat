@@ -27,7 +27,7 @@ import type {
   RunTimelineLite,
 } from '@coding-agent/chat/core';
 
-import { LAB_CONVERSATION_EVENTS } from './lab-fixtures';
+import { LAB_CONVERSATION_EVENTS, LAB_IMAGE_EVENTS } from './lab-fixtures';
 
 export type LabScenarioKind = 'events' | 'replay' | 'live';
 export type LiveCliType = 'claude' | 'codex' | 'gemini';
@@ -235,6 +235,14 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
     description:
       'Handgebaute ConversationEvents: Message-Gruppen, Tool-Burst, Bild-Artefakte (durable + scratch), Orchestrator-Entscheidung mit Retry-Budget, Token-Metrik, Run-Marker.',
     events: LAB_CONVERSATION_EVENTS,
+  },
+  {
+    id: 'images',
+    kind: 'events',
+    title: 'Bilder (Screenshots + Lightbox)',
+    description:
+      'Gerenderte Bild-Artefakte und ein inline Markdown-Bild. Ein Klick öffnet die Lightbox (Pfeiltasten blättern, Escape schließt) — die Host-Seam CHAT_MEDIA_LIGHTBOX stellt das Overlay.',
+    events: LAB_IMAGE_EVENTS,
   },
   {
     id: 'happy-path',

@@ -20,6 +20,8 @@ import type {
   ToolBurstEvent,
 } from '@coding-agent/chat/core';
 
+import { LAB_IMAGE_CHART, LAB_IMAGE_SUNSET } from './lab-image-data';
+
 const SOURCE = 'conversation-lab.log';
 
 let lineCursor = 0;
@@ -119,6 +121,7 @@ const screenshotDurable: ArtifactImageEvent = {
   kind: 'artifact.image',
   timestamp: at(6),
   caption: 'Settings page with the new theme toggle (dark)',
+  url: LAB_IMAGE_CHART,
   sourcePath: '/tmp/playwright/settings-toggle-dark.png',
   durablePath: 'results/settings-toggle-dark.png',
   sourceTool: 'playwright',
@@ -130,6 +133,7 @@ const screenshotScratch: ArtifactImageEvent = {
   kind: 'artifact.image',
   timestamp: at(6, 20),
   caption: 'Light palette sanity check (uncurated)',
+  url: LAB_IMAGE_SUNSET,
   sourcePath: '/tmp/playwright/settings-toggle-light.png',
   durablePath: null,
   sourceTool: 'playwright',
@@ -194,6 +198,60 @@ export const LAB_CONVERSATION_EVENTS: readonly ConversationEvent[] = [
   agentFix,
   tokenMetric,
   runComplete,
+];
+
+/**
+ * A focused image conversation: two rendered screenshot artifacts plus an
+ * inline markdown image — all clickable to enlarge via the host lightbox.
+ * Uses base64 PNG data URLs so it renders with no server.
+ */
+export const LAB_IMAGE_EVENTS: readonly ConversationEvent[] = [
+  {
+    id: 'imgsc-user',
+    kind: 'message.user',
+    timestamp: at(10),
+    actor: 'You',
+    body: 'Zeig mir das Dashboard und den Sonnenuntergangs-Verlauf als Screenshots.',
+    rawRange: nextRange(),
+  } as MessageEvent,
+  {
+    id: 'imgsc-agent-1',
+    kind: 'message.taskAgent',
+    timestamp: at(10, 12),
+    actor: 'Agent',
+    body: 'Klar — hier sind beide Screenshots. Klick auf ein Bild, um es zu vergrößern (Pfeiltasten blättern, Escape schließt).',
+    rawRange: nextRange(),
+  } as MessageEvent,
+  {
+    id: 'imgsc-1',
+    kind: 'artifact.image',
+    timestamp: at(10, 20),
+    caption: 'Dashboard — Kennzahlen als Balkendiagramm',
+    url: LAB_IMAGE_CHART,
+    sourcePath: '/tmp/playwright/dashboard.png',
+    durablePath: 'results/dashboard.png',
+    sourceTool: 'playwright',
+    rawRange: nextRange(),
+  } as ArtifactImageEvent,
+  {
+    id: 'imgsc-2',
+    kind: 'artifact.image',
+    timestamp: at(10, 28),
+    caption: 'Sonnenuntergangs-Verlauf',
+    url: LAB_IMAGE_SUNSET,
+    sourcePath: '/tmp/playwright/sunset.png',
+    durablePath: null,
+    sourceTool: 'screenshot',
+    rawRange: nextRange(),
+  } as ArtifactImageEvent,
+  {
+    id: 'imgsc-agent-2',
+    kind: 'message.taskAgent',
+    timestamp: at(10, 40),
+    actor: 'Agent',
+    body: `Und dasselbe Diagramm inline im Markdown-Text:\n\n![Dashboard-Diagramm](${LAB_IMAGE_CHART})\n\nAuch dieses Bild ist anklickbar.`,
+    rawRange: nextRange(),
+  } as MessageEvent,
 ];
 
 let localTurnSeq = 0;

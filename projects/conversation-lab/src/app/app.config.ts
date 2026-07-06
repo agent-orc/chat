@@ -1,17 +1,17 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideCodingAgentChat } from '@coding-agent/chat';
-import { PROJECT_CHAT_DATA_SOURCE } from '@coding-agent/chat/history';
+import { CHAT_MEDIA_LIGHTBOX } from '@coding-agent/chat/shared';
 
-import { InMemoryProjectChatDataSource } from './lab-chat-data-source';
+import { LabLightboxService } from './lab-lightbox.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     // Single library integration point; called without options so every seam
-    // stays on its safe no-op default (task refs unlinked, no lightbox).
+    // stays on its safe default (task refs unlinked).
     provideCodingAgentChat(),
-    // Host seam for <cac-project-chat-list>: a small in-memory implementation
-    // instead of an HTTP backend.
-    { provide: PROJECT_CHAT_DATA_SOURCE, useClass: InMemoryProjectChatDataSource },
+    // Host seam for click-to-enlarge: the library reports the activated image,
+    // this service + the App overlay render the zoom preview.
+    { provide: CHAT_MEDIA_LIGHTBOX, useExisting: LabLightboxService },
   ],
 };

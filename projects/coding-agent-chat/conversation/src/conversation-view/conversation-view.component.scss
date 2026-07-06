@@ -12,6 +12,24 @@
   color: inherit;
 }
 
+/* Virtualised mode: the view owns its own scroll container so the windowing
+   math has a stable scrollTop/clientHeight. Non-virtualised hosts keep
+   scrolling their own wrapper (no overflow here). */
+.conv--virtualised {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Windowing spacers: invisible <li> blocks that hold the scroll height for
+   rows outside the window. overflow-anchor:none stops the browser pinning to
+   a spacer as it resizes, so visible content stays put while scrolling. */
+.conv__spacer {
+  list-style: none;
+  flex: 0 0 auto;
+  width: 1px;
+  overflow-anchor: none;
+}
+
 .conv__head {
   display: flex;
   align-items: center;
@@ -708,6 +726,42 @@
   font-size: 11px;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
   color: color-mix(in srgb, currentColor 66%, transparent);
+}
+
+/* Rendered image artefact: the actual picture, framed and click-to-enlarge.
+ * Column layout (image over caption) rather than the icon row above. */
+.conv__row--image .image--rendered {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 6px 10px;
+  border-left: 2px solid color-mix(in srgb, var(--studio-accent-2, #4ec9b0) 45%, transparent);
+}
+.image__img {
+  display: block;
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--studio-border, color-mix(in srgb, currentColor 12%, transparent));
+  background: var(--studio-bg-editor, color-mix(in srgb, currentColor 4%, transparent));
+  cursor: zoom-in;
+  transition: filter 0.12s ease;
+}
+.image__img:hover,
+.image__img:focus-visible {
+  filter: brightness(1.04);
+  outline: 2px solid color-mix(in srgb, var(--severity-info, #38bdf8) 60%, transparent);
+  outline-offset: 2px;
+}
+/* Markdown-embedded images in message bodies get the same zoom affordance. */
+.msg__body img {
+  max-width: min(100%, 420px);
+  max-height: 320px;
+  height: auto;
+  border-radius: 6px;
+  cursor: zoom-in;
 }
 
 /* Token metric chip */

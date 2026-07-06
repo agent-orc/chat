@@ -281,6 +281,13 @@ export interface SystemStatusEvent extends ConversationEventBase {
 export interface ArtifactImageEvent extends ConversationEventBase {
   kind: 'artifact.image';
   caption: string;
+  /**
+   * Renderable source for the image — a served URL or an inline `data:` URI
+   * the host resolved from the artifact. When present the renderer shows the
+   * actual image (click-to-enlarge); when absent it falls back to naming the
+   * path, since the raw file paths below are not loadable from the browser.
+   */
+  url?: string | null;
   /** Scratch path the agent first emitted (Playwright temp, /tmp, etc.). */
   sourcePath: string;
   /** Durable copy under `results/` after the host curated it; null if not copied. */

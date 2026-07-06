@@ -278,6 +278,28 @@ describe('ConversationViewComponent', () => {
     expect(rows[1].querySelector('.image__path')?.textContent).toBe('/tmp/shot-02.png');
   });
 
+  it('renders the actual image (not just the path) when the event carries a url', async () => {
+    seq += 1;
+    const withUrl: ArtifactImageEvent = {
+      id: `img-${seq}`,
+      kind: 'artifact.image',
+      timestamp: nextTs(),
+      caption: 'Dashboard',
+      url: 'data:image/png;base64,iVBORw0KGgo=',
+      sourcePath: '/tmp/dash.png',
+      rawRange: RANGE,
+    };
+    const fixture = await render([withUrl]);
+    const el: HTMLElement = fixture.nativeElement;
+
+    const img = el.querySelector<HTMLImageElement>('[data-testid="conversation-artifact-image-img"]');
+    expect(img).toBeTruthy();
+    expect(img?.getAttribute('src')).toContain('data:image/png');
+    expect(img?.getAttribute('alt')).toBe('Dashboard');
+    // The path-only fallback is not used when the image renders.
+    expect(el.querySelector('.image__path')).toBeNull();
+  });
+
   it('lifts a Session init lifecycle line into a session meta card instead of a bubble', async () => {
     const fixture = await render([
       msg('message.taskAgent', '● Session init 0a1b2c3d4e5f'),
@@ -298,5 +320,64 @@ describe('ConversationViewComponent', () => {
     expect(agentRow?.textContent).toContain('Continuing after init.');
     // The bubble header carries the lifted session id.
     expect(agentRow?.getAttribute('data-session-id')).toBe('0a1b2c3d4e5f');
+  });
+
+  describe('virtualisation', () => {
+    // Alternating user/agent turns produce one row each (a user turn closes
+    // the agent group), so N pairs → 2N distinct rows to window over.
+    function manyRows(pairs: number): ConversationEvent[] {
+      const events: ConversationEvent[] = [];
+      for (let i = 0; i < pairs; i++) {
+        events.push(msg('message.user', `Question ${i}`));
+        events.push(msg('message.taskAgent', `Answer ${i}`));
+      }
+      return events;
+    }
+
+    it('renders every row and no spacers when virtualised is off (default)', async () => {
+      const fixture = await render(manyRows(40)); // 80 rows
+      const el: HTMLElement = fixture.nativeElement;
+      const c = fixture.componentInstance;
+
+      expect(c.rows().length).toBe(80);
+      expect(c.windowedRows().length).toBe(80);
+      expect(c.topSpacerPx()).toBe(0);
+      expect(c.bottomSpacerPx()).toBe(0);
+      expect(el.querySelector('[data-testid="conversation-spacer-top"]')).toBeNull();
+      expect(el.querySelector('[data-testid="conversation-spacer-bottom"]')).toBeNull();
+      expect(el.querySelector('.conv--virtualised')).toBeNull();
+    });
+
+    it('windows the feed and holds scroll height with a top spacer when virtualised', async () => {
+      const fixture = await render(manyRows(40), { virtualised: true }); // 80 rows
+      const el: HTMLElement = fixture.nativeElement;
+      const c = fixture.componentInstance;
+
+      expect(c.rows().length).toBe(80);
+      // Stuck-to-bottom by default → the window pins to the tail (~50 rows).
+      expect(c.windowedRows().length).toBeLessThan(c.rows().length);
+      expect(c.windowedRows().length).toBeGreaterThanOrEqual(50);
+      expect(c.visibleStart()).toBeGreaterThan(0);
+      // The rows above the window are held by a top spacer, none below the tail.
+      expect(c.topSpacerPx()).toBe(c.visibleStart() * c.virtualRowHeightPx());
+      expect(c.bottomSpacerPx()).toBe(0);
+
+      const topSpacer = el.querySelector<HTMLElement>('[data-testid="conversation-spacer-top"]');
+      expect(topSpacer).toBeTruthy();
+      expect(topSpacer!.style.height).toBe(`${c.topSpacerPx()}px`);
+      // The view owns its scroll container in virtualised mode.
+      expect(el.querySelector('.conv--virtualised')).toBeTruthy();
+      // The tail row is in the window (the newest answer is rendered).
+      expect(el.querySelector('[data-testid="conversation-feed"]')?.textContent).toContain('Answer 39');
+    });
+
+    it('leaves the window at the full list when it fits (small N)', async () => {
+      const fixture = await render(manyRows(5), { virtualised: true }); // 10 rows
+      const c = fixture.componentInstance;
+      expect(c.rows().length).toBe(10);
+      expect(c.windowedRows().length).toBe(10);
+      expect(c.topSpacerPx()).toBe(0);
+      expect(c.bottomSpacerPx()).toBe(0);
+    });
   });
 });

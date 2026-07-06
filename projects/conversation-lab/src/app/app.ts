@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import type {
   ChatCliOption,
   ChatContextUsage,
@@ -23,6 +23,7 @@ import {
   type LabScenarioKind,
   type LiveScenario,
 } from './lab-scenarios';
+import { LabLightboxService } from './lab-lightbox.service';
 import { ScenarioPlayer, type ReplayMode } from './scenario-player';
 import {
   WORKBENCH_CLI_TYPES,
@@ -48,6 +49,19 @@ const SETTINGS_STORAGE_KEY = 'conversation-lab.settings';
 export class App {
   protected readonly live = inject(WorkbenchLiveSession);
   protected readonly player = inject(ScenarioPlayer);
+  protected readonly lightbox = inject(LabLightboxService);
+
+  /** Keyboard control for the image lightbox overlay (Escape / arrows). */
+  protected onLightboxKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape') this.lightbox.close();
+    else if (event.key === 'ArrowRight') this.lightbox.next();
+    else if (event.key === 'ArrowLeft') this.lightbox.prev();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  protected onDocumentKey(event: KeyboardEvent): void {
+    if (this.lightbox.current()) this.onLightboxKey(event);
+  }
 
   protected readonly theme = signal<'dark' | 'light'>('dark');
 

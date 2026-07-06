@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, untracked, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, input, output, signal, untracked, viewChild } from '@angular/core';
 
 import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
 import { ToolBurstChipComponent } from '../tool-burst-chip/tool-burst-chip.component';
@@ -6,6 +6,7 @@ import { ConversationSessionCardComponent } from '../conversation-session-card/c
 import { PixelProgressComponent } from '../pixel-progress/pixel-progress.component';
 import { PlanChecklistComponent } from '../plan-checklist/plan-checklist.component';
 import {
+  MarkdownImageLightboxDirective,
   StickToBottomDirective,
   TooltipDirective,
   type StructuredTooltip,
@@ -214,6 +215,7 @@ function classifyMessageBody(body: string): ClassifiedBody {
     PlanChecklistComponent,
     TooltipDirective,
     StickToBottomDirective,
+    MarkdownImageLightboxDirective,
   ],
   templateUrl: './conversation-view.component.html',
   styleUrl: './conversation-view.component.scss',
@@ -225,6 +227,23 @@ export class ConversationViewComponent {
   readonly variant = input<'framed' | 'embedded'>('embedded');
   readonly showHeader = input<boolean>(true);
   readonly toolsVisible = input<boolean | null>(null);
+
+  /**
+   * When true the feed windows itself — only the rows near the viewport are
+   * in the DOM, top/bottom spacer rows hold the rest of the scroll height —
+   * and the component owns its own scroll container (bounded by
+   * {@link bodyMaxHeight}). Off by default so existing hosts, which wrap the
+   * view in their own scroll area and render every row, are unchanged. Turn
+   * it on for long single-task transcripts so the DOM stays ~150 nodes
+   * regardless of how many thousand events the run produced.
+   */
+  readonly virtualised = input<boolean>(false);
+  /** Estimated row height (px) for the windowing math. */
+  readonly virtualRowHeightPx = input<number>(120);
+  /** Over-scan rows above + below the viewport to smooth the scroll. */
+  readonly virtualBufferRows = input<number>(20);
+  /** Max height of the self-owned scroll container when {@link virtualised}. */
+  readonly bodyMaxHeight = input<string>('100%');
 
   readonly openTrace = output<RawLineRange | null>();
   readonly openVerboseDebug = output<void>();
@@ -240,7 +259,14 @@ export class ConversationViewComponent {
 
   /** The stick-to-bottom directive on the scroll root (see the template). */
   private readonly stick = viewChild(StickToBottomDirective);
+  /** The scroll-root element — only read in virtualised mode for scroll math. */
+  private readonly scrollRoot = viewChild<ElementRef<HTMLElement>>('scrollRoot');
   private lastUserEventId: string | null = null;
+
+  /** First rendered row index of the virtual window. */
+  readonly visibleStart = signal<number>(0);
+  /** Exclusive end index of the virtual window. */
+  readonly visibleEnd = signal<number>(50);
 
   constructor() {
     // When the LOCAL user posts a turn, always bring it into view — even if
@@ -570,6 +596,75 @@ export class ConversationViewComponent {
   });
 
   readonly hasContent = computed(() => this.rows().length > 0);
+
+  /**
+   * The rows the template actually loops over. In non-virtualised mode this
+   * is the full `rows()` array (unchanged behaviour); virtualised, it is the
+   * slice near the viewport.
+   */
+  readonly windowedRows = computed<RenderRow[]>(() => {
+    const items = this.rows();
+    if (!this.virtualised()) return items;
+    const start = Math.max(0, Math.min(this.visibleStart(), items.length));
+    const end = Math.max(start, Math.min(this.visibleEnd(), items.length));
+    return items.slice(start, end);
+  });
+  /** Spacer height (px) standing in for rows above the window. */
+  readonly topSpacerPx = computed<number>(() =>
+    this.virtualised() ? Math.max(0, this.visibleStart()) * this.virtualRowHeightPx() : 0,
+  );
+  /** Spacer height (px) standing in for rows below the window. */
+  readonly bottomSpacerPx = computed<number>(() => {
+    if (!this.virtualised()) return 0;
+    return Math.max(0, this.rows().length - this.visibleEnd()) * this.virtualRowHeightPx();
+  });
+
+  /**
+   * Keep the window in-bounds as rows arrive, and pin it to the tail while the
+   * user is stuck to the bottom (so new events appear without a manual scroll).
+   * The scroll-driven update lives in {@link onScroll}; this just seeds and
+   * clamps the slice. No-op unless virtualised.
+   */
+  private readonly virtualBoundsEffect = effect(() => {
+    if (!this.virtualised()) return;
+    const total = this.rows().length;
+    const stuck = this.stick()?.stuck() ?? true;
+    const buffer = this.virtualBufferRows();
+    untracked(() => {
+      if (stuck) {
+        const winSize = Math.max(50, this.visibleEnd() - this.visibleStart());
+        this.visibleEnd.set(total);
+        this.visibleStart.set(Math.max(0, total - winSize));
+      } else {
+        this.visibleEnd.set(Math.min(this.visibleEnd(), total));
+        this.visibleStart.set(Math.min(this.visibleStart(), Math.max(0, total - buffer)));
+      }
+    });
+  });
+
+  /** Recompute the virtual window from the scroll position. No-op unless virtualised. */
+  onScroll(): void {
+    if (!this.virtualised()) return;
+    const el = this.scrollRoot()?.nativeElement;
+    if (!el) return;
+    const total = this.rows().length;
+    // Derive stuck from the element itself (not the directive's signal) so the
+    // window is correct regardless of scroll-listener ordering.
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom <= 24) {
+      const winSize = Math.max(50, this.visibleEnd() - this.visibleStart());
+      this.visibleEnd.set(total);
+      this.visibleStart.set(Math.max(0, total - winSize));
+      return;
+    }
+    const rowH = Math.max(1, this.virtualRowHeightPx());
+    const buffer = this.virtualBufferRows();
+    const firstVisibleRow = Math.floor(el.scrollTop / rowH);
+    const visibleRows = Math.ceil(el.clientHeight / rowH);
+    this.visibleStart.set(Math.max(0, firstVisibleRow - buffer));
+    this.visibleEnd.set(Math.min(total, firstVisibleRow + visibleRows + buffer));
+  }
+
   readonly statusKind = computed<'working' | 'queued' | null>(() => {
     if (this.isRunning()) return 'working';
     if (this.queuedFollowUp()) return 'queued';

@@ -214,12 +214,6 @@
   overflow: auto;
 }
 
-.lab-history {
-  display: block;
-  height: 68vh;
-  min-height: 320px;
-}
-
 // ── Live bar ─────────────────────────────────────────────────────────────────
 
 .lab-live-bar {
@@ -529,4 +523,93 @@
       color: var(--studio-fg-strong, #f8fafc);
     }
   }
+}
+
+// ── Image lightbox overlay ───────────────────────────────────────────────────
+
+.lab-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(2px);
+  cursor: zoom-out;
+}
+
+.lab-lightbox__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 92vw;
+  max-height: 92vh;
+  cursor: default;
+}
+
+.lab-lightbox__img {
+  max-width: 92vw;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+.lab-lightbox__caption {
+  color: #e2e8f0;
+  font-size: 13px;
+  text-align: center;
+  max-width: 60ch;
+}
+
+.lab-lightbox__close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.lab-lightbox__close:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.lab-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 64px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.10);
+  color: #f8fafc;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+.lab-lightbox__nav:hover {
+  background: rgba(255, 255, 255, 0.20);
+}
+.lab-lightbox__nav--prev { left: 16px; }
+.lab-lightbox__nav--next { right: 16px; }
+
+.lab-lightbox__pos {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }

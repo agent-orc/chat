@@ -21,14 +21,15 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render the playground title and its three library surfaces', async () => {
+  it('should render the playground title and its single conversation surface', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Conversation Lab');
     expect(compiled.querySelector('cac-conversation-view')).toBeTruthy();
     expect(compiled.querySelector('cac-chat')).toBeTruthy();
-    expect(compiled.querySelector('cac-project-chat-list')).toBeTruthy();
+    // The project-chat-history panel was retired — one view only.
+    expect(compiled.querySelector('cac-project-chat-list')).toBeNull();
   });
 
   it('renders one chip per catalog scenario', async () => {
