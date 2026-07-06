@@ -323,9 +323,13 @@
   line-clamp: unset;
   overflow: visible;
 }
+/* Its own line, flush with the message text (the body above is block-level
+ * markdown, so the toggle can't ride the clamped line's end) — a small top
+ * gap sets it apart as a dezent affordance rather than stray text. */
 .msg__item-toggle {
-  margin-left: 6px;
-  padding: 0 4px;
+  display: inline-block;
+  margin: 2px 0 0;
+  padding: 0;
   border: none;
   background: transparent;
   font: inherit;
