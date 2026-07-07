@@ -46,72 +46,7 @@
         "
         title="Toggle light / dark theme"
       >
-        <svg
-          class="theme-icon"
-          [class.theme-icon--night]="siteTheme() === 'light'"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <!-- Sun: golden disc, ray crown, tiny smile. Shown in dark mode
-               (the icon previews the theme a click switches to). -->
-          <g class="theme-icon__sun">
-            <g class="theme-icon__rays" stroke="#f9b44e" stroke-width="1.7" stroke-linecap="round">
-              <line x1="12" y1="1.6" x2="12" y2="4.2" />
-              <line x1="12" y1="19.8" x2="12" y2="22.4" />
-              <line x1="1.6" y1="12" x2="4.2" y2="12" />
-              <line x1="19.8" y1="12" x2="22.4" y2="12" />
-              <line x1="4.6" y1="4.6" x2="6.5" y2="6.5" />
-              <line x1="17.5" y1="17.5" x2="19.4" y2="19.4" />
-              <line x1="4.6" y1="19.4" x2="6.5" y2="17.5" />
-              <line x1="17.5" y1="6.5" x2="19.4" y2="4.6" />
-            </g>
-            <circle cx="12" cy="12" r="4.7" fill="#fbc860" />
-            <circle cx="10.3" cy="11.1" r="0.62" fill="#8a4b12" />
-            <circle cx="13.7" cy="11.1" r="0.62" fill="#8a4b12" />
-            <path
-              d="M10.2 13.1 Q12 14.7 13.8 13.1"
-              stroke="#8a4b12"
-              stroke-width="0.9"
-              fill="none"
-              stroke-linecap="round"
-            />
-          </g>
-          <!-- Moon: crescent with a sleepy face and two stars. Shown in
-               light mode. -->
-          <g class="theme-icon__moon">
-            <path
-              d="M15.2 2.8 A9.4 9.4 0 1 0 21.4 14.9 A7.4 7.4 0 0 1 15.2 2.8 Z"
-              fill="#8b9df7"
-            />
-            <path
-              d="M9.3 11.6 q0.9 0.85 1.8 0"
-              stroke="#28306e"
-              stroke-width="0.9"
-              fill="none"
-              stroke-linecap="round"
-            />
-            <path
-              d="M13.1 13.4 q0.75 0.7 1.5 0"
-              stroke="#28306e"
-              stroke-width="0.9"
-              fill="none"
-              stroke-linecap="round"
-            />
-            <path
-              d="M10.9 15.6 q0.85 0.8 1.7 0"
-              stroke="#28306e"
-              stroke-width="0.9"
-              fill="none"
-              stroke-linecap="round"
-              transform="rotate(8 11.75 15.6)"
-            />
-            <path
-              d="M18.6 3.4 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 Z"
-              fill="#c7d0fb"
-            />
-            <circle cx="21" cy="9.4" r="0.7" fill="#c7d0fb" />
-          </g>
-        </svg>
+        <site-theme-icon [night]="siteTheme() === 'light'" />
       </button>
       <a
         class="site-nav__ext"
@@ -178,21 +113,16 @@
       <h2 class="section__title reveal">A run, replayed as a conversation</h2>
       <p class="section__lead reveal">
         Both conversations are rendered by <code>&lt;cac-conversation-view&gt;</code> from a plain
-        <code>ConversationEvent[]</code>. They replay at roughly real pace — while the agent
-        works, the frame shows what it is doing and when it last reported back.
+        <code>ConversationEvent[]</code>. They replay at roughly real pace — and each one ends in
+        a live composer: ask a follow-up and the reply streams into the same transcript. The
+        sun/moon in each title bar previews that frame in the opposite theme.
       </p>
-
-      <div class="demo-controls reveal">
-        <button type="button" class="demo-btn" (click)="toggleDemoTheme()">
-          {{ demoTheme() === 'dark' ? '☀ Light preview' : '☾ Dark preview' }}
-        </button>
-      </div>
 
       <div class="demo-stack">
         <div
           class="demo-frame reveal"
           id="demo-frame-a"
-          [attr.data-studio-theme]="demoTheme()"
+          [attr.data-studio-theme]="frameThemes.a()"
         >
           <div class="demo-frame__bar">
             <span class="demo-chip">Feature run · replay</span>
@@ -206,32 +136,53 @@
               }
             </button>
             <span class="demo-frame__progress">
-              @if (replayA.playing()) {
+              @if (busyA()) {
                 <span class="demo-working">
                   <i class="demo-working__dot" aria-hidden="true"></i>
                   Working — {{ workingA() }}
                 </span>
                 <span class="demo-working__contact"
-                  >last contact {{ contactA() }}s ago · event {{ replayA.played() }}/{{
-                    replayA.total
-                  }}</span
-                >
+                  >last contact {{ contactA() }}s ago
+                  @if (replayA.playing()) {
+                    · event {{ replayA.played() }}/{{ replayA.total }}
+                  }
+                </span>
               } @else if (replayA.hasPlayed()) {
-                run complete · {{ replayA.total }} events
+                run complete — ask a follow-up below
               } @else {
                 scroll or press play
               }
             </span>
+            <button
+              type="button"
+              class="demo-frame__theme"
+              (click)="flipFrame('a')"
+              [attr.aria-label]="
+                frameThemes.a() === 'dark'
+                  ? 'Preview this frame in the light theme'
+                  : 'Preview this frame in the dark theme'
+              "
+              title="Preview this frame in the opposite theme"
+            >
+              <site-theme-icon [night]="frameThemes.a() === 'light'" />
+            </button>
           </div>
           <div class="demo-frame__view">
             <!-- Browser-only: the page is prerendered, so the interactive library
                  components load lazily on scroll instead of rendering on the server.
                  The one-item @for tracked by theme re-creates the view on theme
                  toggle: Chromium pins `color-mix(… currentColor …)` colors at node
-                 creation, so reused nodes would keep the previous theme's colors. -->
+                 creation, so reused nodes would keep the previous theme's colors.
+                 Virtualised: the view owns its scroll container, so stick-to-bottom
+                 and the jump-to-latest pill work against the visible viewport. -->
             @defer (on viewport) {
-              @for (theme of [demoTheme()]; track theme) {
-                <cac-conversation-view [events]="replayA.events()" [isRunning]="replayA.playing()" />
+              @for (theme of [frameThemes.a()]; track theme) {
+                <cac-conversation-view
+                  [events]="replayA.events()"
+                  [isRunning]="busyA()"
+                  [virtualised]="true"
+                  bodyMaxHeight="min(52vh, 500px)"
+                />
               }
             } @placeholder {
               <div class="skeleton skeleton--conversation" aria-hidden="true">
@@ -252,9 +203,21 @@
                 </div>
               </div>
             }
-            @if (replayA.playing()) {
-              <div class="demo-thinking" aria-hidden="true">
-                <i></i><i></i><i></i>
+          </div>
+          <div class="demo-frame__composer">
+            @defer (on viewport) {
+              <cac-chat
+                [messages]="[]"
+                placeholder="Ask a follow-up — Enter sends"
+                emptyState="Follow-ups land in the transcript above; the reply here is scripted."
+                submitLabel="Send"
+                bodyMaxHeight="6rem"
+                [allowAttachments]="false"
+                (submitMessage)="onFrameSubmit('a', $event)"
+              />
+            } @placeholder {
+              <div class="skeleton skeleton--composer" aria-hidden="true">
+                <i class="skeleton__bar skeleton__bar--input"></i>
               </div>
             }
           </div>
@@ -263,7 +226,7 @@
         <div
           class="demo-frame reveal"
           id="demo-frame-b"
-          [attr.data-studio-theme]="demoTheme()"
+          [attr.data-studio-theme]="frameThemes.b()"
         >
           <div class="demo-frame__bar">
             <span class="demo-chip">Bugfix session · replay</span>
@@ -277,27 +240,46 @@
               }
             </button>
             <span class="demo-frame__progress">
-              @if (replayB.playing()) {
+              @if (busyB()) {
                 <span class="demo-working">
                   <i class="demo-working__dot" aria-hidden="true"></i>
                   Working — {{ workingB() }}
                 </span>
                 <span class="demo-working__contact"
-                  >last contact {{ contactB() }}s ago · event {{ replayB.played() }}/{{
-                    replayB.total
-                  }}</span
-                >
+                  >last contact {{ contactB() }}s ago
+                  @if (replayB.playing()) {
+                    · event {{ replayB.played() }}/{{ replayB.total }}
+                  }
+                </span>
               } @else if (replayB.hasPlayed()) {
-                run complete · {{ replayB.total }} events
+                run complete — ask a follow-up below
               } @else {
                 failing command → watchdog → retry → green
               }
             </span>
+            <button
+              type="button"
+              class="demo-frame__theme"
+              (click)="flipFrame('b')"
+              [attr.aria-label]="
+                frameThemes.b() === 'dark'
+                  ? 'Preview this frame in the light theme'
+                  : 'Preview this frame in the dark theme'
+              "
+              title="Preview this frame in the opposite theme"
+            >
+              <site-theme-icon [night]="frameThemes.b() === 'light'" />
+            </button>
           </div>
           <div class="demo-frame__view">
             @defer (on viewport) {
-              @for (theme of [demoTheme()]; track theme) {
-                <cac-conversation-view [events]="replayB.events()" [isRunning]="replayB.playing()" />
+              @for (theme of [frameThemes.b()]; track theme) {
+                <cac-conversation-view
+                  [events]="replayB.events()"
+                  [isRunning]="busyB()"
+                  [virtualised]="true"
+                  bodyMaxHeight="min(52vh, 500px)"
+                />
               }
             } @placeholder {
               <div class="skeleton skeleton--conversation" aria-hidden="true">
@@ -318,77 +300,46 @@
                 </div>
               </div>
             }
-            @if (replayB.playing()) {
-              <div class="demo-thinking" aria-hidden="true">
-                <i></i><i></i><i></i>
+          </div>
+          <div class="demo-frame__composer">
+            @defer (on viewport) {
+              <cac-chat
+                [messages]="[]"
+                placeholder="Ask a follow-up — Enter sends"
+                emptyState="Follow-ups land in the transcript above; the reply here is scripted."
+                submitLabel="Send"
+                bodyMaxHeight="6rem"
+                [allowAttachments]="false"
+                (submitMessage)="onFrameSubmit('b', $event)"
+              />
+            } @placeholder {
+              <div class="skeleton skeleton--composer" aria-hidden="true">
+                <i class="skeleton__bar skeleton__bar--input"></i>
               </div>
             }
           </div>
         </div>
       </div>
-      <p class="section__foot reveal">
-        Feed the view your own events and it does the grouping, folding and progressive
-        disclosure. The pacing above is scripted; the components themselves render whatever
-        arrives, whenever it arrives.
-      </p>
 
-      <div
-        class="demo-frame demo-frame--solo reveal"
-        [attr.data-studio-theme]="demoTheme()"
-        id="try-it"
-      >
-        <div class="demo-frame__bar">
-          <span class="demo-chip">Composer · scripted demo agent</span>
-          <span class="demo-frame__progress">
-            @if (composerBusy()) {
-              <span class="demo-working">
-                <i class="demo-working__dot" aria-hidden="true"></i>
-                Working — {{ workingComposer() }}
-              </span>
-              <span class="demo-working__contact">last contact {{ contactComposer() }}s ago</span>
-            } @else if (composerEvents().length > 0) {
-              reply delivered — send another
-            } @else {
-              type below — a scripted reply streams back
-            }
-          </span>
+      <!-- What the view is doing for you — anchored to what is visible above. -->
+      <div class="demo-caps reveal">
+        <div class="demo-cap">
+          <strong>Grouping</strong>
+          <span>Nine tool calls render as one burst chip — count, families, failures, tests.</span>
         </div>
-        @defer (when composerEvents().length > 0) {
-          @if (composerEvents().length > 0) {
-            <div class="demo-frame__view demo-frame__view--mini">
-              @for (theme of [demoTheme()]; track theme) {
-                <cac-conversation-view [events]="composerEvents()" [isRunning]="composerBusy()" />
-              }
-              @if (composerBusy()) {
-                <div class="demo-thinking" aria-hidden="true">
-                  <i></i><i></i><i></i>
-                </div>
-              }
-            </div>
-          }
-        }
-        <div class="demo-frame__composer">
-          @defer (on viewport) {
-            <cac-chat
-              [messages]="[]"
-              placeholder="Type a message — Enter sends, Shift+Enter breaks the line"
-              emptyState="Submits get a scripted Demo Agent reply — plan, tool burst, answer — streamed in above."
-              submitLabel="Send"
-              bodyMaxHeight="8rem"
-              [allowAttachments]="false"
-              (submitMessage)="onComposerSubmit($event)"
-            />
-          } @placeholder {
-            <div class="skeleton skeleton--composer" aria-hidden="true">
-              <i class="skeleton__bar skeleton__bar--input"></i>
-            </div>
-          }
+        <div class="demo-cap">
+          <strong>Folding</strong>
+          <span>Long plans truncate behind <i>expand</i>, so transcripts stay skimmable.</span>
+        </div>
+        <div class="demo-cap">
+          <strong>Progressive disclosure</strong>
+          <span>Output, traces and raw log ranges live one click behind each row.</span>
+        </div>
+        <div class="demo-cap">
+          <strong>Live continuation</strong>
+          <span>The composer under each replay appends real turns — wire it to your backend.</span>
         </div>
       </div>
-      <p class="section__foot section__foot--center reveal">
-        The reply here is scripted in the page. In an app, wire <code>(submitMessage)</code> to
-        your backend and stream real events back.
-      </p>
     </div>
   </section>
 
@@ -407,15 +358,28 @@
       </p>
       <div
         class="demo-frame demo-frame--render reveal"
-        [attr.data-studio-theme]="demoTheme()"
+        [attr.data-studio-theme]="frameThemes.render()"
       >
         <div class="demo-frame__bar">
           <span class="demo-chip">Rendering · static transcript</span>
           <span class="demo-frame__progress">highlighted code · artifact row · inline image</span>
+          <button
+            type="button"
+            class="demo-frame__theme"
+            (click)="flipFrame('render')"
+            [attr.aria-label]="
+              frameThemes.render() === 'dark'
+                ? 'Preview this frame in the light theme'
+                : 'Preview this frame in the dark theme'
+            "
+            title="Preview this frame in the opposite theme"
+          >
+            <site-theme-icon [night]="frameThemes.render() === 'light'" />
+          </button>
         </div>
         <div class="demo-frame__view">
           @defer (on viewport) {
-            @for (theme of [demoTheme()]; track theme) {
+            @for (theme of [frameThemes.render()]; track theme) {
               <cac-conversation-view [events]="showcaseEvents" [isRunning]="false" />
             }
           } @placeholder {
@@ -457,9 +421,10 @@
         <article class="card reveal">
           <h3><span class="card__dot card__dot--orange"></span>Event kinds</h3>
           <p>
-            One append-only event format covers messages, tool bursts, watchdog waits,
-            orchestrator decisions, needs-input, artifacts, token metrics, task and run markers,
-            and trace links.
+            One append-only format tells the whole story — you already saw it above:
+            <code>message.user</code>, a <code>toolBurst</code> of nine calls, a
+            <code>supervisor.wait</code> while the agent went quiet, the orchestrator's retry
+            decision. 23+ kinds in one union type; unknown kinds render as a safe fallback row.
           </p>
         </article>
         <article class="card reveal">
@@ -473,16 +438,18 @@
         <article class="card reveal">
           <h3><span class="card__dot card__dot--purple"></span>Entry points</h3>
           <p>
-            <code>core</code>, <code>markdown</code>, <code>conversation</code>,
-            <code>composer</code>, <code>history</code> and <code>shared</code>, plus the root
-            entry with <code>provideCodingAgentChat()</code>. Import only what you render.
+            Seven import paths, so you ship only what you render — the wire contract alone
+            (<code>core</code>) is plain TypeScript with zero Angular in it. Every entry point
+            has a <a href="#entry-points">live, touchable sample in the explorer below&nbsp;↓</a>
           </p>
         </article>
         <article class="card reveal">
           <h3><span class="card__dot card__dot--green"></span>Host integration points</h3>
           <p>
-            Task linking, image lightbox, history transport and deep-history confirmation are
-            injection tokens. Each has a default, so nothing needs wiring to start.
+            Four injection tokens with safe defaults — wire nothing and everything still
+            renders. One concrete example: provide <code>CHAT_MEDIA_LIGHTBOX</code> and every
+            screenshot in a conversation becomes click-to-enlarge —
+            <a href="#rendering">exactly what this page does&nbsp;↑</a>
           </p>
         </article>
         <article class="card reveal">
@@ -543,55 +510,201 @@
         </div>
       </div>
 
-      <h3 class="docs-sub reveal" id="entry-points">Entry points</h3>
+      <h3 class="docs-sub reveal" id="entry-points">Entry points — pick one, touch the result</h3>
       <p class="section__lead reveal">
-        Six secondary entry points separate the parts. Importing the wire contract does not pull
-        in the renderer.
+        Seven import paths separate the parts, so importing the wire contract never pulls in the
+        renderer. Every tab pairs the snippet with the <b>real component, live</b> — type into
+        the composer, hover the tooltips, flip the theme. (The root import
+        <code>&#64;coding-agent/chat</code> re-exports everything plus
+        <code>provideCodingAgentChat()</code>.)
       </p>
-      <div class="table-scroll reveal">
-        <table class="entry-table">
-          <thead>
-            <tr>
-              <th>Import</th>
-              <th>Contents</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>&#64;coding-agent/chat</code></td>
-              <td>everything + <code>provideCodingAgentChat()</code></td>
-            </tr>
-            <tr>
-              <td><code>&#64;coding-agent/chat/core</code></td>
-              <td>wire contract + projection + pure helpers (zero Angular)</td>
-            </tr>
-            <tr>
-              <td><code>&#64;coding-agent/chat/markdown</code></td>
-              <td><code>&lt;cac-markdown&gt;</code> + markdown utils + task-reference token</td>
-            </tr>
-            <tr>
-              <td><code>&#64;coding-agent/chat/conversation</code></td>
-              <td><code>&lt;cac-conversation-view&gt;</code> + tool-burst chip + session card</td>
-            </tr>
-            <tr>
-              <td><code>&#64;coding-agent/chat/composer</code></td>
-              <td><code>&lt;cac-chat&gt;</code> composer + role badge + workforce/phase helpers</td>
-            </tr>
-            <tr>
-              <td><code>&#64;coding-agent/chat/history</code></td>
-              <td>
-                <code>&lt;cac-project-chat-list&gt;</code> virtualised history +
-                <code>&lt;cac-chat-row&gt;</code> + minimap rail + phase summary strip
-              </td>
-            </tr>
-            <tr>
-              <td><code>&#64;coding-agent/chat/shared</code></td>
-              <td>
-                <code>cacTooltip</code>, <code>cacStickToBottom</code>, lightbox directive + tokens
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="explorer reveal">
+        <div class="explorer__tabs" role="tablist" aria-label="Entry points">
+          @for (tab of explorerTabs; track tab.key) {
+            <button
+              type="button"
+              role="tab"
+              class="explorer__tab"
+              [class.is-active]="explorerTab() === tab.key"
+              [attr.aria-selected]="explorerTab() === tab.key"
+              (click)="explorerTab.set(tab.key)"
+            >
+              <code>/{{ tab.label }}</code>
+              <span>{{ tab.hint }}</span>
+            </button>
+          }
+        </div>
+        <div class="explorer__panel" role="tabpanel">
+          @switch (explorerTab()) {
+            @case ('core') {
+              <p class="explorer__desc">
+                Plain TypeScript: the <code>ConversationEvent</code> union and
+                <code>projectConversation()</code>, which turns a raw feed into grouped,
+                render-ready items. Zero Angular — backends, SSR code and tests import it freely.
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.core.code"
+                  [label]="explorerSnippets.core.label"
+                />
+                <div class="explorer__live" data-studio-theme="dark">
+                  <span class="explorer__live-tag">that call, rendered</span>
+                  <cac-conversation-view [events]="explorerEvents" [isRunning]="false" />
+                </div>
+              </div>
+              <details class="explorer__details">
+                <summary>See one event on the wire — the tool burst above as JSON</summary>
+                <site-code [code]="explorerEventJson" label="toolBurst — wire format" />
+              </details>
+            }
+            @case ('markdown') {
+              <p class="explorer__desc">
+                <code>&lt;cac-markdown&gt;</code> renders agent text: GFM, syntax-highlighted
+                fences, sanitized HTML, image lightbox hooks, task-reference auto-linking.
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.markdown.code"
+                  [label]="explorerSnippets.markdown.label"
+                />
+                <div class="explorer__live" data-studio-theme="dark">
+                  <span class="explorer__live-tag">result</span>
+                  <cac-markdown [source]="explorerMarkdown" />
+                </div>
+              </div>
+            }
+            @case ('conversation') {
+              <p class="explorer__desc">
+                <code>&lt;cac-conversation-view&gt;</code> is the surface from the demos above:
+                give it events, it does grouping, folding, working indicators and
+                stick-to-bottom scrolling.
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.conversation.code"
+                  [label]="explorerSnippets.conversation.label"
+                />
+                <div class="explorer__live" data-studio-theme="dark">
+                  <span class="explorer__live-tag">three events in, this out</span>
+                  <cac-conversation-view [events]="explorerEvents" [isRunning]="false" />
+                </div>
+              </div>
+            }
+            @case ('composer') {
+              <p class="explorer__desc">
+                <code>&lt;cac-chat&gt;</code> is the input surface: multiline editing,
+                attachments, submit events. <b>Try it</b> — replies here are scripted, in your
+                app they come from your backend.
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.composer.code"
+                  [label]="explorerSnippets.composer.label"
+                />
+                <div class="explorer__live" data-studio-theme="dark">
+                  <span class="explorer__live-tag">live — type something</span>
+                  @if (explorerChat().length > 0) {
+                    <cac-conversation-view
+                      [events]="explorerChat()"
+                      [isRunning]="explorerThread.busy()"
+                      [virtualised]="true"
+                      bodyMaxHeight="240px"
+                    />
+                  }
+                  <cac-chat
+                    [messages]="[]"
+                    placeholder="Ask the demo agent…"
+                    emptyState="Submits stream a scripted reply in right here."
+                    submitLabel="Send"
+                    bodyMaxHeight="5rem"
+                    [allowAttachments]="false"
+                    (submitMessage)="explorerThread.submit($event.text)"
+                  />
+                </div>
+              </div>
+            }
+            @case ('history') {
+              <p class="explorer__desc">
+                <code>&lt;cac-project-chat-list&gt;</code> renders a project's past runs as a
+                virtualised, searchable day list. It reads through the
+                <code>PROJECT_CHAT_DATA_SOURCE</code> token — four read methods, so the data can
+                live anywhere (HTTP, SQLite, files).
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.history.code"
+                  [label]="explorerSnippets.history.label"
+                />
+                <div class="explorer__live explorer__live--mock" data-studio-theme="dark">
+                  <span class="explorer__live-tag">shape (no data source on this page)</span>
+                  <div class="skeleton" aria-hidden="true">
+                    @for (width of [58, 44, 66, 38, 72]; track $index) {
+                      <div class="skeleton__row skeleton__row--inline">
+                        <i class="skeleton__bar skeleton__bar--chip" style="width: 14%"></i>
+                        <i class="skeleton__bar" [style.width.%]="width"></i>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+            @case ('shared') {
+              <p class="explorer__desc">
+                The small building blocks the bigger surfaces share: <code>cacTooltip</code>,
+                <code>cacStickToBottom</code>, and the image-lightbox seam.
+                <b>Hover the buttons</b> — those are real tooltips.
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.shared.code"
+                  [label]="explorerSnippets.shared.label"
+                />
+                <div class="explorer__live explorer__live--row" data-studio-theme="dark">
+                  <span class="explorer__live-tag">hover these</span>
+                  <button type="button" class="demo-btn" cacTooltip="Re-runs the failing spec">
+                    Re-run
+                  </button>
+                  <button
+                    type="button"
+                    class="demo-btn"
+                    cacTooltip="Opens the raw activity log in Trace mode"
+                  >
+                    Trace
+                  </button>
+                </div>
+              </div>
+            }
+            @case ('theme') {
+              <p class="explorer__desc">
+                One optional stylesheet — the look of this whole page. Palettes are scoped to
+                <code>data-studio-theme</code>, and scopes <b>nest</b>: flip just this panel.
+              </p>
+              <div class="explorer__grid">
+                <site-code
+                  [code]="explorerSnippets.theme.code"
+                  [label]="explorerSnippets.theme.label"
+                />
+                <div class="explorer__live" [attr.data-studio-theme]="explorerTheme()">
+                  <button
+                    type="button"
+                    class="demo-frame__theme explorer__flip"
+                    (click)="explorerTheme.set(explorerTheme() === 'dark' ? 'light' : 'dark')"
+                    [attr.aria-label]="
+                      explorerTheme() === 'dark'
+                        ? 'Preview this panel in the light theme'
+                        : 'Preview this panel in the dark theme'
+                    "
+                  >
+                    <site-theme-icon [night]="explorerTheme() === 'light'" />
+                  </button>
+                  @for (theme of [explorerTheme()]; track theme) {
+                    <cac-markdown [source]="explorerMarkdown" />
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
       </div>
 
       <h3 class="docs-sub reveal" id="seams">Host integration points</h3>

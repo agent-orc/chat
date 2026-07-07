@@ -125,8 +125,9 @@ export class MarkdownImageLightboxDirective implements AfterViewInit, OnDestroy 
     const images: MediaLightboxImageRef[] = [];
     const anchors: HTMLElement[] = [];
     const seenWrappers = new Set<HTMLElement>();
-    this.host.nativeElement
-      .querySelectorAll<HTMLImageElement>('img')
+    // Array.from: the server-side DOM's NodeList has no .forEach, and these
+    // surfaces prerender under SSG.
+    Array.from(this.host.nativeElement.querySelectorAll<HTMLImageElement>('img'))
       .forEach((img) => {
         const wrapper = img.closest<HTMLElement>('[data-results-lightbox]');
         if (wrapper) {
@@ -147,7 +148,8 @@ export class MarkdownImageLightboxDirective implements AfterViewInit, OnDestroy 
 
   private markImages(): void {
     const root = this.host.nativeElement;
-    const images = root.querySelectorAll<HTMLImageElement>('img');
+    // Array.from: SSR NodeLists lack .forEach (see collectGallery).
+    const images = Array.from(root.querySelectorAll<HTMLImageElement>('img'));
     images.forEach((img) => {
       if (img.dataset['mdLightboxBound'] === '1') return;
       // Skip images that already live inside a button wrapper (beautiful-

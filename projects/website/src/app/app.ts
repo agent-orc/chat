@@ -14,8 +14,19 @@ import {
 import type { ChatSubmitEvent, ConversationEvent } from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
+import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
+import { TooltipDirective } from '@coding-agent/chat/shared';
 
 import { CodeBlockComponent } from './code-block.component';
+import {
+  ENTRY_POINT_TABS,
+  EXPLORER_EVENTS,
+  EXPLORER_EVENT_JSON,
+  EXPLORER_MARKDOWN,
+  EXPLORER_SNIPPETS,
+  type EntryPointKey,
+} from './explorer-data';
+import { ThemeIconComponent } from './theme-icon.component';
 import {
   DEMO_REPLAY_STEPS,
   DEMO_REPLAY_STEPS_B,
@@ -72,13 +83,16 @@ class DemoReplay {
   readonly hasPlayed = signal(false);
   /** Epoch ms of the most recent event — feeds the "last contact" readout. */
   readonly lastEventAt = signal(0);
+  /** Follow-up events appended by the frame's composer (user turns + scripted replies). */
+  private readonly extras = signal<readonly ConversationEvent[]>([]);
   /** Invalidates pending timers when a replay restarts or unmounts. */
   private token = 0;
 
   readonly total: number;
-  readonly events = computed<readonly ConversationEvent[]>(() =>
-    this.steps.slice(0, this.played()).map((step) => step.event),
-  );
+  readonly events = computed<readonly ConversationEvent[]>(() => [
+    ...this.steps.slice(0, this.played()).map((step) => step.event),
+    ...this.extras(),
+  ]);
   /** Kind of the event currently being "worked on" (the next one to land). */
   readonly nextKind = computed<ConversationEvent['kind'] | null>(() =>
     this.playing() ? (this.steps[this.played()]?.event.kind ?? null) : null,
@@ -88,10 +102,16 @@ class DemoReplay {
     this.total = steps.length;
   }
 
+  /** Append a composer follow-up after the replayed transcript. */
+  append(event: ConversationEvent): void {
+    this.extras.update((list) => [...list, event]);
+  }
+
   play(): void {
     this.token += 1;
     const token = this.token;
     this.played.set(0);
+    this.extras.set([]); // a restart tells the story from the top
     this.playing.set(true);
     this.hasPlayed.set(true);
     this.lastEventAt.set(Date.now());
@@ -114,9 +134,72 @@ class DemoReplay {
   }
 }
 
+/**
+ * One composer-fed reply loop: a submit appends the user turn immediately,
+ * then streams the scripted Demo Agent reply (plan → tool burst → answer)
+ * into `append` with the same 1.5–3s pacing as the replays. Queued submits
+ * play strictly in order. One instance per demo surface.
+ */
+class ScriptedThread {
+  readonly busy = signal(false);
+  /** Kind of the scripted event currently being "worked on". */
+  readonly nextKind = signal<ConversationEvent['kind'] | null>(null);
+  /** Epoch ms of the last thread event (user turn or reply step). */
+  readonly lastAt = signal(0);
+  private readonly pending: string[] = [];
+  private alive = true;
+
+  constructor(private readonly append: (event: ConversationEvent) => void) {}
+
+  destroy(): void {
+    this.alive = false;
+  }
+
+  submit(text: string): void {
+    const trimmed = text.trim();
+    if (trimmed.length === 0) return;
+    this.append(userTurnEvent(trimmed));
+    this.lastAt.set(Date.now());
+    this.pending.push(trimmed);
+    if (!this.busy()) this.streamNext();
+  }
+
+  private streamNext(): void {
+    const text = this.pending.shift();
+    if (text === undefined) {
+      this.busy.set(false);
+      this.nextKind.set(null);
+      return;
+    }
+    this.busy.set(true);
+    const steps = demoAgentResponseSteps(text);
+    this.nextKind.set(steps[0]?.event.kind ?? null);
+    let elapsed = 0;
+    for (const [i, step] of steps.entries()) {
+      elapsed += step.delayMs;
+      const isLast = i === steps.length - 1;
+      const upNext = steps[i + 1]?.event.kind ?? null;
+      setTimeout(() => {
+        if (!this.alive) return;
+        this.append(step.event);
+        this.lastAt.set(Date.now());
+        this.nextKind.set(upNext);
+        if (isLast) this.streamNext();
+      }, elapsed);
+    }
+  }
+}
+
 @Component({
   selector: 'app-root',
-  imports: [ConversationViewComponent, ChatComponent, CodeBlockComponent],
+  imports: [
+    ConversationViewComponent,
+    ChatComponent,
+    CodeBlockComponent,
+    MarkdownViewComponent,
+    ThemeIconComponent,
+    TooltipDirective,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -138,10 +221,18 @@ export class App {
   protected readonly snippetCoreOnly = SNIPPET_CORE_ONLY;
   protected readonly heroInstall = 'npm install @coding-agent/chat';
 
-  // --- Live demo: two paced replays -----------------------------------------
+  // --- Live demo: two paced replays, each with a follow-up composer ----------
   protected readonly replayA = new DemoReplay(DEMO_REPLAY_STEPS);
   protected readonly replayB = new DemoReplay(DEMO_REPLAY_STEPS_B);
-  protected readonly demoTheme = signal<'dark' | 'light'>('dark');
+  protected readonly threadA = new ScriptedThread((e) => this.replayA.append(e));
+  protected readonly threadB = new ScriptedThread((e) => this.replayB.append(e));
+  /** Per-frame preview theme — thanks to the token scopes each frame is
+   * independently light/dark, toggled by the icon in its own title bar. */
+  protected readonly frameThemes = {
+    a: signal<'dark' | 'light'>('dark'),
+    b: signal<'dark' | 'light'>('dark'),
+    render: signal<'dark' | 'light'>('dark'),
+  };
 
   // --- Rendering showcase: static transcript + image lightbox ----------------
   /** Static exchange showing highlighted code + clickable images. */
@@ -156,26 +247,37 @@ export class App {
   /** 1s wall-clock tick for the "last contact Ns ago" readouts. */
   private readonly now = signal(Date.now());
 
-  protected readonly workingA = computed(() => workingLabel(this.replayA.nextKind()));
-  protected readonly workingB = computed(() => workingLabel(this.replayB.nextKind()));
-  protected readonly contactA = computed(() => this.secondsSince(this.replayA.lastEventAt()));
-  protected readonly contactB = computed(() => this.secondsSince(this.replayB.lastEventAt()));
+  /** A frame is "working" while its replay runs OR its composer reply streams. */
+  protected readonly busyA = computed(() => this.replayA.playing() || this.threadA.busy());
+  protected readonly busyB = computed(() => this.replayB.playing() || this.threadB.busy());
+  protected readonly workingA = computed(() =>
+    workingLabel(this.replayA.playing() ? this.replayA.nextKind() : this.threadA.nextKind()),
+  );
+  protected readonly workingB = computed(() =>
+    workingLabel(this.replayB.playing() ? this.replayB.nextKind() : this.threadB.nextKind()),
+  );
+  protected readonly contactA = computed(() =>
+    this.secondsSince(Math.max(this.replayA.lastEventAt(), this.threadA.lastAt())),
+  );
+  protected readonly contactB = computed(() =>
+    this.secondsSince(Math.max(this.replayB.lastEventAt(), this.threadB.lastAt())),
+  );
 
-  // --- Composer demo: scripted Demo Agent replies ------------------------------
-  /** The composer frame's own mini conversation (user turns + scripted replies). */
-  protected readonly composerEvents = signal<readonly ConversationEvent[]>([]);
-  /** True while a scripted reply is still streaming in. */
-  protected readonly composerBusy = signal(false);
-  /** Kind of the scripted event currently being "worked on". */
-  private readonly composerNextKind = signal<ConversationEvent['kind'] | null>(null);
-  /** Epoch ms of the last composer-frame event (user turn or reply step). */
-  private readonly composerLastAt = signal(0);
-  protected readonly workingComposer = computed(() => workingLabel(this.composerNextKind()));
-  protected readonly contactComposer = computed(() => this.secondsSince(this.composerLastAt()));
-  /** Submits waiting for their scripted reply, processed strictly in order. */
-  private readonly pendingReplies: string[] = [];
-  /** Guards composer timers on teardown. */
-  private composerAlive = true;
+  // --- Entry-point explorer: one live, touchable sample per entry point --------
+  /** Which entry point the docs explorer currently shows. */
+  protected readonly explorerTab = signal<EntryPointKey>('core');
+  protected readonly explorerTabs = ENTRY_POINT_TABS;
+  /** The composer tab's own mini conversation (type → scripted reply). */
+  protected readonly explorerChat = signal<readonly ConversationEvent[]>([]);
+  protected readonly explorerThread = new ScriptedThread((e) =>
+    this.explorerChat.update((list) => [...list, e]),
+  );
+  /** The theme tab's flippable mini surface. */
+  protected readonly explorerTheme = signal<'dark' | 'light'>('dark');
+  protected readonly explorerEvents = EXPLORER_EVENTS;
+  protected readonly explorerEventJson = EXPLORER_EVENT_JSON;
+  protected readonly explorerMarkdown = EXPLORER_MARKDOWN;
+  protected readonly explorerSnippets = EXPLORER_SNIPPETS;
 
   // --- Sticky nav highlight ---------------------------------------------------
   protected readonly activeSection = signal<string>('');
@@ -205,12 +307,20 @@ export class App {
     this.destroyRef.onDestroy(() => {
       this.replayA.cancel(); // cancel any scheduled replay step
       this.replayB.cancel();
-      this.composerAlive = false; // cancel any scheduled scripted reply
+      this.threadA.destroy(); // cancel any scheduled scripted reply
+      this.threadB.destroy();
+      this.explorerThread.destroy();
     });
   }
 
-  protected toggleDemoTheme(): void {
-    this.demoTheme.update((t) => (t === 'dark' ? 'light' : 'dark'));
+  /** Flip one demo frame's preview theme (the icon in its title bar). */
+  protected flipFrame(key: keyof App['frameThemes']): void {
+    this.frameThemes[key].update((t) => (t === 'dark' ? 'light' : 'dark'));
+  }
+
+  /** A follow-up typed under a replay: user turn + scripted reply, in place. */
+  protected onFrameSubmit(key: 'a' | 'b', submit: ChatSubmitEvent): void {
+    (key === 'a' ? this.threadA : this.threadB).submit(submit.text);
   }
 
   /**
@@ -306,43 +416,6 @@ export class App {
   private startContactTicker(): void {
     const timer = setInterval(() => this.now.set(Date.now()), 1000);
     this.destroyRef.onDestroy(() => clearInterval(timer));
-  }
-
-  protected onComposerSubmit(submit: ChatSubmitEvent): void {
-    const text = submit.text.trim();
-    if (text.length === 0) return;
-    // The user turn lands immediately; the scripted reply queues behind any
-    // reply that is still streaming so multiple submits play out in order.
-    this.composerEvents.update((list) => [...list, userTurnEvent(text)]);
-    this.composerLastAt.set(Date.now());
-    this.pendingReplies.push(text);
-    if (!this.composerBusy()) this.streamNextReply();
-  }
-
-  /** Pop the next queued submit and stream its scripted reply step by step. */
-  private streamNextReply(): void {
-    const text = this.pendingReplies.shift();
-    if (text === undefined) {
-      this.composerBusy.set(false);
-      this.composerNextKind.set(null);
-      return;
-    }
-    this.composerBusy.set(true);
-    const steps = demoAgentResponseSteps(text);
-    this.composerNextKind.set(steps[0]?.event.kind ?? null);
-    let elapsed = 0;
-    for (const [i, step] of steps.entries()) {
-      elapsed += step.delayMs;
-      const isLast = i === steps.length - 1;
-      const upNext = steps[i + 1]?.event.kind ?? null;
-      setTimeout(() => {
-        if (!this.composerAlive) return;
-        this.composerEvents.update((list) => [...list, step.event]);
-        this.composerLastAt.set(Date.now());
-        this.composerNextKind.set(upNext);
-        if (isLast) this.streamNextReply();
-      }, elapsed);
-    }
   }
 
   // --- Intersection observers ---------------------------------------------------

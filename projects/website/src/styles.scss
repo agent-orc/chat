@@ -497,12 +497,6 @@ code {
   --demo-solo-max: 680px;
 }
 
-.demo-controls {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-
 /* The two example conversations stack vertically at reading width — chat
  * typography reads best in a single centred column, same as the composer
  * and rendering frames below. */
@@ -597,6 +591,71 @@ code {
   background: linear-gradient(135deg, #e0805f, #c05f3f);
 }
 
+/* Per-frame theme flip: a quiet round icon in the frame's title bar. The
+ * same sun/moon artwork as the nav toggle, one size down. */
+.demo-frame__theme {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.75;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.demo-frame__theme:hover {
+  opacity: 1;
+  border-color: var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.demo-frame__theme .theme-icon {
+  width: 17px;
+  height: 17px;
+}
+
+/* Capability strip: what the view just did for you, anchored to the demos. */
+.demo-caps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 980px;
+  margin: clamp(22px, 3.5vw, 34px) auto 0;
+}
+
+.demo-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--site-line);
+  border-left: 3px solid rgba(217, 119, 87, 0.55);
+  border-radius: 12px;
+  background: var(--site-card);
+}
+
+.demo-cap strong {
+  font-size: 0.86rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.demo-cap span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
 .demo-frame__progress {
   flex: 1;
   min-width: 0;
@@ -654,95 +713,17 @@ code {
   font-weight: 400;
 }
 
-/* Thinking-row placeholder: three animated dots as the "next line" of the
- * conversation while the agent works; the real event replaces the gap. */
-.demo-thinking {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  width: max-content;
-  margin: 10px 0 4px;
-  padding: 11px 16px;
-  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
-  border-radius: 14px;
-  background: var(--studio-bg-elevated, #1e1e2e);
-}
-
-.demo-thinking i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--studio-fg-dim, #94a3b8);
-  animation: thinking-bounce 1.2s ease-in-out infinite;
-}
-
-.demo-thinking i:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.demo-thinking i:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-@keyframes thinking-bounce {
-  0%,
-  60%,
-  100% {
-    opacity: 0.35;
-    transform: translateY(0);
-  }
-  30% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .demo-working__dot,
-  .demo-thinking i {
+  .demo-working__dot {
     animation: none;
   }
 }
 
+/* The conversation view inside owns its scrolling (virtualised mode) — the
+ * frame view is just padding around it, so the jump-to-latest pill floats
+ * against the view's own visible viewport instead of the page. */
 .demo-frame__view {
-  height: min(58vh, 560px);
-  min-height: 320px;
-  overflow-y: auto;
-  padding: 16px clamp(10px, 2.5vw, 22px);
-  overscroll-behavior: contain;
-}
-
-/* The "try it" frame sits alone under the duo, capped at chat width. */
-.demo-frame--solo {
-  max-width: var(--demo-solo-max);
-  margin: clamp(26px, 4vw, 40px) auto 0;
-}
-
-/* Its conversation grows with the scripted replies instead of reserving
- * a full-height viewport up front. */
-.demo-frame__view--mini {
-  height: auto;
-  min-height: 0;
-  max-height: min(48vh, 420px);
-}
-
-.section__foot--center {
-  max-width: var(--demo-solo-max);
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-}
-
-/* The scripted replies in the try-it frame are authored by a "Demo Agent" —
- * relabel the library's generic Agent chip there (site-owned override; the
- * library itself derives the label from the event kind). */
-.demo-frame--solo .conv__row--message[data-actor='message.taskAgent'] .msg__actor {
-  font-size: 0;
-}
-
-.demo-frame--solo .conv__row--message[data-actor='message.taskAgent'] .msg__actor::after {
-  content: 'Demo Agent';
-  font-size: 11.5px;
+  padding: 12px clamp(10px, 2.5vw, 22px);
 }
 
 .demo-frame__composer {
@@ -962,50 +943,172 @@ code {
   scroll-margin-top: calc(var(--nav-height) + 14px);
 }
 
-.table-scroll {
-  overflow-x: auto;
+/* ----------------------------------------------------- entry explorer -- */
+
+/* Tabs on the left (top on narrow screens), one live panel on the right:
+ * every entry point pairs its snippet with the real component, rendered. */
+.explorer {
+  display: grid;
+  grid-template-columns: 218px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.explorer__tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.explorer__tab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border: 1px solid var(--site-line);
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.explorer__tab code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__tab span {
+  font-size: 11.5px;
+  color: var(--site-muted);
+}
+
+.explorer__tab:hover {
+  border-color: var(--site-line-strong);
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.explorer__tab.is-active {
+  border-color: rgba(217, 119, 87, 0.55);
+  background: rgba(217, 119, 87, 0.08);
+}
+
+.explorer__tab.is-active code {
+  color: var(--site-accent);
+}
+
+.explorer__panel {
+  min-width: 0;
+  padding: 16px 18px;
   border: 1px solid var(--site-line);
   border-radius: 14px;
   background: var(--site-card);
 }
 
-.entry-table {
-  width: 100%;
-  min-width: 560px;
-  border-collapse: collapse;
-  font-size: 0.92rem;
-}
-
-.entry-table th,
-.entry-table td {
-  text-align: left;
-  padding: 11px 16px;
-  border-bottom: 1px solid var(--site-line);
-  vertical-align: top;
-}
-
-.entry-table th {
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--site-muted);
-}
-
-.entry-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.entry-table tbody tr:hover {
-  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
-}
-
-.entry-table td:first-child {
-  white-space: nowrap;
-}
-
-.entry-table td:last-child {
+.explorer__desc {
+  margin: 0 0 14px;
+  font-size: 0.94rem;
   color: var(--studio-fg-dim, #94a3b8);
+}
+
+.explorer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+/* The live half: a real studio surface, theme-pinned per panel. */
+.explorer__live {
+  position: relative;
+  min-width: 0;
+  padding: 26px 14px 14px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  background: var(--studio-bg-surface, #0f0f1a);
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__live-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 9px 3px;
+  border-left: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-radius: 0 11px 0 8px;
+  background: var(--studio-bg-elevated, #1e1e2e);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--studio-fg-muted, #64748b);
+}
+
+.explorer__live--row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.explorer__live--mock .skeleton__bar {
+  animation: none; /* a static shape sample, not a loading state */
+}
+
+.skeleton__row--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.explorer__details {
+  margin-top: 14px;
+}
+
+.explorer__details summary {
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--site-muted);
+  padding: 4px 0;
+}
+
+.explorer__details summary:hover {
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__details[open] summary {
+  margin-bottom: 10px;
+}
+
+/* The theme panel's flip button sits on the surface it flips. */
+.explorer__flip {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  opacity: 0.9;
+}
+
+@media (max-width: 860px) {
+  .explorer {
+    grid-template-columns: 1fr;
+  }
+
+  .explorer__tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .explorer__tab {
+    flex: 1 1 130px;
+  }
 }
 
 .seams {
@@ -1266,13 +1369,6 @@ code {
 .demo-frame--render {
   max-width: 720px;
   margin: 0 auto;
-}
-
-.demo-frame--render .demo-frame__view {
-  height: auto;
-  min-height: 0;
-  max-height: none;
-  overflow: visible;
 }
 
 /* ------------------------------------------------------------ lightbox -- */
