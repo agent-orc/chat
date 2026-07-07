@@ -54,6 +54,7 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
 
   private container: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private mutationObserver: MutationObserver | null = null;
   private scrollFrame: number | null = null;
   private suppressScrollEvent = false;
   private editableFocused = false;
@@ -75,6 +76,19 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
       this.resizeObserver = new ResizeObserver(() => this.onContentResize());
       this.resizeObserver.observe(this.host.nativeElement);
       if (this.container) this.resizeObserver.observe(this.container);
+    }
+    // The ResizeObserver only sees the HOST's border box. When the host IS
+    // the scroller and has a fixed height (the virtualised conversation in a
+    // sized frame), streamed rows grow scrollHeight without resizing the
+    // element — no resize event, no re-pin, auto-follow silently dies once
+    // the viewport is full. Watch the content itself as well.
+    if (typeof MutationObserver !== 'undefined') {
+      this.mutationObserver = new MutationObserver(() => this.onContentResize());
+      this.mutationObserver.observe(this.host.nativeElement, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
     }
     // Initial pin: land on the newest row the first time content paints —
     // but NEVER when the resolved container is the document scroller. A
@@ -99,6 +113,8 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    this.mutationObserver?.disconnect();
+    this.mutationObserver = null;
     if (this.scrollFrame !== null && typeof cancelAnimationFrame !== 'undefined') {
       cancelAnimationFrame(this.scrollFrame);
       this.scrollFrame = null;

@@ -162,6 +162,26 @@ describe('StickToBottomDirective', () => {
     expect(fixture.componentInstance.stick().stuck()).toBe(true);
   });
 
+  it('re-pins on CONTENT mutations when the fixed-height scroller itself never resizes', async () => {
+    // Regression: with a fixed-height scroll container (virtualised
+    // conversation in a sized frame), streamed rows grow scrollHeight but the
+    // element's border box never changes — the ResizeObserver stays silent
+    // and auto-follow died once the viewport was full. The MutationObserver
+    // path must cover this: append a row WITHOUT firing any resize callback.
+    const { scroller, state } = await setup();
+    flushFrames();
+    expect(scroller.scrollTop).toBe(1000); // initial pin
+
+    state.scrollHeight = 1600; // content grew…
+    const row = document.createElement('div');
+    row.textContent = 'streamed row';
+    scroller.appendChild(row); // …via a DOM mutation only (no resize event)
+    await new Promise((resolve) => setTimeout(resolve, 0)); // deliver mutations
+
+    flushFrames();
+    expect(scroller.scrollTop).toBe(1600); // followed to the new bottom
+  });
+
   it('pins to the bottom initially and re-pins when content grows while stuck', async () => {
     const { scroller, state, stick } = await setup();
 
