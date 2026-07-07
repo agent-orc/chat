@@ -33,6 +33,18 @@
         >Docs</a
       >
       <span class="site-nav__sep" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="site-nav__theme"
+        (click)="toggleSiteTheme()"
+        [attr.aria-pressed]="siteTheme() === 'light'"
+        [attr.aria-label]="
+          siteTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
+        "
+        title="Toggle light / dark theme"
+      >
+        {{ siteTheme() === 'dark' ? '☀' : '☾' }}
+      </button>
       <a
         class="site-nav__ext"
         href="https://github.com/RobertMischke/coding-agent-chat"

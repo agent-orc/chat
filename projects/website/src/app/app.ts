@@ -162,8 +162,16 @@ export class App {
   // --- Sticky nav highlight ---------------------------------------------------
   protected readonly activeSection = signal<string>('');
 
+  // --- Site-wide light / dark theme -------------------------------------------
+  /** Whole-page theme. A pre-paint boot script in index.html sets the initial
+   * value on <html> (stored pref, else OS preference); this mirrors it and owns
+   * the in-page toggle. Distinct from the demo frames' own `demoTheme`. */
+  protected readonly siteTheme = signal<'dark' | 'light'>('dark');
+  private static readonly THEME_STORAGE_KEY = 'cac-site-theme';
+
   constructor() {
     afterNextRender(() => {
+      this.syncSiteThemeFromDom();
       this.observeSections();
       this.observeReveals();
       this.autoplayWhenVisible();
@@ -178,6 +186,28 @@ export class App {
 
   protected toggleDemoTheme(): void {
     this.demoTheme.update((t) => (t === 'dark' ? 'light' : 'dark'));
+  }
+
+  /** Read back the theme the boot script already applied to <html>. */
+  private syncSiteThemeFromDom(): void {
+    const applied = document.documentElement.getAttribute('data-studio-theme');
+    this.siteTheme.set(applied === 'light' ? 'light' : 'dark');
+  }
+
+  protected toggleSiteTheme(): void {
+    const next = this.siteTheme() === 'dark' ? 'light' : 'dark';
+    this.siteTheme.set(next);
+    const root = document.documentElement;
+    root.setAttribute('data-studio-theme', next);
+    root.style.colorScheme = next;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', next === 'light' ? '#ffffff' : '#0f0f1a');
+    try {
+      localStorage.setItem(App.THEME_STORAGE_KEY, next);
+    } catch {
+      // Private mode / storage disabled: the toggle still works for the session.
+    }
   }
 
   private secondsSince(epochMs: number): number {

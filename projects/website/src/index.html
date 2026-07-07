@@ -14,8 +14,28 @@
       content="Angular, coding agent, chat UI, agent conversation, LLM, streaming, TypeScript, zoneless, component library, coding-agent-runner"
     />
     <meta name="author" content="Robert Mischke" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#0f0f1a" />
+
+    <!-- Theme boot: apply the stored / OS-preferred theme to <html> before the
+         first paint so there is no dark→light flash on load. The App component
+         reads this attribute back and owns the in-page toggle afterwards. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('cac-site-theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          var root = document.documentElement;
+          root.setAttribute('data-studio-theme', theme);
+          root.style.colorScheme = theme;
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- Canonical + social. Absolute URLs (crawlers ignore <base>); the GitHub
          Pages base is /coding-agent-chat/. The share image is an SVG card in
