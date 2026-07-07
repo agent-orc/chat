@@ -218,20 +218,25 @@ describe('markdownToHtml', () => {
   });
 
   describe('language hint capture', () => {
-    it('captures the fence language tag and emits data-lang + class', () => {
+    it('captures the fence language tag and syntax-highlights the body', () => {
       const md = ['```ts', 'const x: number = 1;', '```'].join('\n');
       const html = markdownToHtml(md);
       expect(html).toContain('data-lang="ts"');
-      expect(html).toContain('class="md-code md-code--lang-ts"');
-      expect(html).toContain('const x: number = 1;');
+      expect(html).toContain('md-code--lang-ts');
+      // Highlighted: the block is flagged and carries class-based hljs tokens
+      // (which survive the sanitizer, unlike inline styles). The source text
+      // is now split across token spans, so it is no longer contiguous.
+      expect(html).toContain('md-code--hl');
+      expect(html).toContain('hljs-keyword');
+      expect(html).toContain('>const<');
     });
 
     it('normalises common aliases (typescript -> ts, shell -> bash)', () => {
       const tsHtml = markdownToHtml(['```typescript', 'x', '```'].join('\n'));
-      expect(tsHtml).toContain('class="md-code md-code--lang-ts"');
+      expect(tsHtml).toContain('md-code--lang-ts');
       expect(tsHtml).toContain('data-lang="typescript"');
       const bashHtml = markdownToHtml(['```shell', 'ls -la', '```'].join('\n'));
-      expect(bashHtml).toContain('class="md-code md-code--lang-bash"');
+      expect(bashHtml).toContain('md-code--lang-bash');
     });
 
     it('falls back to the historical shape when no language is given', () => {
@@ -248,6 +253,37 @@ describe('markdownToHtml', () => {
       expect(html).toContain('md-code--numbered');
       expect(html).toContain('md-code--lang-ts');
       expect(html).toContain('data-lang="ts"');
+    });
+
+    it('highlights per line inside the numbered shape, one row per source line', () => {
+      const md = ['```ts', 'const a = 1;', 'const b = 2;', 'const c = 3;', 'const d = 4;', '```'].join('\n');
+      const html = markdownToHtml(md, { codeLineNumbers: true, codeLineNumberThreshold: 2 });
+      expect(html).toContain('md-code--numbered');
+      expect(html).toContain('md-code--hl');
+      // One row per source line, with highlight tokens inside — the gutter grid
+      // survives (balanced spans per line).
+      expect((html.match(/class="md-code-row"/g) ?? []).length).toBe(4);
+      expect(html).toContain('hljs-keyword');
+    });
+
+    it('re-opens a token span across line boundaries (multi-line comment)', () => {
+      const md = ['```ts', '/* line one', '   line two', '   end */', 'const x = 1;', '```'].join('\n');
+      const html = markdownToHtml(md, { codeLineNumbers: true, codeLineNumberThreshold: 2 });
+      // Four source lines → four rows; the 3-line comment re-opens its span
+      // per line (≥3 hljs-comment spans), and every span stays balanced.
+      expect((html.match(/class="md-code-row"/g) ?? []).length).toBe(4);
+      expect((html.match(/hljs-comment/g) ?? []).length).toBeGreaterThanOrEqual(3);
+      const opens = (html.match(/<span/g) ?? []).length;
+      const closes = (html.match(/<\/span>/g) ?? []).length;
+      expect(opens).toBe(closes);
+    });
+
+    it('leaves an unknown fence language un-highlighted but still tagged', () => {
+      const html = markdownToHtml(['```wat', 'noop', '```'].join('\n'));
+      expect(html).toContain('data-lang="wat"');
+      expect(html).not.toContain('md-code--hl');
+      expect(html).not.toContain('hljs-');
+      expect(html).toContain('<code>noop</code>');
     });
   });
 

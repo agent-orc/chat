@@ -1,5 +1,76 @@
 import { Marked, type MarkedExtension, type Tokens } from 'marked';
 import DOMPurify from 'dompurify';
+import { createLowlight } from 'lowlight';
+import type { Element, Root, RootContent } from 'hast';
+import bash from 'highlight.js/lib/languages/bash';
+import c from 'highlight.js/lib/languages/c';
+import cpp from 'highlight.js/lib/languages/cpp';
+import csharp from 'highlight.js/lib/languages/csharp';
+import css from 'highlight.js/lib/languages/css';
+import diff from 'highlight.js/lib/languages/diff';
+import dockerfile from 'highlight.js/lib/languages/dockerfile';
+import go from 'highlight.js/lib/languages/go';
+import ini from 'highlight.js/lib/languages/ini';
+import java from 'highlight.js/lib/languages/java';
+import javascript from 'highlight.js/lib/languages/javascript';
+import json from 'highlight.js/lib/languages/json';
+import markdown from 'highlight.js/lib/languages/markdown';
+import php from 'highlight.js/lib/languages/php';
+import powershell from 'highlight.js/lib/languages/powershell';
+import python from 'highlight.js/lib/languages/python';
+import ruby from 'highlight.js/lib/languages/ruby';
+import rust from 'highlight.js/lib/languages/rust';
+import scss from 'highlight.js/lib/languages/scss';
+import sql from 'highlight.js/lib/languages/sql';
+import typescript from 'highlight.js/lib/languages/typescript';
+import xml from 'highlight.js/lib/languages/xml';
+import yaml from 'highlight.js/lib/languages/yaml';
+
+/**
+ * A single lowlight instance with a curated language set (highlight.js
+ * grammars). Curated rather than lowlight's full `common` set to keep the
+ * markdown entry point lean while still covering what coding agents emit.
+ * Registration is one-time at module load; highlighting itself is synchronous
+ * and class-based (`hljs-*` spans) so it survives the DOMPurify sanitizer,
+ * which strips inline styles.
+ */
+const lowlight = createLowlight({
+  bash, c, cpp, csharp, css, diff, dockerfile, go, ini, java, javascript, json,
+  markdown, php, powershell, python, ruby, rust, scss, sql, typescript, xml, yaml,
+});
+
+/** Fence label → registered highlight.js grammar name. */
+const HLJS_LANG: Record<string, string> = {
+  ts: 'typescript', typescript: 'typescript', tsx: 'typescript',
+  js: 'javascript', javascript: 'javascript', jsx: 'javascript', mjs: 'javascript', cjs: 'javascript',
+  py: 'python', python: 'python',
+  bash: 'bash', sh: 'bash', shell: 'bash', zsh: 'bash',
+  powershell: 'powershell', ps: 'powershell', ps1: 'powershell',
+  json: 'json',
+  yaml: 'yaml', yml: 'yaml',
+  html: 'xml', xml: 'xml', svg: 'xml', vue: 'xml',
+  css: 'css', scss: 'scss', sass: 'scss',
+  markdown: 'markdown', md: 'markdown',
+  diff: 'diff', patch: 'diff',
+  csharp: 'csharp', cs: 'csharp',
+  java: 'java',
+  go: 'go', golang: 'go',
+  rust: 'rust', rs: 'rust',
+  sql: 'sql',
+  c: 'c', h: 'c',
+  cpp: 'cpp', 'c++': 'cpp', cc: 'cpp', hpp: 'cpp',
+  ruby: 'ruby', rb: 'ruby',
+  php: 'php',
+  dockerfile: 'dockerfile', docker: 'dockerfile',
+  ini: 'ini', toml: 'ini',
+};
+
+/**
+ * Above this size a block is left un-highlighted (still styled + readable):
+ * synchronous tokenization of a very large paste would jank the UI, and the
+ * chat re-renders the whole body on every stream tick. ~1500 lines of code.
+ */
+const MAX_HIGHLIGHT_CHARS = 60_000;
 
 /**
  * Optional URL transformers for image sources. The prompt editor renders
@@ -157,34 +228,107 @@ function safeLinkUrl(raw: string): string {
   return trimmed;
 }
 
+/**
+ * Syntax-highlight `source` with the grammar for `lang`, returning one HTML
+ * string PER LINE (token spans balanced within each line, so the numbered
+ * gutter's per-line grid stays intact and a multi-line token — a block
+ * comment, a template literal — re-opens its span on each line). Returns null
+ * to fall back to plain escaped text: no language, an unregistered grammar, or
+ * a block over the size guard.
+ */
+function highlightLines(source: string, lang: string | null): string[] | null {
+  if (!lang) return null;
+  const grammar = HLJS_LANG[lang];
+  if (!grammar || !lowlight.registered(grammar)) return null;
+  if (source.length > MAX_HIGHLIGHT_CHARS) return null;
+  let tree: Root;
+  try {
+    tree = lowlight.highlight(grammar, source);
+  } catch {
+    return null;
+  }
+  return hastToLines(tree);
+}
+
+/** Serialise a lowlight hast tree into per-line HTML with balanced spans. */
+function hastToLines(tree: Root): string[] {
+  const lines: string[] = [];
+  const openClasses: string[] = [];
+  let current = '';
+  const openTags = (): string => openClasses.map((c) => `<span class="${c}">`).join('');
+  const closeTags = (): string => '</span>'.repeat(openClasses.length);
+
+  const walk = (nodes: readonly RootContent[]): void => {
+    for (const node of nodes) {
+      if (node.type === 'text') {
+        const parts = node.value.split('\n');
+        for (let i = 0; i < parts.length; i++) {
+          if (i > 0) {
+            current += closeTags();
+            lines.push(current);
+            current = openTags();
+          }
+          current += escapeHtml(parts[i]);
+        }
+      } else if (node.type === 'element') {
+        const cls = classOf(node);
+        current += `<span class="${cls}">`;
+        openClasses.push(cls);
+        walk(node.children);
+        openClasses.pop();
+        current += '</span>';
+      }
+    }
+  };
+
+  walk(tree.children);
+  lines.push(current);
+  return lines;
+}
+
+function classOf(node: Element): string {
+  const cn = node.properties?.['className'];
+  const raw = Array.isArray(cn) ? cn.join(' ') : typeof cn === 'string' ? cn : '';
+  return escapeAttribute(raw);
+}
+
 function renderCodeBlock(source: string, lang: string | null, options: MarkdownImageOptions): string {
   const codeLines = source.split('\n');
   const threshold = options.codeLineNumberThreshold ?? 5;
   const hasLang = !!lang;
   const langAttrs = hasLang ? ` data-lang="${escapeAttribute(lang!)}"` : '';
+
+  // Syntax-highlight when possible; require one highlighted line per source
+  // line so it lines up with either shape (else fall back to plain text).
+  let highlighted = highlightLines(source, lang);
+  if (highlighted && highlighted.length !== codeLines.length) highlighted = null;
+  const hlClass = highlighted ? ' md-code--hl' : '';
+
   // Only attach md-code* classes when a language is present, otherwise
   // keep the historical `<pre><code>` shape (pinned by spec tests +
   // any downstream consumer that grep'd on the literal markup).
   if (!options.codeLineNumbers || codeLines.length <= threshold) {
+    const inner = highlighted ? highlighted.join('\n') : escapeHtml(source);
     if (!hasLang) {
-      return `<pre><code>${escapeHtml(source)}</code></pre>`;
+      return `<pre><code>${inner}</code></pre>`;
     }
     const langClass = ` md-code--lang-${escapeAttribute(normaliseLang(lang!))}`;
-    return `<pre class="md-code${langClass}"${langAttrs}><code>${escapeHtml(source)}</code></pre>`;
+    return `<pre class="md-code${langClass}${hlClass}"${langAttrs}><code>${inner}</code></pre>`;
   }
   // Numbered shape: one row per source line, gutter cells get a stable
   // class so the chat stylesheet can hide them from text selection.
   const rows = codeLines
     .map((line, i) => {
       const num = i + 1;
+      const text = highlighted ? highlighted[i] : escapeHtml(line);
       return `<span class="md-code-row" data-line="${num}">`
         + `<span class="md-code-num" aria-hidden="true">${num}</span>`
-        + `<span class="md-code-text">${escapeHtml(line)}</span>`
+        + `<span class="md-code-text">${text}</span>`
         + `</span>`;
     })
     .join('');
   const langClass = hasLang ? ` md-code--lang-${escapeAttribute(normaliseLang(lang!))}` : '';
-  return `<pre class="md-code md-code--numbered${langClass}" data-line-count="${codeLines.length}"${langAttrs}><code>${rows}</code></pre>`;
+  return `<pre class="md-code md-code--numbered${langClass}${hlClass}" data-line-count="${codeLines.length}"${langAttrs}><code>${rows}</code></pre>`;
 }
 
 /**

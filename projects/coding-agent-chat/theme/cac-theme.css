@@ -122,6 +122,21 @@
   --md-surface-soft: rgba(49, 50, 68, 0.45);
   --md-surface: rgba(49, 50, 68, 0.70);
   --md-code-bg: #181825; /* mantle     */
+  /* -- Syntax highlight tokens (Catppuccin Mocha) ------------------ */
+  --md-hl-keyword: #cba6f7; /* mauve      */
+  --md-hl-string: #a6e3a1; /* green      */
+  --md-hl-number: #fab387; /* peach      */
+  --md-hl-comment: #7f849c; /* overlay1   */
+  --md-hl-function: #89b4fa; /* blue       */
+  --md-hl-type: #f9e2af; /* yellow     */
+  --md-hl-variable: #bac2de; /* subtext1   */
+  --md-hl-builtin: #f38ba8; /* red        */
+  --md-hl-attr: #f9e2af; /* yellow     */
+  --md-hl-tag: #89b4fa; /* blue       */
+  --md-hl-meta: #f5c2e7; /* pink       */
+  --md-hl-punct: #9399b2; /* overlay2   */
+  --md-hl-addition: #a6e3a1; /* green      */
+  --md-hl-deletion: #f38ba8; /* red        */
   color: var(--md-fg);
   font-family: var(--font-ui);
   font-size: var(--md-font-size);
@@ -396,6 +411,97 @@
   color: var(--md-fg);
 }
 
+/* -- Syntax highlighting (highlight.js/lowlight token classes) -----
+ * Class-based tokens (no inline styles, so they survive the sanitizer),
+ * coloured from the --md-hl-* tokens above → flips light/dark automatically. */
+.markdown-body .hljs-keyword,
+.markdown-body .hljs-literal,
+.markdown-body .hljs-selector-tag,
+.markdown-body .hljs-doctag {
+  color: var(--md-hl-keyword);
+}
+
+.markdown-body .hljs-string,
+.markdown-body .hljs-regexp,
+.markdown-body .hljs-meta .hljs-string {
+  color: var(--md-hl-string);
+}
+
+.markdown-body .hljs-number {
+  color: var(--md-hl-number);
+}
+
+.markdown-body .hljs-comment,
+.markdown-body .hljs-quote {
+  color: var(--md-hl-comment);
+  font-style: italic;
+}
+
+.markdown-body .hljs-title,
+.markdown-body .hljs-title.function_,
+.markdown-body .hljs-section {
+  color: var(--md-hl-function);
+}
+
+.markdown-body .hljs-title.class_,
+.markdown-body .hljs-type,
+.markdown-body .hljs-selector-class,
+.markdown-body .hljs-selector-id,
+.markdown-body .hljs-selector-pseudo {
+  color: var(--md-hl-type);
+}
+
+.markdown-body .hljs-built_in {
+  color: var(--md-hl-builtin);
+}
+
+.markdown-body .hljs-variable,
+.markdown-body .hljs-template-variable,
+.markdown-body .hljs-params,
+.markdown-body .hljs-subst {
+  color: var(--md-hl-variable);
+}
+
+.markdown-body .hljs-attr,
+.markdown-body .hljs-attribute,
+.markdown-body .hljs-property {
+  color: var(--md-hl-attr);
+}
+
+.markdown-body .hljs-tag,
+.markdown-body .hljs-name {
+  color: var(--md-hl-tag);
+}
+
+.markdown-body .hljs-meta,
+.markdown-body .hljs-meta .hljs-keyword,
+.markdown-body .hljs-symbol,
+.markdown-body .hljs-bullet,
+.markdown-body .hljs-link {
+  color: var(--md-hl-meta);
+}
+
+.markdown-body .hljs-punctuation,
+.markdown-body .hljs-operator {
+  color: var(--md-hl-punct);
+}
+
+.markdown-body .hljs-addition {
+  color: var(--md-hl-addition);
+}
+
+.markdown-body .hljs-deletion {
+  color: var(--md-hl-deletion);
+}
+
+.markdown-body .hljs-emphasis {
+  font-style: italic;
+}
+
+.markdown-body .hljs-strong {
+  font-weight: 600;
+}
+
 /* -- Tables ------------------------------------------------------- */
 .markdown-body table {
   width: 100%;
@@ -515,4 +621,19 @@ html[data-studio-theme=light] .markdown-body {
   --md-surface-soft: rgba(0, 0, 0, 0.04);
   --md-surface: rgba(0, 0, 0, 0.06);
   --md-code-bg: rgba(0, 0, 0, 0.06);
+  /* Syntax highlight tokens (Catppuccin Latte) — legible on paper-white. */
+  --md-hl-keyword: #8839ef; /* mauve      */
+  --md-hl-string: #40a02b; /* green      */
+  --md-hl-number: #fe640b; /* peach      */
+  --md-hl-comment: #8c8fa1; /* overlay1   */
+  --md-hl-function: #1e66f5; /* blue       */
+  --md-hl-type: #df8e1d; /* yellow     */
+  --md-hl-variable: #5c5f77; /* subtext1   */
+  --md-hl-builtin: #d20f39; /* red        */
+  --md-hl-attr: #df8e1d; /* yellow     */
+  --md-hl-tag: #1e66f5; /* blue       */
+  --md-hl-meta: #ea76cb; /* pink       */
+  --md-hl-punct: #7c7f93; /* overlay2   */
+  --md-hl-addition: #40a02b; /* green      */
+  --md-hl-deletion: #d20f39; /* red        */
 }
