@@ -1,0 +1,59 @@
+name: deploy-website
+
+# Builds the website for agent-orchestrator.dev/chat/ and publishes the
+# prerendered output as a single-commit "deploy" branch. The web host pulls
+# that branch and serves it under /chat/ (hosting side lives in the private
+# agent-orchestrator-website repo). Runs alongside pages.yml until the
+# GitHub Pages site is replaced by a redirect.
+#
+# Like pages.yml: the website consumes the BUILT library from dist/, so the
+# library build must run first.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "projects/**"
+      - "package.json"
+      - "package-lock.json"
+      - "angular.json"
+      - ".github/workflows/deploy-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-website
+  cancel-in-progress: true
+
+jobs:
+  publish-deploy-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build library (website consumes dist/)
+        run: npm run build
+
+      - name: Build website (prerendered / SSG)
+        run: npx ng build website --base-href /chat/
+
+      - name: Publish dist/website/browser to deploy branch
+        run: |
+          cd dist/website/browser
+          git init -b deploy
+          git config user.name "deploy-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy ${GITHUB_SHA::7}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
