@@ -15,10 +15,10 @@
         >Demo</a
       >
       <a
-        href="#history"
-        [class.is-active]="activeSection() === 'history'"
-        [attr.aria-current]="activeSection() === 'history' ? 'true' : null"
-        >History</a
+        href="#rendering"
+        [class.is-active]="activeSection() === 'rendering'"
+        [attr.aria-current]="activeSection() === 'rendering' ? 'true' : null"
+        >Rendering</a
       >
       <a
         href="#features"
@@ -43,7 +43,72 @@
         "
         title="Toggle light / dark theme"
       >
-        {{ siteTheme() === 'dark' ? '☀' : '☾' }}
+        <svg
+          class="theme-icon"
+          [class.theme-icon--night]="siteTheme() === 'light'"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <!-- Sun: golden disc, ray crown, tiny smile. Shown in dark mode
+               (the icon previews the theme a click switches to). -->
+          <g class="theme-icon__sun">
+            <g class="theme-icon__rays" stroke="#f9b44e" stroke-width="1.7" stroke-linecap="round">
+              <line x1="12" y1="1.6" x2="12" y2="4.2" />
+              <line x1="12" y1="19.8" x2="12" y2="22.4" />
+              <line x1="1.6" y1="12" x2="4.2" y2="12" />
+              <line x1="19.8" y1="12" x2="22.4" y2="12" />
+              <line x1="4.6" y1="4.6" x2="6.5" y2="6.5" />
+              <line x1="17.5" y1="17.5" x2="19.4" y2="19.4" />
+              <line x1="4.6" y1="19.4" x2="6.5" y2="17.5" />
+              <line x1="17.5" y1="6.5" x2="19.4" y2="4.6" />
+            </g>
+            <circle cx="12" cy="12" r="4.7" fill="#fbc860" />
+            <circle cx="10.3" cy="11.1" r="0.62" fill="#8a4b12" />
+            <circle cx="13.7" cy="11.1" r="0.62" fill="#8a4b12" />
+            <path
+              d="M10.2 13.1 Q12 14.7 13.8 13.1"
+              stroke="#8a4b12"
+              stroke-width="0.9"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </g>
+          <!-- Moon: crescent with a sleepy face and two stars. Shown in
+               light mode. -->
+          <g class="theme-icon__moon">
+            <path
+              d="M15.2 2.8 A9.4 9.4 0 1 0 21.4 14.9 A7.4 7.4 0 0 1 15.2 2.8 Z"
+              fill="#8b9df7"
+            />
+            <path
+              d="M9.3 11.6 q0.9 0.85 1.8 0"
+              stroke="#28306e"
+              stroke-width="0.9"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <path
+              d="M13.1 13.4 q0.75 0.7 1.5 0"
+              stroke="#28306e"
+              stroke-width="0.9"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <path
+              d="M10.9 15.6 q0.85 0.8 1.7 0"
+              stroke="#28306e"
+              stroke-width="0.9"
+              fill="none"
+              stroke-linecap="round"
+              transform="rotate(8 11.75 15.6)"
+            />
+            <path
+              d="M18.6 3.4 l0.5 1.2 1.2 0.5 -1.2 0.5 -0.5 1.2 -0.5 -1.2 -1.2 -0.5 1.2 -0.5 Z"
+              fill="#c7d0fb"
+            />
+            <circle cx="21" cy="9.4" r="0.7" fill="#c7d0fb" />
+          </g>
+        </svg>
       </button>
       <a
         class="site-nav__ext"
@@ -324,34 +389,53 @@
     </div>
   </section>
 
-  <!-- ======================================================= History demo -->
-  <section id="history" class="section section--alt">
+  <!-- ======================================================= Rendering showcase -->
+  <section id="rendering" class="section section--alt">
     <div class="wrap">
-      <p class="section__kicker reveal">Demo — the /history entry point</p>
-      <h2 class="section__title reveal">Project history</h2>
+      <p class="section__kicker reveal">Demo — the markdown pipeline</p>
+      <h2 class="section__title reveal">Code and images, first-class</h2>
       <p class="section__lead reveal">
-        <code>&lt;cac-project-chat-list&gt;</code> renders a day of project history behind the
-        <code>PROJECT_CHAT_DATA_SOURCE</code> interface — an in-memory implementation here, an
-        HTTP service in your app. Search returns ranked hits with snippet highlighting; try
-        <i>fuzzy</i>, <i>release</i> or <i>review</i>.
+        Agent output is full of fenced code and screenshots, so the renderer treats both as
+        headline content: code is syntax-highlighted (24 curated grammars, class-based tokens
+        that survive sanitization, theme-aware palette), and images — inline markdown or
+        <code>artifact.image</code> events — open in a lightbox the host provides through one
+        injection token. <b>Click an image below</b>; arrow keys page through the gallery.
       </p>
-      <div class="history-frame reveal">
-        @defer (on viewport) {
-          <cac-project-chat-list class="history-frame__list" project="website-demo" />
-        } @placeholder {
-          <div class="skeleton skeleton--history" aria-hidden="true">
-            @for (width of [58, 44, 66, 38, 72, 50, 62, 46]; track $index) {
-              <div class="skeleton__row">
-                <i class="skeleton__bar skeleton__bar--chip" style="width: 12%"></i>
-                <i class="skeleton__bar" [style.width.%]="width"></i>
-              </div>
+      <div
+        class="demo-frame demo-frame--render reveal"
+        [attr.data-studio-theme]="demoTheme()"
+      >
+        <div class="demo-frame__bar">
+          <span class="demo-chip">Rendering · static transcript</span>
+          <span class="demo-frame__progress">highlighted code · artifact row · inline image</span>
+        </div>
+        <div class="demo-frame__view">
+          @defer (on viewport) {
+            @for (theme of [demoTheme()]; track theme) {
+              <cac-conversation-view [events]="showcaseEvents" [isRunning]="false" />
             }
-          </div>
-        }
+          } @placeholder {
+            <div class="skeleton skeleton--conversation" aria-hidden="true">
+              <div class="skeleton__row skeleton__row--user">
+                <i class="skeleton__bar" style="width: 48%"></i>
+              </div>
+              <div class="skeleton__row">
+                <i class="skeleton__bar" style="width: 74%"></i>
+                <i class="skeleton__bar" style="width: 66%"></i>
+                <i class="skeleton__bar" style="width: 52%"></i>
+              </div>
+              <div class="skeleton__row">
+                <i class="skeleton__bar skeleton__bar--chip" style="width: 40%"></i>
+              </div>
+            </div>
+          }
+        </div>
       </div>
       <p class="section__foot reveal">
-        Paging works by timestamp cursor. The interface is four read methods; the component does
-        not know where the data lives.
+        The highlighter is lowlight (highlight.js grammars) with a size guard and per-block
+        memoization, so streaming large files stays smooth. The lightbox is the
+        <code>CHAT_MEDIA_LIGHTBOX</code> seam — the library detects the click, this page owns
+        the overlay.
       </p>
     </div>
   </section>
@@ -597,6 +681,7 @@
       </p>
     </div>
     <div class="site-footer__links">
+      <a href="impressum.html">Impressum</a>
       <a href="https://github.com/RobertMischke/coding-agent-chat" target="_blank" rel="noopener"
         >GitHub</a
       >
@@ -615,3 +700,54 @@
     </div>
   </div>
 </footer>
+
+<!-- ================================================== Image lightbox overlay -->
+<!-- The site's half of the CHAT_MEDIA_LIGHTBOX seam: the library calls
+     openGallery() on image clicks; this dialog renders the gallery. -->
+@if (lightbox.current(); as image) {
+  <div
+    class="lightbox"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="image.alt || 'Enlarged image'"
+    (click)="lightbox.close()"
+  >
+    <figure class="lightbox__figure" (click)="$event.stopPropagation()">
+      <img class="lightbox__img" [src]="image.src" [alt]="image.alt ?? ''" />
+      @if (image.alt) {
+        <figcaption class="lightbox__caption">
+          {{ image.alt }}
+          @if (lightbox.count() > 1) {
+            <span class="lightbox__count">{{ lightbox.position() }}</span>
+          }
+        </figcaption>
+      }
+    </figure>
+    @if (lightbox.count() > 1) {
+      <button
+        type="button"
+        class="lightbox__nav lightbox__nav--prev"
+        aria-label="Previous image"
+        (click)="lightbox.prev(); $event.stopPropagation()"
+      >
+        ‹
+      </button>
+      <button
+        type="button"
+        class="lightbox__nav lightbox__nav--next"
+        aria-label="Next image"
+        (click)="lightbox.next(); $event.stopPropagation()"
+      >
+        ›
+      </button>
+    }
+    <button
+      type="button"
+      class="lightbox__close"
+      aria-label="Close"
+      (click)="lightbox.close()"
+    >
+      ✕
+    </button>
+  </div>
+}

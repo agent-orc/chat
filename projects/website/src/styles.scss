@@ -254,28 +254,105 @@ code {
   border-color: var(--site-accent);
 }
 
+/* Round, playful theme toggle: a real sun (rays + tiny smile) and a real
+ * crescent moon (sleepy face + stars) swap with a springy rotate/scale
+ * crossfade. The icon shows the theme a click will switch TO. */
 .site-nav__theme {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border: 1px solid var(--site-line-strong);
-  border-radius: 8px;
+  border-radius: 50%;
   background: var(--studio-surface, #1e1e2e);
-  color: var(--studio-fg-dim, #94a3b8);
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
   transition:
-    color 0.15s ease,
     border-color 0.15s ease,
-    background 0.15s ease;
+    background 0.15s ease,
+    box-shadow 0.25s ease;
 }
 
 .site-nav__theme:hover {
-  color: var(--studio-fg-strong, #f8fafc);
   border-color: var(--site-accent);
+  box-shadow: 0 0 12px rgba(249, 226, 175, 0.35);
+}
+
+.theme-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  overflow: visible;
+}
+
+.theme-icon__sun,
+.theme-icon__moon {
+  transform-origin: 12px 12px;
+  transition:
+    opacity 0.3s ease,
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-icon__sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.theme-icon__moon {
+  opacity: 0;
+  transform: rotate(-120deg) scale(0.3);
+}
+
+.theme-icon--night .theme-icon__sun {
+  opacity: 0;
+  transform: rotate(120deg) scale(0.3);
+}
+
+.theme-icon--night .theme-icon__moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Hover play: the sun's rays spin up slowly; the moon rocks like a cradle. */
+.theme-icon__rays {
+  transform-origin: 12px 12px;
+}
+
+.site-nav__theme:hover .theme-icon__rays {
+  animation: theme-sun-spin 8s linear infinite;
+}
+
+.site-nav__theme:hover .theme-icon--night .theme-icon__moon {
+  animation: theme-moon-rock 1.8s ease-in-out infinite;
+}
+
+@keyframes theme-sun-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes theme-moon-rock {
+  0%,
+  100% {
+    transform: rotate(-8deg) scale(1);
+  }
+  50% {
+    transform: rotate(8deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon__sun,
+  .theme-icon__moon {
+    transition: opacity 0.2s ease;
+  }
+
+  .site-nav__theme:hover .theme-icon__rays,
+  .site-nav__theme:hover .theme-icon--night .theme-icon__moon {
+    animation: none;
+  }
 }
 
 /* --------------------------------------------------------------- hero -- */
@@ -414,8 +491,8 @@ code {
 
 /* ---------------------------------------------------------- demo frame -- */
 
-/* Shared width cap for single-column demo surfaces (composer + history):
- * chat typography reads best well under the full 1120px content column. */
+/* Shared width cap for single-column demo surfaces (composer + rendering
+ * showcase): chat typography reads best well under the full 1120px column. */
 :root {
   --demo-solo-max: 680px;
 }
@@ -428,7 +505,7 @@ code {
 
 /* The two example conversations stack vertically at reading width — chat
  * typography reads best in a single centred column, same as the composer
- * and history frames below. */
+ * and rendering frames below. */
 .demo-stack {
   display: flex;
   flex-direction: column;
@@ -715,27 +792,6 @@ code {
   border-top-color: var(--studio-border, #d4d4d4);
 }
 
-/* -------------------------------------------------------- history frame -- */
-
-.history-frame {
-  max-width: var(--demo-solo-max);
-  margin: 0 auto;
-  border: 1px solid var(--site-line-strong);
-  border-radius: 18px;
-  background: var(--studio-bg-surface, #0f0f1a);
-  box-shadow:
-    0 0 0 1px rgba(137, 180, 250, 0.07),
-    0 24px 70px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-  padding: clamp(8px, 1.6vw, 16px);
-}
-
-.history-frame__list {
-  display: block;
-  height: min(62vh, 580px);
-  min-height: 340px;
-}
-
 /* --------------------------------------------- defer-block skeletons -- */
 /* Static placeholders shown in the prerendered HTML while the interactive
  * library components (`@defer (on viewport)`) are still loading. They mimic
@@ -752,13 +808,6 @@ code {
   padding: 6px 2px;
 }
 
-.skeleton--history {
-  height: min(62vh, 580px);
-  min-height: 340px;
-  padding: 10px 8px;
-  overflow: hidden;
-}
-
 .skeleton--composer {
   padding: 6px 0 2px;
 }
@@ -767,12 +816,6 @@ code {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.skeleton--history .skeleton__row {
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
 }
 
 .skeleton__row--user {
@@ -1244,6 +1287,115 @@ code {
 
 .site-footer__links a:hover {
   color: var(--studio-fg-strong, #f8fafc);
+}
+
+/* ---------------------------------------------------- rendering showcase -- */
+
+/* The markdown-pipeline frame: like a demo frame, static content, sized by
+ * its content instead of reserving a scroll viewport. */
+.demo-frame--render {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.demo-frame--render .demo-frame__view {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+/* ------------------------------------------------------------ lightbox -- */
+
+/* Site-owned overlay behind the library's CHAT_MEDIA_LIGHTBOX seam: the
+ * library detects the image click and calls openGallery(); this dialog is
+ * the host's half of the contract. Dark glass in both site themes. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 5vw, 56px);
+  background: rgba(5, 5, 12, 0.84);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.lightbox__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.lightbox__img {
+  max-width: min(92vw, 1080px);
+  max-height: 78vh;
+  border-radius: 12px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+}
+
+.lightbox__caption {
+  font-size: 13.5px;
+  color: rgba(226, 232, 240, 0.85);
+  text-align: center;
+  max-width: 70ch;
+}
+
+.lightbox__count {
+  margin-left: 10px;
+  color: rgba(148, 163, 184, 0.9);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+
+.lightbox__close,
+.lightbox__nav {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(20, 20, 31, 0.7);
+  color: #e2e8f0;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.lightbox__close:hover,
+.lightbox__nav:hover {
+  border-color: var(--site-accent);
+  background: rgba(30, 30, 46, 0.9);
+}
+
+.lightbox__close {
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+
+.lightbox__nav {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+}
+
+.lightbox__nav--prev {
+  left: 14px;
+}
+
+.lightbox__nav--next {
+  right: 14px;
 }
 
 /* -------------------------------------------------------- light theme -- */

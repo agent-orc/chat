@@ -10,7 +10,6 @@ import {
 import type { ChatSubmitEvent, ConversationEvent } from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
-import { ProjectChatListComponent } from '@coding-agent/chat/history';
 
 import { CodeBlockComponent } from './code-block.component';
 import {
@@ -20,6 +19,8 @@ import {
   demoAgentResponseSteps,
   userTurnEvent,
 } from './demo-fixtures';
+import { SHOWCASE_EVENTS } from './showcase-fixtures';
+import { WebsiteLightboxService } from './website-lightbox.service';
 import {
   SNIPPET_CORE_ONLY,
   SNIPPET_DATA_SOURCE,
@@ -32,7 +33,7 @@ import {
 } from './snippets';
 
 /** Section ids the sticky nav highlights while scrolling. */
-const NAV_SECTIONS = ['demo', 'history', 'features', 'docs'] as const;
+const NAV_SECTIONS = ['demo', 'rendering', 'features', 'docs'] as const;
 
 /**
  * What the agent is "doing" during the pause before the next event lands.
@@ -111,10 +112,13 @@ class DemoReplay {
 
 @Component({
   selector: 'app-root',
-  imports: [ConversationViewComponent, ChatComponent, ProjectChatListComponent, CodeBlockComponent],
+  imports: [ConversationViewComponent, ChatComponent, CodeBlockComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown)': 'onLightboxKey($event)',
+  },
 })
 export class App {
   private readonly destroyRef = inject(DestroyRef);
@@ -134,6 +138,12 @@ export class App {
   protected readonly replayA = new DemoReplay(DEMO_REPLAY_STEPS);
   protected readonly replayB = new DemoReplay(DEMO_REPLAY_STEPS_B);
   protected readonly demoTheme = signal<'dark' | 'light'>('dark');
+
+  // --- Rendering showcase: static transcript + image lightbox ----------------
+  /** Static exchange showing highlighted code + clickable images. */
+  protected readonly showcaseEvents = SHOWCASE_EVENTS;
+  /** The site's CHAT_MEDIA_LIGHTBOX implementation; the overlay lives in the template. */
+  protected readonly lightbox = inject(WebsiteLightboxService);
 
   /** 1s wall-clock tick for the "last contact Ns ago" readouts. */
   private readonly now = signal(Date.now());
@@ -186,6 +196,25 @@ export class App {
 
   protected toggleDemoTheme(): void {
     this.demoTheme.update((t) => (t === 'dark' ? 'light' : 'dark'));
+  }
+
+  /** Lightbox keyboard contract: Escape closes, arrows page the gallery. */
+  protected onLightboxKey(event: KeyboardEvent): void {
+    if (this.lightbox.current() === null) return;
+    switch (event.key) {
+      case 'Escape':
+        this.lightbox.close();
+        break;
+      case 'ArrowRight':
+        this.lightbox.next();
+        break;
+      case 'ArrowLeft':
+        this.lightbox.prev();
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
   }
 
   /** Read back the theme the boot script already applied to <html>. */

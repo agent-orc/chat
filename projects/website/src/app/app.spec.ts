@@ -27,10 +27,9 @@ describe('App (website)', () => {
     expect(compiled.querySelectorAll('site-code').length).toBeGreaterThan(5);
     // The interactive library demos sit in `@defer (on viewport)` blocks so
     // the prerendered page ships static skeletons instead of live components.
-    // Two conversation skeletons: the replay and the bugfix transcript.
-    expect(compiled.querySelectorAll('.skeleton--conversation').length).toBe(2);
+    // Three conversation skeletons: replay, bugfix transcript, rendering showcase.
+    expect(compiled.querySelectorAll('.skeleton--conversation').length).toBe(3);
     expect(compiled.querySelector('.skeleton--composer')).toBeTruthy();
-    expect(compiled.querySelector('.skeleton--history')).toBeTruthy();
   });
 
   it('stacks the two demo conversations vertically plus a solo composer frame', async () => {
@@ -39,7 +38,8 @@ describe('App (website)', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelectorAll('.demo-stack > .demo-frame').length).toBe(2);
     expect(compiled.querySelector('.demo-frame--solo')).toBeTruthy();
-    expect(compiled.querySelectorAll('.demo-chip').length).toBe(3);
+    expect(compiled.querySelector('.demo-frame--render')).toBeTruthy();
+    expect(compiled.querySelectorAll('.demo-chip').length).toBe(4);
   });
 
   it('renders both library demos once the defer blocks complete', async () => {
@@ -49,10 +49,12 @@ describe('App (website)', () => {
       await block.render(DeferBlockState.Complete);
     }
     const compiled = fixture.nativeElement as HTMLElement;
-    // Replay + bugfix transcript render as real conversation views.
-    expect(compiled.querySelectorAll('cac-conversation-view').length).toBeGreaterThanOrEqual(2);
+    // Replay + bugfix transcript + rendering showcase render as conversation views.
+    expect(compiled.querySelectorAll('cac-conversation-view').length).toBeGreaterThanOrEqual(3);
     expect(compiled.querySelector('cac-chat')).toBeTruthy();
-    expect(compiled.querySelector('cac-project-chat-list')).toBeTruthy();
+    // The showcase transcript ships highlighted code and clickable images.
+    expect(compiled.querySelector('.md-code--hl')).toBeTruthy();
+    expect(compiled.querySelectorAll('img[src^="media/"]').length).toBeGreaterThanOrEqual(2);
   });
 
   it('streams a scripted Demo Agent reply after a composer submit', async () => {
