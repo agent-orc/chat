@@ -372,6 +372,9 @@ export class App {
   /** Which entry point the docs explorer currently shows. */
   protected readonly explorerTab = signal<EntryPointKey>('core');
   protected readonly explorerTabs = ENTRY_POINT_TABS;
+  /** Result-or-code toggle: one stage at a time instead of an ambiguous
+   * side-by-side (the code card and the rendered result looked alike). */
+  protected readonly explorerView = signal<'result' | 'code'>('result');
   /** The composer tab's own mini conversation (type → scripted reply). */
   protected readonly explorerChat = signal<readonly ConversationEvent[]>([]);
   protected readonly explorerThread = new ScriptedThread((e) =>

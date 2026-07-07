@@ -85,7 +85,7 @@
     <p class="hero__tag reveal">
       An Angular library that renders an agent's event stream as a readable conversation —
       messages, tool activity, waits and decisions. Built as the frontend for
-      <a href="https://github.com/RobertMischke/coding-agent-runner" target="_blank" rel="noopener"
+      <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
         >coding-agent-runner</a
       >; it works with any backend that emits the same events.
     </p>
@@ -512,7 +512,7 @@
           <p>
             Apache-2.0, the same license as the backend counterpart
             <a
-              href="https://github.com/RobertMischke/coding-agent-runner"
+              href="https://agent-orchestrator.dev/runner/"
               target="_blank"
               rel="noopener"
               >coding-agent-runner</a
@@ -569,6 +569,27 @@
           }
         </div>
         <div class="explorer__panel" role="tabpanel">
+          <!-- One stage at a time: the RESULT or the CODE behind it. The old
+               side-by-side read ambiguously — a code card and a rendered
+               conversation look too similar at a glance. -->
+          <div class="explorer__mode" role="group" aria-label="Show the result or the code">
+            <button
+              type="button"
+              class="explorer__mode-btn"
+              [class.is-active]="explorerView() === 'result'"
+              (click)="explorerView.set('result')"
+            >
+              ▶ Result — live
+            </button>
+            <button
+              type="button"
+              class="explorer__mode-btn"
+              [class.is-active]="explorerView() === 'code'"
+              (click)="explorerView.set('code')"
+            >
+              &lt;/&gt; The code behind it
+            </button>
+          </div>
           @switch (explorerTab()) {
             @case ('core') {
               <p class="explorer__desc">
@@ -576,36 +597,38 @@
                 <code>projectConversation()</code>, which turns a raw feed into grouped,
                 render-ready items. Zero Angular — backends, SSR code and tests import it freely.
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.core.code"
                   [label]="explorerSnippets.core.label"
                 />
+                <details class="explorer__details">
+                  <summary>See one event on the wire — the tool burst as JSON</summary>
+                  <site-code [code]="explorerEventJson" label="toolBurst — wire format" />
+                </details>
+              } @else {
                 <div class="explorer__live" data-studio-theme="dark">
-                  <span class="explorer__live-tag">that call, rendered</span>
+                  <span class="explorer__live-tag">live</span>
                   <cac-conversation-view [events]="explorerEvents" [isRunning]="false" />
                 </div>
-              </div>
-              <details class="explorer__details">
-                <summary>See one event on the wire — the tool burst above as JSON</summary>
-                <site-code [code]="explorerEventJson" label="toolBurst — wire format" />
-              </details>
+              }
             }
             @case ('markdown') {
               <p class="explorer__desc">
                 <code>&lt;cac-markdown&gt;</code> renders agent text: GFM, syntax-highlighted
                 fences, sanitized HTML, image lightbox hooks, task-reference auto-linking.
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.markdown.code"
                   [label]="explorerSnippets.markdown.label"
                 />
+              } @else {
                 <div class="explorer__live" data-studio-theme="dark">
-                  <span class="explorer__live-tag">result</span>
+                  <span class="explorer__live-tag">live</span>
                   <cac-markdown [source]="explorerMarkdown" />
                 </div>
-              </div>
+              }
             }
             @case ('conversation') {
               <p class="explorer__desc">
@@ -613,16 +636,17 @@
                 give it events, it does grouping, folding, working indicators and
                 stick-to-bottom scrolling.
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.conversation.code"
                   [label]="explorerSnippets.conversation.label"
                 />
+              } @else {
                 <div class="explorer__live" data-studio-theme="dark">
-                  <span class="explorer__live-tag">three events in, this out</span>
+                  <span class="explorer__live-tag">live</span>
                   <cac-conversation-view [events]="explorerEvents" [isRunning]="false" />
                 </div>
-              </div>
+              }
             }
             @case ('composer') {
               <p class="explorer__desc">
@@ -630,11 +654,12 @@
                 attachments, submit events. <b>Try it</b> — replies here are scripted, in your
                 app they come from your backend.
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.composer.code"
                   [label]="explorerSnippets.composer.label"
                 />
+              } @else {
                 <div class="explorer__live" data-studio-theme="dark">
                   <span class="explorer__live-tag">live — type something</span>
                   @if (explorerChat().length > 0) {
@@ -655,7 +680,7 @@
                     (submitMessage)="explorerThread.submit($event.text)"
                   />
                 </div>
-              </div>
+              }
             }
             @case ('history') {
               <p class="explorer__desc">
@@ -664,13 +689,14 @@
                 <code>PROJECT_CHAT_DATA_SOURCE</code> token — four read methods, so the data can
                 live anywhere (HTTP, SQLite, files).
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.history.code"
                   [label]="explorerSnippets.history.label"
                 />
+              } @else {
                 <div class="explorer__live explorer__live--mock" data-studio-theme="dark">
-                  <span class="explorer__live-tag">shape (no data source on this page)</span>
+                  <span class="explorer__live-tag">shape — no data source on this page</span>
                   <div class="skeleton" aria-hidden="true">
                     @for (width of [58, 44, 66, 38, 72]; track $index) {
                       <div class="skeleton__row skeleton__row--inline">
@@ -680,7 +706,7 @@
                     }
                   </div>
                 </div>
-              </div>
+              }
             }
             @case ('shared') {
               <p class="explorer__desc">
@@ -688,13 +714,14 @@
                 <code>cacStickToBottom</code>, and the image-lightbox seam.
                 <b>Hover the buttons</b> — those are real tooltips.
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.shared.code"
                   [label]="explorerSnippets.shared.label"
                 />
+              } @else {
                 <div class="explorer__live explorer__live--row" data-studio-theme="dark">
-                  <span class="explorer__live-tag">hover these</span>
+                  <span class="explorer__live-tag">live — hover these</span>
                   <button type="button" class="demo-btn" cacTooltip="Re-runs the failing spec">
                     Re-run
                   </button>
@@ -706,18 +733,19 @@
                     Trace
                   </button>
                 </div>
-              </div>
+              }
             }
             @case ('theme') {
               <p class="explorer__desc">
                 One optional stylesheet — the look of this whole page. Palettes are scoped to
                 <code>data-studio-theme</code>, and scopes <b>nest</b>: flip just this panel.
               </p>
-              <div class="explorer__grid">
+              @if (explorerView() === 'code') {
                 <site-code
                   [code]="explorerSnippets.theme.code"
                   [label]="explorerSnippets.theme.label"
                 />
+              } @else {
                 <div class="explorer__live" [attr.data-studio-theme]="explorerTheme()">
                   <button
                     type="button"
@@ -735,7 +763,7 @@
                     <cac-markdown [source]="explorerMarkdown" />
                   }
                 </div>
-              </div>
+              }
             }
           }
         </div>
@@ -822,13 +850,15 @@
     <div>
       <p class="site-footer__brand">coding-agent-<b>chat</b></p>
       <p class="site-footer__note">
-        Apache-2.0 · the frontend counterpart to
-        <a
-          href="https://robertmischke.github.io/coding-agent-runner/"
-          target="_blank"
-          rel="noopener"
-          >coding-agent-runner</a
+        Apache-2.0 · coding-agent-chat pairs naturally with
+        <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
+          >CodingAgentRunner</a
         >
+        and is the chat surface inside Agent Studio. Find the other Agent Orchestrator projects
+        at
+        <a href="https://agent-orchestrator.dev" target="_blank" rel="noopener"
+          >agent-orchestrator.dev</a
+        >.
       </p>
       <p class="site-footer__note">
         Part of the <a href="https://agent-orchestrator.dev/">Agent Orchestrator</a> ecosystem
@@ -849,7 +879,7 @@
         rel="noopener"
         >License</a
       >
-      <a href="https://robertmischke.github.io/coding-agent-runner/" target="_blank" rel="noopener"
+      <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
         >coding-agent-runner ↗</a
       >
     </div>

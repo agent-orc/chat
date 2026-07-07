@@ -70,7 +70,6 @@ function highlight(code: string, lang: string): string {
     <figure class="code-card">
       @if (label()) {
         <figcaption class="code-card__head">
-          <span class="code-card__dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="code-card__label">{{ label() }}</span>
           <button type="button" class="code-card__copy" (click)="copy()">
             {{ copied() ? 'Copied ✓' : 'Copy' }}

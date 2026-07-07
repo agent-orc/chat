@@ -207,21 +207,22 @@ export interface ReplayStep {
 }
 
 /**
- * Replay pacing: long-running agent work should *feel* like work, so text
- * events hold 1.5–3s before the next one lands. Only tool bursts may follow
- * their announcing message a bit faster (~1.4s) — that mirrors a real run,
- * where the agent starts its tools right after stating the plan.
+ * Replay pacing: long-running agent work should *feel* like work — and real
+ * runs have an uneven pulse. Quick one-two-threes where the agent narrates,
+ * then genuinely long holds while tools grind (that is when the pixel
+ * progress scene gets its stage), and a slow exhale at the end while the
+ * run wraps up instead of a hard stop.
  */
 export const DEMO_REPLAY_STEPS: readonly ReplayStep[] = [
-  { event: runStart, holdMs: 1500 },
-  { event: userAsk, holdMs: 2600 },
-  { event: agentPlan, holdMs: 1400 }, // tool burst follows quickly
-  { event: exploreBurst, holdMs: 2800 },
-  { event: agentFindings, holdMs: 1400 }, // tool burst follows quickly
-  { event: editBurst, holdMs: 3000 },
-  { event: agentAnswer, holdMs: 2400 },
-  { event: tokenMetric, holdMs: 1500 },
-  { event: runComplete, holdMs: 1800 },
+  { event: runStart, holdMs: 1100 },
+  { event: userAsk, holdMs: 2400 },
+  { event: agentPlan, holdMs: 1200 }, // tools start right after the plan
+  { event: exploreBurst, holdMs: 7000 }, // long grind — worker builds a while
+  { event: agentFindings, holdMs: 1300 }, // quick narration…
+  { event: editBurst, holdMs: 9000 }, // …then the longest stretch of work
+  { event: agentAnswer, holdMs: 2600 },
+  { event: tokenMetric, holdMs: 4500 }, // slow exhale: still "computing"
+  { event: runComplete, holdMs: 2800 },
   { event: decision, holdMs: 0 },
 ];
 
@@ -445,16 +446,16 @@ const bFinalDecision: OrchestratorDecisionEvent = {
  * and an orchestrator retry before the fix. Same pacing rules as run A.
  */
 export const DEMO_REPLAY_STEPS_B: readonly ReplayStep[] = [
-  { event: bRunStart, holdMs: 1500 },
-  { event: bUserAsk, holdMs: 2600 },
-  { event: bAgentPlan, holdMs: 1400 }, // tool burst follows quickly
-  { event: bFailBurst, holdMs: 2900 },
-  { event: bWatchdog, holdMs: 2200 },
-  { event: bRetryDecision, holdMs: 2600 },
-  { event: bAgentFindings, holdMs: 1400 }, // tool burst follows quickly
-  { event: bFixBurst, holdMs: 3000 },
-  { event: bAgentAnswer, holdMs: 2400 },
-  { event: bRunComplete, holdMs: 1600 },
+  { event: bRunStart, holdMs: 1100 },
+  { event: bUserAsk, holdMs: 2400 },
+  { event: bAgentPlan, holdMs: 1200 }, // tools start right after the plan
+  { event: bFailBurst, holdMs: 6500 }, // the failing run takes its time
+  { event: bWatchdog, holdMs: 4500 }, // …and the watchdog wait feels like one
+  { event: bRetryDecision, holdMs: 3200 },
+  { event: bAgentFindings, holdMs: 1300 }, // quick narration…
+  { event: bFixBurst, holdMs: 9500 }, // …then the long repeat-each grind
+  { event: bAgentAnswer, holdMs: 2600 },
+  { event: bRunComplete, holdMs: 4200 }, // slow exhale before the sign-off
   { event: bFinalDecision, holdMs: 0 },
 ];
 

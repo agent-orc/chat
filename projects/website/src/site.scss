@@ -672,13 +672,15 @@ code {
   height: 17px;
 }
 
-/* Capability strip: what the view just did for you, anchored to the demos. */
+/* Capability strip: what the view just did for you, anchored to the demos.
+ * Generous clearance from the second frame — the strip is a new thought,
+ * not a caption of the frame above it. */
 .demo-caps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+  gap: 14px;
   max-width: 980px;
-  margin: clamp(22px, 3.5vw, 34px) auto 0;
+  margin: clamp(44px, 6.5vw, 72px) auto 0;
 }
 
 .demo-cap {
@@ -1073,16 +1075,46 @@ code {
 }
 
 .explorer__desc {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   font-size: 0.94rem;
   color: var(--studio-fg-dim, #94a3b8);
 }
 
-.explorer__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-  gap: 14px;
-  align-items: start;
+/* Result/code segmented switch: ONE stage at a time, clearly named. */
+.explorer__mode {
+  display: inline-flex;
+  gap: 0;
+  margin: 0 0 14px;
+  border: 1px solid var(--site-line-strong);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.explorer__mode-btn {
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  color: var(--site-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.explorer__mode-btn + .explorer__mode-btn {
+  border-left: 1px solid var(--site-line-strong);
+}
+
+.explorer__mode-btn:hover {
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__mode-btn.is-active {
+  background: rgba(217, 119, 87, 0.14);
+  color: var(--site-accent);
 }
 
 /* The live half: a real studio surface, theme-pinned per panel. */
@@ -1251,30 +1283,6 @@ code {
   background: rgba(255, 255, 255, 0.025);
 }
 
-.code-card__dots {
-  display: inline-flex;
-  gap: 5px;
-}
-
-.code-card__dots i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: rgba(148, 163, 184, 0.25);
-}
-
-.code-card__dots i:first-child {
-  background: rgba(239, 68, 68, 0.55);
-}
-
-.code-card__dots i:nth-child(2) {
-  background: rgba(204, 167, 0, 0.55);
-}
-
-.code-card__dots i:nth-child(3) {
-  background: rgba(22, 163, 74, 0.55);
-}
-
 .code-card__label {
   flex: 1;
   min-width: 0;
@@ -1425,10 +1433,15 @@ code {
 /* ---------------------------------------------------- rendering showcase -- */
 
 /* The markdown-pipeline frame: like a demo frame, static content, sized by
- * its content instead of reserving a scroll viewport. */
+ * its content instead of reserving a scroll viewport. Clear air between the
+ * section intro, the frame, and the footnote below. */
 .demo-frame--render {
   max-width: 720px;
-  margin: 0 auto;
+  margin: clamp(30px, 4.5vw, 52px) auto 0;
+}
+
+#rendering .section__foot {
+  margin-top: clamp(30px, 4.5vw, 52px);
 }
 
 /* ------------------------------------------------------------ lightbox -- */
