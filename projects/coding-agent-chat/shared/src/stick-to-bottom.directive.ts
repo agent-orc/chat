@@ -76,8 +76,19 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
       this.resizeObserver.observe(this.host.nativeElement);
       if (this.container) this.resizeObserver.observe(this.container);
     }
-    // Initial pin: land on the newest row the first time content paints.
-    this.scheduleScrollToBottom();
+    // Initial pin: land on the newest row the first time content paints —
+    // but NEVER when the resolved container is the document scroller. A
+    // component finishing its own init must not yank the user's page: an
+    // inline conversation on a docs/marketing page would otherwise scroll
+    // the whole viewport to its bottom on load and on every re-creation
+    // (tab switches). Document-scrolled hosts still get growth re-pins
+    // while the user is at the bottom.
+    if (!this.isDocumentContainer()) this.scheduleScrollToBottom();
+  }
+
+  /** True when the resolved scroll container is the page itself. */
+  private isDocumentContainer(): boolean {
+    return typeof document !== 'undefined' && this.container === document.scrollingElement;
   }
 
   ngOnDestroy(): void {

@@ -1,0 +1,5 @@
+/* Live-iteration entry (`npm run website:live`): the studio theme compiles
+ * from the library SOURCE, so theme/library edits hot-reload without an
+ * ng-packagr rebuild or server restart. Same site chrome as styles.scss. */
+@use '../../coding-agent-chat/theme/cac-theme';
+@use './site';

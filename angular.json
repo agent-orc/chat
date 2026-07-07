@@ -56,7 +56,9 @@
                 "input": "projects/conversation-lab/public"
               }
             ],
-            "styles": ["projects/conversation-lab/src/styles.scss"]
+            "styles": [
+              "projects/conversation-lab/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -84,7 +86,9 @@
               "extractLicenses": false,
               "sourceMap": true,
               "tsConfig": "projects/conversation-lab/tsconfig.live.json",
-              "styles": ["projects/conversation-lab/src/styles-live.scss"]
+              "styles": [
+                "projects/conversation-lab/src/styles-live.scss"
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -148,7 +152,9 @@
                 "input": "projects/website/public"
               }
             ],
-            "styles": ["projects/website/src/styles.scss"]
+            "styles": [
+              "projects/website/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -170,6 +176,15 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "live": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "tsConfig": "projects/website/tsconfig.live.json",
+              "styles": [
+                "projects/website/src/styles-live.scss"
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -196,6 +211,9 @@
             },
             "development": {
               "buildTarget": "website:build:development"
+            },
+            "live": {
+              "buildTarget": "website:build:live"
             }
           },
           "defaultConfiguration": "development"

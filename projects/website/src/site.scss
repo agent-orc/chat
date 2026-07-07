@@ -1,0 +1,1624 @@
+/* @coding-agent/chat — public website: ALL site chrome (nav, hero, demo
+ * frames, explorer, footer, light-theme overrides). Theme-agnostic: the
+ * studio theme itself is imported by the entry stylesheet — styles.scss
+ * pulls the BUILT dist css (consumer contract), styles-live.scss pulls the
+ * library SOURCE scss (npm run website:live) so theme edits hot-reload. */
+
+/* ---------------------------------------------------------------- reset -- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Slim, theme-following scrollbars page-wide (token flips with the theme). */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--studio-fg-muted, #64748b) 50%, transparent)
+    transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 16px;
+  line-height: 1.65;
+  background: var(--studio-bg-surface, #0f0f1a);
+  color: var(--studio-fg, #e2e8f0);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Site-only tokens layered on top of the studio palette. */
+:root {
+  --site-max: 1120px;
+  --site-accent: var(--studio-accent, #d97757);
+  --site-accent-blue: #89b4fa;
+  --site-accent-purple: #c586c0;
+  --site-accent-green: #4ec9b0;
+  --site-line: var(--studio-border, rgba(255, 255, 255, 0.06));
+  --site-line-strong: var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  --site-card: rgba(30, 30, 46, 0.55);
+  --site-code-bg: #14141f;
+  /* Small-print grey: replaces the studio muted token (#64748b) for tiny site
+   * text — that one lands below 4.5:1 on the page background. */
+  --site-muted: #8b99ad;
+  --nav-height: 58px;
+}
+
+a {
+  color: var(--site-accent-blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.86em;
+  background: rgba(137, 180, 250, 0.09);
+  border: 1px solid rgba(137, 180, 250, 0.14);
+  border-radius: 5px;
+  padding: 0.08em 0.35em;
+  color: var(--studio-fg-strong, #f8fafc);
+  overflow-wrap: anywhere;
+}
+
+.wrap {
+  max-width: var(--site-max);
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 28px);
+}
+
+.icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* Keyboard skip link: off-screen until focused, then it slides into the
+ * top-left so the first Tab press jumps past the nav to the page content. */
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -64px;
+  z-index: 100;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: var(--site-accent);
+  color: #16100d;
+  font-size: 14px;
+  font-weight: 650;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  transition: top 0.18s ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+  text-decoration: none;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* The skip target is focused programmatically; no focus ring on the region. */
+#main-content:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------ reveals -- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 0.65, 0.3, 1),
+    transform 0.6s cubic-bezier(0.22, 0.65, 0.3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* --------------------------------------------------------------- nav -- */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(15, 15, 26, 0.82);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border-bottom: 1px solid var(--site-line);
+}
+
+.site-nav__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: var(--nav-height);
+  flex-wrap: wrap;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.site-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.site-nav__brand b {
+  color: var(--site-accent);
+}
+
+.site-nav__brand:hover {
+  text-decoration: none;
+}
+
+.site-nav__logo {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--site-accent), var(--site-accent-purple));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 1px 10px rgba(217, 119, 87, 0.35);
+  color: #16100d;
+  font:
+    700 11px/1 var(--font-mono, monospace);
+}
+
+.site-nav__logo::after {
+  content: '❯';
+  margin-top: 1px;
+}
+
+.site-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.site-nav__links > a {
+  color: var(--studio-fg-dim, #94a3b8);
+  font-size: 13.5px;
+  font-weight: 550;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.site-nav__links > a:hover {
+  color: var(--studio-fg-strong, #f8fafc);
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+  text-decoration: none;
+}
+
+.site-nav__links > a.is-active {
+  color: var(--site-accent);
+  background: rgba(217, 119, 87, 0.12);
+}
+
+.site-nav__sep {
+  width: 1px;
+  height: 18px;
+  background: var(--site-line-strong);
+  margin: 0 6px;
+}
+
+.site-nav__ext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--site-line-strong);
+  background: var(--studio-surface, #1e1e2e);
+}
+
+.site-nav__ext:hover {
+  border-color: var(--site-accent);
+}
+
+/* Round, playful theme toggle: a real sun (rays + tiny smile) and a real
+ * crescent moon (sleepy face + stars) swap with a springy rotate/scale
+ * crossfade. The icon shows the theme a click will switch TO. */
+.site-nav__theme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--site-line-strong);
+  border-radius: 50%;
+  background: var(--studio-surface, #1e1e2e);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.25s ease;
+}
+
+.site-nav__theme:hover {
+  border-color: var(--site-accent);
+  box-shadow: 0 0 12px rgba(249, 226, 175, 0.35);
+}
+
+.theme-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  overflow: visible;
+}
+
+.theme-icon__sun,
+.theme-icon__moon {
+  transform-origin: 12px 12px;
+  transition:
+    opacity 0.3s ease,
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-icon__sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.theme-icon__moon {
+  opacity: 0;
+  transform: rotate(-120deg) scale(0.3);
+}
+
+.theme-icon--night .theme-icon__sun {
+  opacity: 0;
+  transform: rotate(120deg) scale(0.3);
+}
+
+.theme-icon--night .theme-icon__moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Hover play: the sun's rays spin up slowly; the moon rocks like a cradle. */
+.theme-icon__rays {
+  transform-origin: 12px 12px;
+}
+
+.site-nav__theme:hover .theme-icon__rays {
+  animation: theme-sun-spin 8s linear infinite;
+}
+
+.site-nav__theme:hover .theme-icon--night .theme-icon__moon {
+  animation: theme-moon-rock 1.8s ease-in-out infinite;
+}
+
+@keyframes theme-sun-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes theme-moon-rock {
+  0%,
+  100% {
+    transform: rotate(-8deg) scale(1);
+  }
+  50% {
+    transform: rotate(8deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon__sun,
+  .theme-icon__moon {
+    transition: opacity 0.2s ease;
+  }
+
+  .site-nav__theme:hover .theme-icon__rays,
+  .site-nav__theme:hover .theme-icon--night .theme-icon__moon {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------- hero -- */
+
+/* Kept deliberately small: the first demo should be visible with little or
+ * no scrolling, so the hero is title + two sentences + install line + links. */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(28px, 4.5vw, 48px) 0 clamp(20px, 3vw, 30px);
+  border-bottom: 1px solid var(--site-line);
+  text-align: center;
+}
+
+.hero__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(720px 340px at 22% -12%, rgba(217, 119, 87, 0.17), transparent 65%),
+    radial-gradient(640px 320px at 80% -6%, rgba(137, 180, 250, 0.13), transparent 65%),
+    radial-gradient(900px 460px at 50% 118%, rgba(197, 134, 192, 0.08), transparent 70%);
+}
+
+.hero__inner {
+  position: relative;
+}
+
+.hero__title {
+  margin: 0 0 12px;
+  font-size: clamp(1.7rem, 3.2vw, 2.35rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  color: var(--studio-fg-strong, #f8fafc);
+  text-wrap: balance;
+}
+
+.hero__tag {
+  max-width: 780px;
+  margin: 0 auto 16px;
+  font-size: clamp(0.95rem, 1.6vw, 1.02rem);
+  color: var(--studio-fg-dim, #94a3b8);
+  text-wrap: pretty;
+}
+
+.hero__install {
+  max-width: 460px;
+  margin: 0 auto 12px;
+  text-align: left;
+}
+
+.hero__links {
+  display: flex;
+  justify-content: center;
+  gap: 8px 22px;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 14px;
+}
+
+.hero__links a {
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.hero__links a:hover {
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+/* ------------------------------------------------------------ sections -- */
+
+.section {
+  padding: clamp(56px, 9vw, 104px) 0;
+  border-bottom: 1px solid var(--site-line);
+  scroll-margin-top: calc(var(--nav-height) + 10px);
+}
+
+/* The demo follows the compact hero; enough top padding + lead margin that
+ * the intro text breathes before the first frame takes over. */
+#demo.section {
+  padding-top: clamp(34px, 4.5vw, 60px);
+}
+
+#demo .section__kicker {
+  margin-bottom: 8px;
+}
+
+#demo .section__title {
+  margin-bottom: 12px;
+}
+
+#demo .section__lead {
+  max-width: 880px;
+  margin-bottom: clamp(30px, 4.5vw, 52px);
+}
+
+.section--alt {
+  background:
+    radial-gradient(900px 420px at 85% 0%, rgba(137, 180, 250, 0.05), transparent 60%),
+    var(--studio-bg-elevated, #1e1e2e);
+}
+
+.section__kicker {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--site-accent);
+}
+
+.section__title {
+  margin: 0 0 14px;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  color: var(--studio-fg-strong, #f8fafc);
+  text-wrap: balance;
+}
+
+.section__lead {
+  max-width: 760px;
+  margin: 0 0 30px;
+  font-size: clamp(0.98rem, 1.6vw, 1.08rem);
+  color: var(--studio-fg-dim, #94a3b8);
+  text-wrap: pretty;
+}
+
+.section__foot {
+  max-width: 760px;
+  margin: 22px 0 0;
+  font-size: 0.95rem;
+  color: var(--site-muted);
+}
+
+/* ---------------------------------------------------------- demo frame -- */
+
+/* Shared width cap for single-column demo surfaces (composer + rendering
+ * showcase): chat typography reads best well under the full 1120px column. */
+:root {
+  --demo-solo-max: 680px;
+}
+
+/* The two example conversations stack vertically at reading width — chat
+ * typography reads best in a single centred column, same as the composer
+ * and rendering frames below. */
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(18px, 2.6vw, 26px);
+}
+
+.demo-stack > .demo-frame,
+.demo-stack > .demo-intro {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* Numbered intro before each conversation: names the story and, for the
+ * second one, what makes it different. Extra top margin separates it from
+ * the previous frame so the pair (intro + frame) reads as one unit. */
+.demo-intro {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.demo-stack > .demo-intro + .demo-frame {
+  margin-top: calc(-1 * clamp(6px, 1vw, 10px));
+}
+
+.demo-stack > .demo-frame + .demo-intro {
+  margin-top: clamp(22px, 3.5vw, 40px);
+}
+
+.demo-intro__num {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: rgba(217, 119, 87, 0.14);
+  border: 1px solid rgba(217, 119, 87, 0.4);
+  color: var(--site-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.demo-intro__title {
+  margin: 0 0 4px;
+  font-size: 1.06rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.demo-intro__text {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.demo-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 119, 87, 0.4);
+  background: rgba(217, 119, 87, 0.12);
+  color: var(--site-accent);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Frame chrome reads STUDIO tokens (not site tokens): the packaged theme
+ * scopes its palettes on any element carrying `data-studio-theme`, so a
+ * theme-pinned frame resolves every studio/markdown token frame-locally —
+ * dark frames on a light site and vice versa, no mirrored values needed. */
+.demo-frame {
+  position: relative;
+  border: 1px solid var(--site-line-strong);
+  border-radius: 18px;
+  background: var(--studio-bg-surface, #0f0f1a);
+  color: var(--studio-fg, #e2e8f0);
+  box-shadow:
+    0 0 0 1px rgba(217, 119, 87, 0.08),
+    0 24px 70px rgba(0, 0, 0, 0.45),
+    0 0 90px rgba(217, 119, 87, 0.07);
+  overflow: hidden;
+}
+
+.demo-frame__view {
+  background: var(--studio-bg-editor, transparent);
+}
+
+.demo-frame__bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--studio-border, rgba(255, 255, 255, 0.06));
+  background: var(--studio-bg-elevated, #1e1e2e);
+}
+
+.demo-btn {
+  flex: none;
+  padding: 7px 15px;
+  border: 1px solid var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  border-radius: 9px;
+  background: transparent;
+  color: var(--studio-fg, #e2e8f0);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.demo-btn:hover {
+  border-color: var(--site-accent);
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.demo-btn--accent {
+  background: linear-gradient(135deg, var(--site-accent), #c05f3f);
+  border-color: transparent;
+  color: #16100d;
+}
+
+.demo-btn--accent:hover {
+  box-shadow: 0 2px 16px rgba(217, 119, 87, 0.45);
+  background: linear-gradient(135deg, #e0805f, #c05f3f);
+}
+
+/* Per-frame theme flip: a quiet round icon in the frame's title bar. The
+ * same sun/moon artwork as the nav toggle, one size down. */
+.demo-frame__theme {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.75;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.demo-frame__theme:hover {
+  opacity: 1;
+  border-color: var(--studio-border-strong, rgba(255, 255, 255, 0.1));
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.demo-frame__theme .theme-icon {
+  width: 17px;
+  height: 17px;
+}
+
+/* Capability strip: what the view just did for you, anchored to the demos. */
+.demo-caps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 980px;
+  margin: clamp(22px, 3.5vw, 34px) auto 0;
+}
+
+.demo-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--site-line);
+  border-left: 3px solid rgba(217, 119, 87, 0.55);
+  border-radius: 12px;
+  background: var(--site-card);
+}
+
+.demo-cap strong {
+  font-size: 0.86rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.demo-cap span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.demo-frame__progress {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-family: var(--font-mono, monospace);
+  /* fg-dim (not muted) — must stay legible in both frame themes */
+  color: var(--studio-fg-dim, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* While the working indicator is up the status text may wrap instead of
+ * truncating — "last contact Ns ago" must stay readable. */
+.demo-frame__progress:has(.demo-working) {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+/* Working indicator in the frame chrome: pulsing dot + activity label +
+ * "last contact Ns ago". Shown during replay/reply gaps so long-running
+ * agent work visibly stays alive; disappears on "run complete". */
+.demo-working {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--studio-fg, #e2e8f0);
+  font-weight: 600;
+}
+
+.demo-working__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--site-accent-green);
+  animation: working-pulse 1.6s ease-out infinite;
+}
+
+@keyframes working-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(78, 201, 176, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(78, 201, 176, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(78, 201, 176, 0);
+  }
+}
+
+.demo-working__contact {
+  margin-left: 12px;
+  color: var(--studio-fg-dim, #94a3b8);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-working__dot {
+    animation: none;
+  }
+}
+
+/* The conversation view inside owns its scrolling (virtualised mode) — the
+ * frame view is just padding around it, so the jump-to-latest pill floats
+ * against the view's own visible viewport instead of the page. */
+.demo-frame__view {
+  padding: 12px clamp(10px, 2.5vw, 22px);
+}
+
+/* Calm, constant geometry: the two replay conversations keep one FIXED
+ * height from first paint through replay and follow-ups — the page never
+ * pumps as events stream in. (The rendering frame stays content-sized.) */
+.demo-stack .demo-frame__view .conv {
+  height: min(52vh, 500px);
+}
+
+.demo-stack .skeleton--conversation {
+  min-height: min(52vh, 500px);
+}
+
+.demo-frame__composer {
+  padding: 10px clamp(10px, 2.5vw, 22px) 14px;
+  border-top: 1px solid var(--studio-border, rgba(255, 255, 255, 0.06));
+  background: var(--studio-bg-elevated, #1e1e2e);
+}
+
+/* The composer's own timeline stays empty on this page (submits land in the
+ * conversation view above), so shrink its reserved body height. */
+.demo-frame .demo-frame__composer .chat__body {
+  min-height: 0;
+}
+
+.demo-frame .demo-frame__composer .chat__empty {
+  padding: 8px 12px;
+}
+
+
+/* --------------------------------------------- defer-block skeletons -- */
+/* Static placeholders shown in the prerendered HTML while the interactive
+ * library components (`@defer (on viewport)`) are still loading. They mimic
+ * the frames' final geometry so nothing jumps when the real content lands. */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.skeleton--conversation {
+  min-height: 320px;
+  padding: 6px 2px;
+}
+
+.skeleton--composer {
+  padding: 6px 0 2px;
+}
+
+.skeleton__row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton__row--user {
+  align-items: flex-end;
+}
+
+.skeleton__bar {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--site-line-strong) 25%,
+    rgba(255, 255, 255, 0.16) 50%,
+    var(--site-line-strong) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton__bar--chip {
+  height: 20px;
+  border-radius: 10px;
+}
+
+.skeleton__bar--input {
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__bar {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------------------- cards -- */
+
+/* The numbers that used to headline the hero, demoted to one quiet line. */
+.stats-line {
+  margin: -14px 0 26px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  color: var(--site-muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  padding: 22px 22px 20px;
+  border: 1px solid var(--site-line);
+  border-radius: 16px;
+  background: var(--site-card);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--site-line-strong);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
+.card h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.card__dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.card__dot--orange {
+  background: var(--site-accent);
+  box-shadow: 0 0 10px rgba(217, 119, 87, 0.7);
+}
+
+.card__dot--blue {
+  background: var(--site-accent-blue);
+  box-shadow: 0 0 10px rgba(137, 180, 250, 0.7);
+}
+
+.card__dot--purple {
+  background: var(--site-accent-purple);
+  box-shadow: 0 0 10px rgba(197, 134, 192, 0.7);
+}
+
+.card__dot--green {
+  background: var(--site-accent-green);
+  box-shadow: 0 0 10px rgba(78, 201, 176, 0.7);
+}
+
+/* ---------------------------------------------------------------- docs -- */
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.docs-step h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.docs-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(217, 119, 87, 0.14);
+  border: 1px solid rgba(217, 119, 87, 0.4);
+  color: var(--site-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.docs-sub {
+  margin: clamp(36px, 6vw, 56px) 0 12px;
+  font-size: clamp(1.25rem, 2.6vw, 1.55rem);
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  color: var(--studio-fg-strong, #f8fafc);
+  scroll-margin-top: calc(var(--nav-height) + 14px);
+}
+
+/* ----------------------------------------------------- entry explorer -- */
+
+/* Tabs on the left (top on narrow screens), one live panel on the right:
+ * every entry point pairs its snippet with the real component, rendered. */
+.explorer {
+  display: grid;
+  grid-template-columns: 218px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.explorer__tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.explorer__tab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border: 1px solid var(--site-line);
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.explorer__tab code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__tab span {
+  font-size: 11.5px;
+  color: var(--site-muted);
+}
+
+.explorer__tab:hover {
+  border-color: var(--site-line-strong);
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.explorer__tab.is-active {
+  border-color: rgba(217, 119, 87, 0.55);
+  background: rgba(217, 119, 87, 0.08);
+}
+
+.explorer__tab.is-active code {
+  color: var(--site-accent);
+}
+
+.explorer__panel {
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--site-line);
+  border-radius: 14px;
+  background: var(--site-card);
+}
+
+.explorer__desc {
+  margin: 0 0 14px;
+  font-size: 0.94rem;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.explorer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+/* The live half: a real studio surface, theme-pinned per panel. */
+.explorer__live {
+  position: relative;
+  min-width: 0;
+  padding: 26px 14px 14px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  background: var(--studio-bg-surface, #0f0f1a);
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__live-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 9px 3px;
+  border-left: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--studio-border, rgba(255, 255, 255, 0.08));
+  border-radius: 0 11px 0 8px;
+  background: var(--studio-bg-elevated, #1e1e2e);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--studio-fg-muted, #64748b);
+}
+
+.explorer__live--row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.explorer__live--mock .skeleton__bar {
+  animation: none; /* a static shape sample, not a loading state */
+}
+
+.skeleton__row--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.explorer__details {
+  margin-top: 14px;
+}
+
+.explorer__details summary {
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--site-muted);
+  padding: 4px 0;
+}
+
+.explorer__details summary:hover {
+  color: var(--studio-fg, #e2e8f0);
+}
+
+.explorer__details[open] summary {
+  margin-bottom: 10px;
+}
+
+/* The theme panel's flip button sits on the surface it flips. */
+.explorer__flip {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  opacity: 0.9;
+}
+
+@media (max-width: 860px) {
+  .explorer {
+    grid-template-columns: 1fr;
+  }
+
+  .explorer__tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .explorer__tab {
+    flex: 1 1 130px;
+  }
+}
+
+.seams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.seam {
+  padding: 16px 18px;
+  border: 1px solid var(--site-line);
+  border-radius: 14px;
+  background: var(--site-card);
+}
+
+.seam h4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.seam h4 code {
+  font-size: 12px;
+}
+
+.seam__entry {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(137, 180, 250, 0.12);
+  color: var(--site-accent-blue);
+}
+
+.seam p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.docs-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.docs-theme {
+  max-width: 680px;
+}
+
+/* ---------------------------------------------------------- code cards -- */
+
+.code-card {
+  position: relative;
+  margin: 0;
+  border: 1px solid var(--site-line-strong);
+  border-radius: 12px;
+  background: var(--site-code-bg);
+  overflow: hidden;
+}
+
+.code-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--site-line);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.code-card__dots {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.code-card__dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.code-card__dots i:first-child {
+  background: rgba(239, 68, 68, 0.55);
+}
+
+.code-card__dots i:nth-child(2) {
+  background: rgba(204, 167, 0, 0.55);
+}
+
+.code-card__dots i:nth-child(3) {
+  background: rgba(22, 163, 74, 0.55);
+}
+
+.code-card__label {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  color: var(--site-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.code-card__copy {
+  flex: none;
+  border: 1px solid var(--site-line-strong);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--studio-fg-dim, #94a3b8);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.code-card__copy:hover {
+  color: var(--studio-fg-strong, #f8fafc);
+  border-color: var(--site-accent);
+}
+
+.code-card__copy--floating {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  background: rgba(20, 20, 31, 0.85);
+}
+
+.code-card__pre {
+  margin: 0;
+  padding: 14px 18px;
+  overflow-x: auto;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #cdd6f4;
+  tab-size: 2;
+  /* Scroll shadows: long lines fade out at either edge instead of clipping
+   * mid-token. The `local` cover layers scroll with the content and hide the
+   * `scroll`-attached shadows once that end is reached (Lea Verou technique). */
+  background:
+    linear-gradient(90deg, var(--site-code-bg) 45%, rgba(20, 20, 31, 0)) 0 0 / 44px 100%
+      no-repeat local,
+    linear-gradient(270deg, var(--site-code-bg) 45%, rgba(20, 20, 31, 0)) 100% 0 / 44px 100%
+      no-repeat local,
+    linear-gradient(90deg, rgba(0, 0, 0, 0.6), transparent) 0 0 / 18px 100% no-repeat scroll,
+    linear-gradient(270deg, rgba(0, 0, 0, 0.6), transparent) 100% 0 / 18px 100% no-repeat scroll;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+}
+
+.code-card__pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.code-card__pre::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 4px;
+}
+
+.code-card__pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+.tok-comment {
+  color: #7f849c;
+  font-style: italic;
+}
+
+.tok-string {
+  color: #a6e3a1;
+}
+
+.tok-keyword {
+  color: #cba6f7;
+}
+
+.tok-decorator {
+  color: #fab387;
+}
+
+.tok-number {
+  color: #f9e2af;
+}
+
+/* -------------------------------------------------------------- footer -- */
+
+.site-footer {
+  padding: 38px 0 46px;
+}
+
+.site-footer__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.site-footer__brand {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.site-footer__brand b {
+  color: var(--site-accent);
+}
+
+.site-footer__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--site-muted);
+}
+
+.site-footer__links {
+  display: flex;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+}
+
+.site-footer__links a {
+  color: var(--studio-fg-dim, #94a3b8);
+}
+
+.site-footer__links a:hover {
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+/* ---------------------------------------------------- rendering showcase -- */
+
+/* The markdown-pipeline frame: like a demo frame, static content, sized by
+ * its content instead of reserving a scroll viewport. */
+.demo-frame--render {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ------------------------------------------------------------ lightbox -- */
+
+/* Site-owned overlay behind the library's CHAT_MEDIA_LIGHTBOX seam: the
+ * library detects the image click and calls openGallery(); this dialog is
+ * the host's half of the contract. Dark glass in both site themes. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 5vw, 56px);
+  background: rgba(5, 5, 12, 0.84);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.lightbox__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.lightbox__img {
+  max-width: min(92vw, 1080px);
+  max-height: 78vh;
+  border-radius: 12px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+}
+
+.lightbox__caption {
+  font-size: 13.5px;
+  color: rgba(226, 232, 240, 0.85);
+  text-align: center;
+  max-width: 70ch;
+}
+
+.lightbox__count {
+  margin-left: 10px;
+  color: rgba(148, 163, 184, 0.9);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+
+.lightbox__close,
+.lightbox__nav {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(20, 20, 31, 0.7);
+  color: #e2e8f0;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.lightbox__close:hover,
+.lightbox__nav:hover {
+  border-color: var(--site-accent);
+  background: rgba(30, 30, 46, 0.9);
+}
+
+.lightbox__close {
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+
+.lightbox__nav {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+}
+
+.lightbox__nav--prev {
+  left: 14px;
+}
+
+.lightbox__nav--next {
+  right: 14px;
+}
+
+/* -------------------------------------------------------- light theme -- */
+/* The studio tokens (surfaces, foreground, borders) already flip via the
+ * packaged theme when `data-studio-theme="light"` is set on <html>, so most of
+ * the page re-themes for free. These overrides cover the site-only tokens and
+ * the few hardcoded dark values that don't. Code cards deliberately stay dark
+ * in both themes — their syntax palette (`.tok-*`) is dark-only — so their
+ * chrome text is re-pinned here to stay readable against the dark card. */
+
+html[data-studio-theme='light'] {
+  --site-card: var(--studio-bg-surface, #fff);
+  --site-muted: #5a6572;
+  --site-accent-blue: #1d4ed8;
+}
+
+html[data-studio-theme='light'] .site-nav {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+html[data-studio-theme='light'] .card,
+html[data-studio-theme='light'] .seam,
+html[data-studio-theme='light'] .table-scroll {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+html[data-studio-theme='light'] .card:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+}
+
+html[data-studio-theme='light'] .code-card__label {
+  color: #8892a6;
+}
+
+html[data-studio-theme='light'] .code-card__copy {
+  color: #9aa4b8;
+}
+
+html[data-studio-theme='light'] .code-card__copy:hover {
+  color: #f1f3f8;
+}
+
+/* A darker sweep reads against the light base bar. */
+html[data-studio-theme='light'] .skeleton__bar {
+  background: linear-gradient(
+    90deg,
+    var(--site-line-strong) 25%,
+    rgba(0, 0, 0, 0.08) 50%,
+    var(--site-line-strong) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ---------------------------------------------------------- responsive -- */
+
+@media (max-width: 720px) {
+  .site-nav__row {
+    justify-content: center;
+  }
+
+  /* Icon-only external links + no separator: the nav collapses to two tight
+   * rows instead of three. */
+  .site-nav__ext-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .site-nav__links {
+    gap: 2px;
+  }
+
+  .site-nav__links > a {
+    font-size: 13px;
+    padding: 6px 7px;
+  }
+
+  .site-nav__ext {
+    padding: 6px 8px;
+  }
+
+  .site-nav__sep {
+    display: none;
+  }
+
+  .demo-frame__bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .demo-frame__progress {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

@@ -22,6 +22,21 @@ class StickHostComponent {
   readonly stick = viewChild.required(StickToBottomDirective);
 }
 
+/** Host with NO scrollable ancestor — container resolution falls back to the
+ *  document scroller (an inline conversation on a normal page). */
+@Component({
+  standalone: true,
+  imports: [StickToBottomDirective],
+  template: `
+    <div class="inline-host" cacStickToBottom>
+      <div class="content">line</div>
+    </div>
+  `,
+})
+class InlineHostComponent {
+  readonly stick = viewChild.required(StickToBottomDirective);
+}
+
 interface ScrollState {
   scrollHeight: number;
   clientHeight: number;
@@ -128,6 +143,24 @@ describe('StickToBottomDirective', () => {
     const state = mockScrollMetrics(scroller, { scrollHeight: 1000, clientHeight: 200 });
     return { scroller, state, stick: fixture.componentInstance.stick() };
   }
+
+  it('never scrolls the PAGE on init when the fallback container is the document', async () => {
+    // Regression: an inline conversation view on a docs/marketing page (no
+    // scrollable ancestor) used to pin document.scrollingElement on init,
+    // yanking the whole viewport to the component's bottom on load and on
+    // every tab-switch re-creation. Spy on the prototype accessor — jsdom
+    // does not allow redefining scrollTop on the documentElement instance.
+    const setSpy = vi.spyOn(Element.prototype, 'scrollTop', 'set');
+
+    const fixture = TestBed.createComponent(InlineHostComponent);
+    await fixture.whenStable();
+    flushFrames();
+
+    expect(setSpy).not.toHaveBeenCalled(); // the page stays where the user was
+    // Growth re-pins still work for genuinely document-scrolled hosts once
+    // the user is at the bottom — the guard only skips the INITIAL pin.
+    expect(fixture.componentInstance.stick().stuck()).toBe(true);
+  });
 
   it('pins to the bottom initially and re-pins when content grows while stuck', async () => {
     const { scroller, state, stick } = await setup();

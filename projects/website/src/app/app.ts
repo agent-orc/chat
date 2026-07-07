@@ -17,6 +17,7 @@ import type {
   ChatModelSelection,
   ChatPermissionControl,
   ChatSubmitEvent,
+  ChatToolbarItem,
   ConversationEvent,
 } from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
@@ -281,6 +282,36 @@ export class App {
     ],
   });
 
+  /** The four attached documents as hoverable toolbar pills — each tooltip
+   * says what the doc is and what it costs in tokens. Clicks land in
+   * (toolbarAction); this demo leaves them inert. */
+  protected readonly demoDocs: readonly ChatToolbarItem[] = [
+    {
+      id: 'doc-api',
+      glyph: 'api.md',
+      variant: 'pill',
+      label: 'api.md — REST contract the change must honour · 6.2k tokens',
+    },
+    {
+      id: 'doc-schema',
+      glyph: 'schema.sql',
+      variant: 'pill',
+      label: 'schema.sql — current tables and indexes · 8.1k tokens',
+    },
+    {
+      id: 'doc-roadmap',
+      glyph: 'roadmap.md',
+      variant: 'pill',
+      label: 'roadmap.md — Q3 scope guardrails · 3.4k tokens',
+    },
+    {
+      id: 'doc-adr',
+      glyph: 'adr-012.md',
+      variant: 'pill',
+      label: 'adr-012.md — decision record: cache invalidation · 4.9k tokens',
+    },
+  ];
+
   /** Context snapshot: what fills the window, incl. four attached documents. */
   protected readonly demoContext: ChatContextUsage = {
     usedTokens: 74_300,
@@ -395,6 +426,17 @@ export class App {
   /** A follow-up typed under a replay: user turn + scripted reply, in place. */
   protected onFrameSubmit(key: 'a' | 'b', submit: ChatSubmitEvent): void {
     (key === 'a' ? this.threadA : this.threadB).submit(submit.text);
+    // Reveal the appended turn even if the reader had scrolled up in the
+    // transcript: nudge the frame's conversation to its latest row. Reaching
+    // the bottom re-arms stick-to-bottom, so the streamed reply then follows
+    // automatically.
+    if (typeof document === 'undefined') return;
+    setTimeout(() => {
+      const conv = document.querySelector(`#demo-frame-${key} .conv`);
+      if (conv instanceof HTMLElement) {
+        conv.scrollTo({ top: conv.scrollHeight, behavior: 'smooth' });
+      }
+    }, 60);
   }
 
   /**

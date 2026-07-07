@@ -477,7 +477,6 @@ export interface DemoResponseStep {
 }
 
 const DEMO_AGENT = 'Demo Agent';
-const DEMO_DISCLAIMER = '*(Demo response — in production this comes from your agent backend.)*';
 
 /** Compact single-line quote of the visitor's text for reply bodies. */
 function quoteUserText(text: string, max = 96): string {
@@ -493,84 +492,74 @@ interface DemoResponseTemplate {
 
 const RESPONSE_TEMPLATES: readonly DemoResponseTemplate[] = [
   {
+    // The builder: has a hunch, is right, is a little smug about it.
     plan: (q) =>
-      [
-        DEMO_DISCLAIMER,
-        '',
-        `Got it — you asked: “${q}”. Sketching a quick plan: locate the code involved, make the change, prove it with a spec.`,
-      ].join('\n'),
+      `“${q}” — love it. I have a hunch where this lives; give me a second to confirm before I touch anything.`,
     burst: () => ({
-      count: 6,
-      families: { read: 3, search: 2, command: 1 },
+      count: 7,
+      families: { read: 3, search: 3, edit: 1 },
       failures: 0,
       durationMs: 4200,
-      files: ['src/app/feature/feature.ts', 'src/app/feature/feature.spec.ts'],
-      tests: [{ command: 'npx vitest run feature', status: 'pass' }],
-      samples: { read: 'Read feature.ts', search: 'Grep "feature" src/app' },
+      files: ['src/app/feature/feature-flags.ts', 'src/app/feature/feature-flags.spec.ts'],
+      tests: [{ command: 'npx vitest run flags', status: 'pass' }],
+      samples: { read: 'Read feature-flags.ts', search: 'Grep "TODO(2024)" src/app' },
     }),
     answer: (q) =>
       [
-        `Done — here is what a finished turn for **“${q}”** would look like:`,
+        `Called it — **“${q}”** lived exactly where I thought, right next to a TODO from 2024. Landed:`,
         '',
-        '- scoped the change to one module and its spec',
-        '- kept the public API untouched',
-        '- verification: `npx vitest run feature` → **all green**',
+        '- `feature-flags.ts` got a real implementation instead of the TODO',
+        '- one new spec pins the edge case (`npx vitest run flags` → **green**)',
+        '- zero public-API churn — your reviewers will be pleasantly bored',
         '',
-        'In a real deployment this text streams from *your* runner; the page only fakes the timing.',
+        'On a real backend I would push a branch and open the PR now. *(This one is scripted — the page has no repo to break.)*',
       ].join('\n'),
   },
   {
+    // The careful one: reproduce first, edit second, gloat never (well, a bit).
     plan: (q) =>
-      [
-        DEMO_DISCLAIMER,
-        '',
-        `Reading “${q}” as the task. First a look at the surrounding code, then the smallest change that could work.`,
-      ].join('\n'),
+      `“${q}” — bold. Rule one applies: reproduce it before fixing it. Future-us always thanks past-us for this.`,
     burst: () => ({
-      count: 8,
-      families: { read: 3, edit: 3, command: 2 },
-      failures: 0,
-      durationMs: 6900,
-      files: ['src/app/core/service.ts', 'src/app/core/service.spec.ts'],
-      tests: [{ command: 'npx vitest run core', status: 'pass' }],
-      samples: { edit: 'Edit service.ts', command: 'npx vitest run core' },
+      count: 9,
+      families: { command: 4, read: 3, edit: 2 },
+      failures: 1,
+      durationMs: 8100,
+      files: ['src/app/core/request.pipe.ts', 'src/app/core/request.pipe.spec.ts'],
+      tests: [{ command: 'npx vitest run core --repeat-each=5', status: 'pass' }],
+      samples: {
+        command: 'npx vitest run core --repeat-each=5',
+        edit: 'Edit request.pipe.ts',
+      },
     }),
     answer: (q) =>
       [
-        `Landed. For **“${q}”** an agent would now report:`,
+        `Reproduced **“${q}”** on the second try (that red ✗ in the burst above was the repro — on purpose).`,
         '',
         '```diff',
-        '- const result = legacyPath(input);',
-        '+ const result = handleRequest(input); // covers the new case',
+        '- return cache.get(key) ?? compute(input);',
+        '+ return cache.get(key) ?? cache.set(key, compute(input)); // actually cache it',
         '```',
         '',
-        'Two new specs pin the behaviour; the whole suite stays green. (Scripted demo — wire `submitMessage` to your backend for the real thing.)',
+        'The fix is one line; the confidence came from `--repeat-each=5` staying green. Classic.',
       ].join('\n'),
   },
   {
-    plan: (q) =>
-      [
-        DEMO_DISCLAIMER,
-        '',
-        `“${q}” — checking whether that touches code, config or docs before editing anything.`,
-      ].join('\n'),
+    // The speed-runner: terse, fast, quietly proud of the timer.
+    plan: (q) => `“${q}”? Say less. Timer starts now. ⏱`,
     burst: () => ({
       count: 5,
-      families: { search: 2, read: 2, command: 1 },
+      families: { search: 1, read: 1, edit: 2, command: 1 },
       failures: 0,
-      durationMs: 3600,
-      files: ['docs/usage.md'],
-      samples: { search: 'Grep across src and docs', command: 'npm run lint' },
+      durationMs: 3100,
+      files: ['src/app/ui/toolbar.ts'],
+      tests: [{ command: 'npx vitest run ui', status: 'pass' }],
+      samples: { edit: 'Edit toolbar.ts', command: 'npx vitest run ui' },
     }),
     answer: (q) =>
       [
-        `Wrapped up. Summary for **“${q}”**:`,
+        `**“${q}”** — done in one pass. Three files read, twelve lines changed, suite green on the first run. Personal best for today.`,
         '',
-        '1. traced the request to its owning module',
-        '2. applied the change plus an inline note for reviewers',
-        '3. `npm run lint` and the affected specs pass',
-        '',
-        '> This reply is scripted for the demo — the event shapes are exactly what a live backend would emit.',
+        '> Real deployments stream this from *your* runner — I am just the demo with good reflexes.',
       ].join('\n'),
   },
 ];

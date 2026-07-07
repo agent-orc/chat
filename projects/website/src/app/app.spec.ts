@@ -88,7 +88,9 @@ describe('App (website)', () => {
       vi.advanceTimersByTime(7000);
       const replies = app.replayA.events().filter((e) => e.actor === 'Demo Agent');
       expect(replies.length).toBe(2);
-      expect(replies[0].body).toContain('Demo response');
+      // Both the plan and the answer quote the submitted text — the reply
+      // reads as a reaction to THIS ask, not a canned paragraph.
+      expect(replies[0].body).toContain('Rename the export button');
       expect(replies[1].body).toContain('Rename the export button');
       expect(app.threadA.busy()).toBe(false);
     } finally {

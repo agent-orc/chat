@@ -11,7 +11,8 @@
     "workbench": "dotnet run --project workbench",
     "website": "ng serve website",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "website:live": "ng serve website --configuration live"
   },
   "private": true,
   "packageManager": "npm@11.3.0",
