@@ -83,6 +83,41 @@ code {
   flex: none;
 }
 
+/* Keyboard skip link: off-screen until focused, then it slides into the
+ * top-left so the first Tab press jumps past the nav to the page content. */
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -64px;
+  z-index: 100;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: var(--site-accent);
+  color: #16100d;
+  font-size: 14px;
+  font-weight: 650;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  transition: top 0.18s ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+  text-decoration: none;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* The skip target is focused programmatically; no focus ring on the region. */
+#main-content:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
 /* ------------------------------------------------------------ reveals -- */
 
 .reveal {

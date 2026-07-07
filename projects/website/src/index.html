@@ -9,9 +9,67 @@
       name="description"
       content="Angular library that renders coding-agent conversations — the frontend counterpart to coding-agent-runner. 23+ event kinds, zero-Angular core, 7 entry points, drop-in studio theme, zoneless."
     />
+    <meta
+      name="keywords"
+      content="Angular, coding agent, chat UI, agent conversation, LLM, streaming, TypeScript, zoneless, component library, coding-agent-runner"
+    />
+    <meta name="author" content="Robert Mischke" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0f0f1a" />
+
+    <!-- Canonical + social. Absolute URLs (crawlers ignore <base>); the GitHub
+         Pages base is /coding-agent-chat/. The share image is an SVG card in
+         public/ — swap in a PNG export for maximum crawler coverage. -->
+    <link rel="canonical" href="https://robertmischke.github.io/coding-agent-chat/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="@coding-agent/chat" />
+    <meta property="og:title" content="@coding-agent/chat — Angular chat UI for coding agents" />
+    <meta
+      property="og:description"
+      content="An Angular library that renders an agent's event stream as a readable conversation — messages, tool activity, waits and decisions. Zoneless, zero-Angular core, 7 entry points."
+    />
+    <meta property="og:url" content="https://robertmischke.github.io/coding-agent-chat/" />
+    <meta
+      property="og:image"
+      content="https://robertmischke.github.io/coding-agent-chat/og-card.svg"
+    />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="@coding-agent/chat — Chat UI components for coding agents"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@coding-agent/chat — Angular chat UI for coding agents" />
+    <meta
+      name="twitter:description"
+      content="An Angular library that renders an agent's event stream as a readable conversation. Zoneless, zero-Angular core, 7 entry points."
+    />
+    <meta
+      name="twitter:image"
+      content="https://robertmischke.github.io/coding-agent-chat/og-card.svg"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareSourceCode",
+        "name": "@coding-agent/chat",
+        "description": "An Angular library that renders a coding agent's event stream as a readable conversation — messages, tool activity, waits and decisions.",
+        "url": "https://robertmischke.github.io/coding-agent-chat/",
+        "codeRepository": "https://github.com/RobertMischke/coding-agent-chat",
+        "programmingLanguage": ["TypeScript", "Angular"],
+        "runtimePlatform": "Angular",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "author": { "@type": "Person", "name": "Robert Mischke" }
+      }
+    </script>
   </head>
   <body>
     <app-root></app-root>

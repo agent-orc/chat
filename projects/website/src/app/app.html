@@ -1,3 +1,5 @@
+<a class="skip-link" href="#main-content">Skip to content</a>
+
 <!-- ======================================================= Sticky nav -->
 <nav class="site-nav" aria-label="Site">
   <div class="wrap site-nav__row">
@@ -6,10 +8,30 @@
       <span>&#64;coding-agent/<b>chat</b></span>
     </a>
     <div class="site-nav__links">
-      <a href="#demo" [class.is-active]="activeSection() === 'demo'">Demo</a>
-      <a href="#history" [class.is-active]="activeSection() === 'history'">History</a>
-      <a href="#features" [class.is-active]="activeSection() === 'features'">Overview</a>
-      <a href="#docs" [class.is-active]="activeSection() === 'docs'">Docs</a>
+      <a
+        href="#demo"
+        [class.is-active]="activeSection() === 'demo'"
+        [attr.aria-current]="activeSection() === 'demo' ? 'true' : null"
+        >Demo</a
+      >
+      <a
+        href="#history"
+        [class.is-active]="activeSection() === 'history'"
+        [attr.aria-current]="activeSection() === 'history' ? 'true' : null"
+        >History</a
+      >
+      <a
+        href="#features"
+        [class.is-active]="activeSection() === 'features'"
+        [attr.aria-current]="activeSection() === 'features' ? 'true' : null"
+        >Overview</a
+      >
+      <a
+        href="#docs"
+        [class.is-active]="activeSection() === 'docs'"
+        [attr.aria-current]="activeSection() === 'docs' ? 'true' : null"
+        >Docs</a
+      >
       <span class="site-nav__sep" aria-hidden="true"></span>
       <a
         class="site-nav__ext"
@@ -68,7 +90,7 @@
   </div>
 </header>
 
-<main>
+<main id="main-content" tabindex="-1">
   <!-- ======================================================= Live demo -->
   <section id="demo" class="section">
     <div class="wrap">
