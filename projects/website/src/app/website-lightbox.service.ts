@@ -3,7 +3,7 @@ import type {
   ChatMediaLightbox,
   MediaLightboxGalleryRequest,
   MediaLightboxImageRef,
-} from '@coding-agent/chat/shared';
+} from 'coding-agent-chat/shared';
 
 /**
  * The site's half of the CHAT_MEDIA_LIGHTBOX seam: the library detects the

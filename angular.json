@@ -99,13 +99,13 @@
             "port": 4201,
             "prebundle": {
               "exclude": [
-                "@coding-agent/chat",
-                "@coding-agent/chat/core",
-                "@coding-agent/chat/shared",
-                "@coding-agent/chat/markdown",
-                "@coding-agent/chat/conversation",
-                "@coding-agent/chat/composer",
-                "@coding-agent/chat/history"
+                "coding-agent-chat",
+                "coding-agent-chat/core",
+                "coding-agent-chat/shared",
+                "coding-agent-chat/markdown",
+                "coding-agent-chat/conversation",
+                "coding-agent-chat/composer",
+                "coding-agent-chat/history"
               ]
             }
           },
@@ -195,13 +195,13 @@
             "port": 4202,
             "prebundle": {
               "exclude": [
-                "@coding-agent/chat",
-                "@coding-agent/chat/core",
-                "@coding-agent/chat/shared",
-                "@coding-agent/chat/markdown",
-                "@coding-agent/chat/conversation",
-                "@coding-agent/chat/composer",
-                "@coding-agent/chat/history"
+                "coding-agent-chat",
+                "coding-agent-chat/core",
+                "coding-agent-chat/shared",
+                "coding-agent-chat/markdown",
+                "coding-agent-chat/conversation",
+                "coding-agent-chat/composer",
+                "coding-agent-chat/history"
               ]
             }
           },

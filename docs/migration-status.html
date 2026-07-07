@@ -87,7 +87,7 @@
 
   <header>
     <div class="kicker">Coding Agent Chat · Extraction Tracker</div>
-    <h1>Migration status <code>@coding-agent/chat</code></h1>
+    <h1>Migration status <code>coding-agent-chat</code></h1>
     <p>
       The chat UI of the Agent Studio frontend is being extracted into a standalone
       Angular library (<code>C:\Projects\coding-agent-chat</code>) — the frontend
@@ -193,10 +193,10 @@
           (2FA or a granular token with 2FA bypass is mandatory) and run the first publish
           (<code>npm run build &amp;&amp; cd dist/coding-agent-chat &amp;&amp; npm version 0.1.0 --no-git-tag-version &amp;&amp; npm publish --access public</code>),
           then register the Trusted Publisher on npmjs.com (repo <code>coding-agent-chat</code>, workflow
-          <code>release.yml</code>) — mirroring the runner's NuGet setup. The <code>@coding-agent</code> scope
+          <code>release.yml</code>) — mirroring the runner's NuGet setup. The unscoped <code>coding-agent-chat</code> name
           must belong to you.
         </p>
-        <div class="plan-meta"><b>Result:</b> installable <code>@coding-agent/chat@0.1.0</code></div>
+        <div class="plan-meta"><b>Result:</b> installable <code>coding-agent-chat@0.1.0</code></div>
       </div>
     </div>
 
@@ -206,7 +206,7 @@
         <h4>Host adoption in the Agent Studio frontend <span class="chip done">✔ done (5e)</span></h4>
         <p>
           Completed 2026-07-03 (app commit <code>90a9120b</code>): the frontend consumes
-          <code>@coding-agent/chat</code> (as a <code>file:</code> dependency on <code>dist/</code> for now,
+          <code>coding-agent-chat</code> (as a <code>file:</code> dependency on <code>dist/</code> for now,
           registry version after the first publish). All ~72 duplicated files deleted (−16,644 lines),
           ~200 consumers moved to library entry points and <code>cac-*</code> selectors, seams wired
           (<code>provideCodingAgentChat</code>, <code>PROJECT_CHAT_DATA_SOURCE</code> adapter,

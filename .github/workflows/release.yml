@@ -1,6 +1,6 @@
 name: release
 
-# Publishes @coding-agent/chat to npmjs.com when a version tag is pushed
+# Publishes coding-agent-chat to npmjs.com when a version tag is pushed
 # (e.g. v0.1.0). The version is derived from the tag.
 #
 # Auth uses npm **Trusted Publishing** (OIDC): no long-lived token in secrets.

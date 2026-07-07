@@ -3,7 +3,7 @@ import type {
   ChatMediaLightbox,
   MediaLightboxGalleryRequest,
   MediaLightboxImageRef,
-} from '@coding-agent/chat/shared';
+} from 'coding-agent-chat/shared';
 
 /**
  * Host implementation of `CHAT_MEDIA_LIGHTBOX` for the lab: the library only

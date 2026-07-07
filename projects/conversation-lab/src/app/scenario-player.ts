@@ -17,7 +17,7 @@ import {
   type RunInfoLite,
   type RunTimelineLite,
   type TaskInfoLite,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 import type { ReplayScenario } from './lab-scenarios';
 

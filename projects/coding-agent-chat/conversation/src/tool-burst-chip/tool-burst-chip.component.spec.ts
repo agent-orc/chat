@@ -5,7 +5,7 @@
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import type { RawLineRange, ToolBurstEvent } from '@coding-agent/chat/core';
+import type { RawLineRange, ToolBurstEvent } from 'coding-agent-chat/core';
 
 import { ToolBurstChipComponent } from './tool-burst-chip.component';
 

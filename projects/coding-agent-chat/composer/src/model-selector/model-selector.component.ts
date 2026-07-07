@@ -11,13 +11,13 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { AnchoredPopoverDirective, TooltipDirective } from '@coding-agent/chat/shared';
+import { AnchoredPopoverDirective, TooltipDirective } from 'coding-agent-chat/shared';
 import {
   ChatCliOption,
   ChatModelOption,
   ChatModelSelection,
   shortModelLabel,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 /**
  * Unified CLI + model + thinking-level selector for the composer footer:

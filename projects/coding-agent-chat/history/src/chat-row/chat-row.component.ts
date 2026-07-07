@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
-import { RoleBadgeComponent } from '@coding-agent/chat/composer';
-import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
+import { RoleBadgeComponent } from 'coding-agent-chat/composer';
+import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
 
 /**
  * Shared chat-row presentation. Renders one message-or-event row inside

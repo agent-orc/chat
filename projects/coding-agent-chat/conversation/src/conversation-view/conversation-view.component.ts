@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, input, output, signal, untracked, viewChild } from '@angular/core';
 
-import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
+import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
 import { ToolBurstChipComponent } from '../tool-burst-chip/tool-burst-chip.component';
 import { ConversationSessionCardComponent } from '../conversation-session-card/conversation-session-card.component';
 import { PixelProgressComponent } from '../pixel-progress/pixel-progress.component';
@@ -10,8 +10,8 @@ import {
   StickToBottomDirective,
   TooltipDirective,
   type StructuredTooltip,
-} from '@coding-agent/chat/shared';
-import { parseRateLimit, shortModelLabel, type SessionCardData } from '@coding-agent/chat/core';
+} from 'coding-agent-chat/shared';
+import { parseRateLimit, shortModelLabel, type SessionCardData } from 'coding-agent-chat/core';
 import type {
   AgentNeedsInputEvent,
   ArtifactImageEvent,
@@ -33,7 +33,7 @@ import type {
   ToolBurstEvent,
   ToolOutputHit,
   TraceLinkEvent,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 interface MessageGroupItem {
   id: string;

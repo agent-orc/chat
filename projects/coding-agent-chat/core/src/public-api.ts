@@ -1,5 +1,5 @@
 /*
- * Public API surface of @coding-agent/chat/core
+ * Public API surface of coding-agent-chat/core
  *
  * The pure, zero-Angular kernel: the ConversationEvent wire contract, the
  * legacy ChatMessage/ChatEvent composer contract, the lib-owned projection

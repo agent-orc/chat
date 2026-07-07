@@ -10,10 +10,10 @@ import type {
   CliOutputLine,
   ConversationEvent,
   RawLineRange,
-} from '@coding-agent/chat/core';
-import { shortModelLabel } from '@coding-agent/chat/core';
-import { ChatComponent } from '@coding-agent/chat/composer';
-import { ConversationViewComponent } from '@coding-agent/chat/conversation';
+} from 'coding-agent-chat/core';
+import { shortModelLabel } from 'coding-agent-chat/core';
+import { ChatComponent } from 'coding-agent-chat/composer';
+import { ConversationViewComponent } from 'coding-agent-chat/conversation';
 
 import { userTurnEvent } from './lab-fixtures';
 import {

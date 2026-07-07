@@ -7,7 +7,7 @@
  * chains one-shot runs via the CLI-native resume session id), and
  * `GET /api/sessions/{id}/stream` is a Server-Sent-Events feed where every
  * `data:` payload is one `CliOutputLine` ({timestamp, stream, text}) — the
- * exact projection input shape from '@coding-agent/chat/core'.
+ * exact projection input shape from 'coding-agent-chat/core'.
  *
  * The received lines are collected in a signal and projected through
  * `projectConversation` into `ConversationEvent[]`, so the SAME renderer
@@ -23,7 +23,7 @@ import {
   type RunInfoLite,
   type RunTimelineLite,
   type TaskInfoLite,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 export type WorkbenchCliType = 'claude' | 'codex' | 'gemini';
 export type WorkbenchConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';

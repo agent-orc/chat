@@ -6,7 +6,7 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ChatCliOption, ChatModelOption, ChatModelSelection } from '@coding-agent/chat/core';
+import type { ChatCliOption, ChatModelOption, ChatModelSelection } from 'coding-agent-chat/core';
 import { ModelSelectorComponent } from './model-selector.component';
 
 const CLIS: ChatCliOption[] = [

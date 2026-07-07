@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { PlanItem, PlanItemStatus } from '@coding-agent/chat/core';
+import type { PlanItem, PlanItemStatus } from 'coding-agent-chat/core';
 
 /**
  * Renders an agent task plan (`plan.update` snapshot) as a live checklist:

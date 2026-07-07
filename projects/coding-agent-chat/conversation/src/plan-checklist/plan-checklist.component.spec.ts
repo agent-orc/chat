@@ -4,7 +4,7 @@
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import type { PlanItem } from '@coding-agent/chat/core';
+import type { PlanItem } from 'coding-agent-chat/core';
 import { PlanChecklistComponent } from './plan-checklist.component';
 
 const item = (id: string, title: string, status: PlanItem['status']): PlanItem => ({ id, title, status });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-import { TooltipDirective } from '@coding-agent/chat/shared';
-import type { ParsedRateLimit, SessionCardData } from '@coding-agent/chat/core';
+import { TooltipDirective } from 'coding-agent-chat/shared';
+import type { ParsedRateLimit, SessionCardData } from 'coding-agent-chat/core';
 
 /**
  * Compact session / rate-limit meta card for the next-gen conversation view

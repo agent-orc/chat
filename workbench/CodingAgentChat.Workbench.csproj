@@ -13,7 +13,7 @@
       Deliberately a PackageReference to the *published* nuget.org package, not a
       ProjectReference into the runner repo: the whole point of this workbench is
       to exercise the two released artifacts together — the CodingAgentRunner
-      NuGet package driving a real CLI, and the @coding-agent/chat npm library
+      NuGet package driving a real CLI, and the coding-agent-chat npm library
       rendering its output.
     -->
     <PackageReference Include="CodingAgentRunner" Version="0.2.0" />

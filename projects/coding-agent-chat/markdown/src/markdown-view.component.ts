@@ -6,7 +6,7 @@ import {
   input,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
-import { MarkdownImageLightboxDirective } from '@coding-agent/chat/shared';
+import { MarkdownImageLightboxDirective } from 'coding-agent-chat/shared';
 import { CHAT_TASK_REFERENCE_PROVIDER } from './chat-task-reference.token';
 import {
   linkTaskReferencesInHtml,

@@ -9,7 +9,7 @@ This is an Angular CLI workspace (Angular 21.2, `ng-packagr`):
 
 | Project | Path | Purpose |
 |---|---|---|
-| `@coding-agent/chat` | [`projects/coding-agent-chat`](projects/coding-agent-chat) | the publishable library |
+| `coding-agent-chat` | [`projects/coding-agent-chat`](projects/coding-agent-chat) | the publishable library |
 | `conversation-lab` | [`projects/conversation-lab`](projects/conversation-lab) | demo / playground app (dev server port 4201) |
 | `website` | [`projects/website`](projects/website) | public website (GitHub Pages) with live component demos (dev server port 4202) |
 
@@ -81,7 +81,7 @@ ng build coding-agent-chat --watch
 Consumers should depend on the **built `dist/`** output (not the source) — this
 exercises the published partial-Ivy compile mode and catches strict-template
 mismatches early. The Conversation Lab demo follows the same rule: its
-tsconfig paths resolve `@coding-agent/chat/*` to `dist/`, so rebuild the
+tsconfig paths resolve `coding-agent-chat/*` to `dist/`, so rebuild the
 library before serving the demo.
 
 ## License

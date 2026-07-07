@@ -4,7 +4,7 @@
 // coding-agent CLI (Claude Code / Codex / Gemini) through the published
 // CodingAgentRunner NuGet package. It exposes chat-shaped session endpoints and
 // streams every produced line as a Server-Sent Event whose JSON shape matches
-// `CliOutputLine` from '@coding-agent/chat/core' ({timestamp, stream, text}).
+// `CliOutputLine` from 'coding-agent-chat/core' ({timestamp, stream, text}).
 //
 // ── How "interactive sessions" map onto the runner API ─────────────────────────
 // CodingAgentRunner does NOT model a conversation as a long-lived stdin-driven
@@ -185,7 +185,7 @@ sealed record PostMessageRequest(string? Text, string? PermissionMode);
 
 /// <summary>
 /// The wire shape of one streamed line — structurally identical to
-/// <c>CliOutputLine</c> from '@coding-agent/chat/core' once serialized with
+/// <c>CliOutputLine</c> from 'coding-agent-chat/core' once serialized with
 /// web defaults ({"timestamp": ISO-8601, "stream", "text"}).
 /// </summary>
 sealed record OutputLineDto(DateTime Timestamp, string Stream, string Text);

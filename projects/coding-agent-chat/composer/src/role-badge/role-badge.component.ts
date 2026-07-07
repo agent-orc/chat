@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { getRole, resolveRole, type WorkforceRole, type WorkforceRoleId } from '../workforce-role';
 
-import { TooltipDirective } from '@coding-agent/chat/shared';
+import { TooltipDirective } from 'coding-agent-chat/shared';
 /**
  * Small inline badge that identifies the workforce role for a chat row.
  *

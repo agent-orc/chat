@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config';
  *
  * Angular component specs (*.component.spec.ts across all entry points) run
  * through the `@angular/build:unit-test` builder (`npx ng test`), which
- * resolves the `@coding-agent/chat/*` self-references — raw vitest cannot,
+ * resolves the `coding-agent-chat/*` self-references — raw vitest cannot,
  * so component specs are excluded here.
  */
 export default defineConfig({

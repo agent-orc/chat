@@ -15,7 +15,7 @@ import type {
   RawLineRange,
   RunMarkerEvent,
   ToolBurstEvent,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 import { ConversationViewComponent } from './conversation-view.component';
 

@@ -5,7 +5,7 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ChatContextUsage } from '@coding-agent/chat/core';
+import type { ChatContextUsage } from 'coding-agent-chat/core';
 import { ContextRingComponent } from './context-ring.component';
 
 const USAGE: ChatContextUsage = {

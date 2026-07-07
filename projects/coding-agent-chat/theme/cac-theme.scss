@@ -5,9 +5,9 @@
 // Optional, drop-in side-effect stylesheet that gives the `cac-*` components
 // the studio look out of the box. Import it once at app level:
 //
-//   // angular.json "styles": [ "node_modules/@coding-agent/chat/theme/cac-theme.css" ]
+//   // angular.json "styles": [ "node_modules/coding-agent-chat/theme/cac-theme.css" ]
 //   //  — or —
-//   @use '@coding-agent/chat/theme/cac-theme.css';      // global SCSS
+//   @use 'coding-agent-chat/theme/cac-theme.css';      // global SCSS
 //
 // Components read these CSS custom properties (every one has a built-in
 // fallback, so the library still renders without this sheet — just unstyled).

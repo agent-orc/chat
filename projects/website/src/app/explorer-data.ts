@@ -11,7 +11,7 @@ import type {
   MessageEvent,
   RawLineRange,
   ToolBurstEvent,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 export type EntryPointKey =
   | 'core'
@@ -117,8 +117,8 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
   core: {
     label: 'zero Angular — runs in Node, tests, your backend',
     code: [
-      "import { projectConversation } from '@coding-agent/chat/core';",
-      "import type { ConversationEvent } from '@coding-agent/chat/core';",
+      "import { projectConversation } from 'coding-agent-chat/core';",
+      "import type { ConversationEvent } from 'coding-agent-chat/core';",
       '',
       'const events: ConversationEvent[] = JSON.parse(feed); // wire JSON below ↓',
       'const items = projectConversation(events); // grouped, folded, render-ready',
@@ -160,7 +160,7 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
   theme: {
     label: 'styles.scss + any parent element',
     code: [
-      "@use '@coding-agent/chat/theme/cac-theme.css';",
+      "@use 'coding-agent-chat/theme/cac-theme.css';",
       '',
       '<!-- light/dark per subtree — nest them freely: -->',
       '<div data-studio-theme="light"> …chat surfaces… </div>',

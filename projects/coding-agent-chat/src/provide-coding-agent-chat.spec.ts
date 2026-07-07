@@ -8,12 +8,12 @@ import {
   CHAT_TASK_REFERENCE_PROVIDER,
   ChatTaskReferenceProvider,
   MarkdownTaskReference,
-} from '@coding-agent/chat/markdown';
+} from 'coding-agent-chat/markdown';
 import {
   CHAT_MEDIA_LIGHTBOX,
   ChatMediaLightbox,
   MediaLightboxGalleryRequest,
-} from '@coding-agent/chat/shared';
+} from 'coding-agent-chat/shared';
 
 import { provideCodingAgentChat } from './provide-coding-agent-chat';
 

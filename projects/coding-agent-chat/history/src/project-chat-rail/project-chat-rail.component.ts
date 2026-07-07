@@ -12,7 +12,7 @@ import {
   signal,
 } from '@angular/core';
 
-import { TooltipDirective } from '@coding-agent/chat/shared';
+import { TooltipDirective } from 'coding-agent-chat/shared';
 
 import type { ProjectChatTurn } from '../project-chat.model';
 

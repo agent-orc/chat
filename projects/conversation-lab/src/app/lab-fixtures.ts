@@ -18,7 +18,7 @@ import type {
   RawLineRange,
   RunMarkerEvent,
   ToolBurstEvent,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 import { LAB_IMAGE_CHART, LAB_IMAGE_SUNSET } from './lab-image-data';
 

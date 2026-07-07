@@ -1,5 +1,5 @@
 /*
- * Public API surface of @coding-agent/chat/history
+ * Public API surface of coding-agent-chat/history
  *
  * The project-chat history surface: `<cac-chat-row>` (shared row
  * presentation over role badge + markdown body), the virtualised

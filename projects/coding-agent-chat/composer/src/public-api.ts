@@ -1,5 +1,5 @@
 /*
- * Public API surface of @coding-agent/chat/composer
+ * Public API surface of coding-agent-chat/composer
  *
  * The Orchestrator chat surface: `<cac-chat>` (composer + timeline over the
  * legacy ChatMessage/ChatEvent contract, draft/paste/drop/attachments, no

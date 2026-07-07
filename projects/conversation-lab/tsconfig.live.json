@@ -1,5 +1,5 @@
 /* Live-iteration variant of the lab build (`npm run lab:live`): resolves the
- * @coding-agent/chat entry points to their SOURCE public-api files instead of
+ * coding-agent-chat entry points to their SOURCE public-api files instead of
  * the built dist/ output, so library edits reach the browser immediately —
  * no ng-packagr rebuild, no server restart. The default `npm run lab` keeps
  * consuming dist/ (the "renders against the packaged output" contract). */
@@ -7,13 +7,13 @@
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
     "paths": {
-      "@coding-agent/chat": ["../coding-agent-chat/src/public-api.ts"],
-      "@coding-agent/chat/core": ["../coding-agent-chat/core/src/public-api.ts"],
-      "@coding-agent/chat/markdown": ["../coding-agent-chat/markdown/src/public-api.ts"],
-      "@coding-agent/chat/shared": ["../coding-agent-chat/shared/src/public-api.ts"],
-      "@coding-agent/chat/conversation": ["../coding-agent-chat/conversation/src/public-api.ts"],
-      "@coding-agent/chat/composer": ["../coding-agent-chat/composer/src/public-api.ts"],
-      "@coding-agent/chat/history": ["../coding-agent-chat/history/src/public-api.ts"]
+      "coding-agent-chat": ["../coding-agent-chat/src/public-api.ts"],
+      "coding-agent-chat/core": ["../coding-agent-chat/core/src/public-api.ts"],
+      "coding-agent-chat/markdown": ["../coding-agent-chat/markdown/src/public-api.ts"],
+      "coding-agent-chat/shared": ["../coding-agent-chat/shared/src/public-api.ts"],
+      "coding-agent-chat/conversation": ["../coding-agent-chat/conversation/src/public-api.ts"],
+      "coding-agent-chat/composer": ["../coding-agent-chat/composer/src/public-api.ts"],
+      "coding-agent-chat/history": ["../coding-agent-chat/history/src/public-api.ts"]
     }
   }
 }

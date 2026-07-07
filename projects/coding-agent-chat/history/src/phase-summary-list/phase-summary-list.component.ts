@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
-import { RoleBadgeComponent, type ChatPhase } from '@coding-agent/chat/composer';
-import { TooltipDirective } from '@coding-agent/chat/shared';
+import { RoleBadgeComponent, type ChatPhase } from 'coding-agent-chat/composer';
+import { TooltipDirective } from 'coding-agent-chat/shared';
 
 /**
  * Compressed summary layer rendered above the verbatim chat. Each row

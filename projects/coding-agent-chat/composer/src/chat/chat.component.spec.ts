@@ -13,7 +13,7 @@ import type {
   ChatPermissionControl,
   ChatSubmitEvent,
   ChatToolbarItem,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 import { ChatComponent } from './chat.component';
 
 const message = (

@@ -1,5 +1,5 @@
 /*
- * Public API surface of @coding-agent/chat/shared
+ * Public API surface of coding-agent-chat/shared
  *
  * Vendored, namespaced UI primitives shared by the renderer and composer:
  * the canonical hover tooltip (`cacTooltip`), the stick-to-bottom scroll

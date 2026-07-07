@@ -19,11 +19,11 @@ import type {
   ChatSubmitEvent,
   ChatToolbarItem,
   ConversationEvent,
-} from '@coding-agent/chat/core';
-import { ChatComponent } from '@coding-agent/chat/composer';
-import { ConversationViewComponent } from '@coding-agent/chat/conversation';
-import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
-import { TooltipDirective } from '@coding-agent/chat/shared';
+} from 'coding-agent-chat/core';
+import { ChatComponent } from 'coding-agent-chat/composer';
+import { ConversationViewComponent } from 'coding-agent-chat/conversation';
+import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
+import { TooltipDirective } from 'coding-agent-chat/shared';
 
 import { CodeBlockComponent } from './code-block.component';
 import {
@@ -227,7 +227,7 @@ export class App {
   protected readonly snippetDataSource = SNIPPET_DATA_SOURCE;
   protected readonly snippetTheme = SNIPPET_THEME;
   protected readonly snippetCoreOnly = SNIPPET_CORE_ONLY;
-  protected readonly heroInstall = 'npm install @coding-agent/chat';
+  protected readonly heroInstall = 'npm install coding-agent-chat';
 
   // --- Live demo: two paced replays, each with a follow-up composer ----------
   protected readonly replayA = new DemoReplay(DEMO_REPLAY_STEPS);

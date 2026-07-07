@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideCodingAgentChat } from '@coding-agent/chat';
+import { provideCodingAgentChat } from 'coding-agent-chat';
 
 import { WebsiteLightboxService } from './website-lightbox.service';
 

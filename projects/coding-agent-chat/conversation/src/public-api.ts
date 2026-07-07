@@ -1,5 +1,5 @@
 /*
- * Public API surface of @coding-agent/chat/conversation
+ * Public API surface of coding-agent-chat/conversation
  *
  * The Activity-chat renderer over `ConversationEvent[]`: the grouping/folding
  * `<cac-conversation-view>` plus its dense sub-renderers

@@ -5,7 +5,7 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ChatPermissionOption } from '@coding-agent/chat/core';
+import type { ChatPermissionOption } from 'coding-agent-chat/core';
 import { PermissionSelectComponent } from './permission-select.component';
 
 const OPTIONS: ChatPermissionOption[] = [

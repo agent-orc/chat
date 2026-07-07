@@ -9,8 +9,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { AnchoredPopoverDirective, TooltipDirective } from '@coding-agent/chat/shared';
-import { ChatContextUsage, formatTokenCount } from '@coding-agent/chat/core';
+import { AnchoredPopoverDirective, TooltipDirective } from 'coding-agent-chat/shared';
+import { ChatContextUsage, formatTokenCount } from 'coding-agent-chat/core';
 
 /** Radius of the ring circles in the 18x18 viewBox — shared with the template. */
 const RING_RADIUS = 7;

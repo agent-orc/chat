@@ -25,7 +25,7 @@ import type {
   ConversationEvent,
   RunInfoLite,
   RunTimelineLite,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 import { LAB_CONVERSATION_EVENTS, LAB_IMAGE_EVENTS } from './lab-fixtures';
 

@@ -9,8 +9,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { AnchoredPopoverDirective, TooltipDirective } from '@coding-agent/chat/shared';
-import { ChatPermissionOption } from '@coding-agent/chat/core';
+import { AnchoredPopoverDirective, TooltipDirective } from 'coding-agent-chat/shared';
+import { ChatPermissionOption } from 'coding-agent-chat/core';
 
 /**
  * Permission / sandbox-mode select for the composer footer: a chip showing

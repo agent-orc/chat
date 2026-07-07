@@ -5,7 +5,7 @@
 import { TestBed } from '@angular/core/testing';
 import type { ComponentFixture } from '@angular/core/testing';
 
-import { parseRateLimit, type SessionCardData } from '@coding-agent/chat/core';
+import { parseRateLimit, type SessionCardData } from 'coding-agent-chat/core';
 
 import { ConversationSessionCardComponent } from './conversation-session-card.component';
 

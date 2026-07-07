@@ -1,7 +1,7 @@
 import { EnvironmentProviders, Provider, Type, makeEnvironmentProviders } from '@angular/core';
 
-import { CHAT_TASK_REFERENCE_PROVIDER, ChatTaskReferenceProvider } from '@coding-agent/chat/markdown';
-import { CHAT_MEDIA_LIGHTBOX, ChatMediaLightbox } from '@coding-agent/chat/shared';
+import { CHAT_TASK_REFERENCE_PROVIDER, ChatTaskReferenceProvider } from 'coding-agent-chat/markdown';
+import { CHAT_MEDIA_LIGHTBOX, ChatMediaLightbox } from 'coding-agent-chat/shared';
 
 /**
  * Host wiring for the optional library seams. Every seam has a safe no-op

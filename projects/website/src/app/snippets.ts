@@ -4,12 +4,12 @@
  * when the public API moves.
  */
 
-export const SNIPPET_INSTALL = `npm install @coding-agent/chat
+export const SNIPPET_INSTALL = `npm install coding-agent-chat
 # peer deps: @angular/core, @angular/common, @angular/forms (>=21 <22), rxjs ~7.8`;
 
 export const SNIPPET_PROVIDE = `// app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideCodingAgentChat } from '@coding-agent/chat';
+import { provideCodingAgentChat } from 'coding-agent-chat';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,8 +19,8 @@ export const appConfig: ApplicationConfig = {
 };`;
 
 export const SNIPPET_RENDER = `// any component
-import { ConversationViewComponent } from '@coding-agent/chat/conversation';
-import type { ConversationEvent } from '@coding-agent/chat/core';
+import { ConversationViewComponent } from 'coding-agent-chat/conversation';
+import type { ConversationEvent } from 'coding-agent-chat/core';
 
 @Component({
   imports: [ConversationViewComponent],
@@ -38,7 +38,7 @@ provideCodingAgentChat({
 });`;
 
 export const SNIPPET_SEAM_HISTORY = `// The history entry point adds two more seams, provided directly:
-import { CHAT_HISTORY_CONFIRM, PROJECT_CHAT_DATA_SOURCE } from '@coding-agent/chat/history';
+import { CHAT_HISTORY_CONFIRM, PROJECT_CHAT_DATA_SOURCE } from 'coding-agent-chat/history';
 
 providers: [
   // scroll/search/stats/turn transport behind <cac-project-chat-list>
@@ -56,15 +56,15 @@ export interface ProjectChatDataSource {
 }`;
 
 export const SNIPPET_THEME = `/* styles.scss — optional drop-in stylesheet with the studio look */
-@import '@coding-agent/chat/theme/cac-theme.css';
+@import 'coding-agent-chat/theme/cac-theme.css';
 
 /* Dark by default. Light theme via an attribute on any parent: */
 /* <html data-studio-theme="light"> */`;
 
 export const SNIPPET_CORE_ONLY = `// Zero-Angular kernel: backends, SSR and tests can import the wire
 // contract + projection without pulling in the renderer.
-import { projectConversation } from '@coding-agent/chat/core';
-import type { ConversationEvent } from '@coding-agent/chat/core';
+import { projectConversation } from 'coding-agent-chat/core';
+import type { ConversationEvent } from 'coding-agent-chat/core';
 
 // Raw evidence in (CLI log lines, run timeline, tokens, screenshots, commits) —
 // a flat, ordered ConversationEvent[] out.

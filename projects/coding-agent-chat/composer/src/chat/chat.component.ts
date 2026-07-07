@@ -16,8 +16,8 @@ import { FormsModule } from '@angular/forms';
 import {
   MarkdownImageLightboxDirective,
   TooltipDirective,
-} from '@coding-agent/chat/shared';
-import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
+} from 'coding-agent-chat/shared';
+import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
 import {
   mergeByTimestamp,
   ChatContextUsage,
@@ -30,7 +30,7 @@ import {
   ChatRole,
   ChatSubmitEvent,
   ChatToolbarItem,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 import { RoleBadgeComponent } from '../role-badge/role-badge.component';
 import { ModelSelectorComponent } from '../model-selector/model-selector.component';
 import { PermissionSelectComponent } from '../permission-select/permission-select.component';

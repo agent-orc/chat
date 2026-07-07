@@ -17,7 +17,7 @@ import type {
   RunMarkerEvent,
   SupervisorWaitEvent,
   ToolBurstEvent,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 const SOURCE = 'website-demo.log';
 

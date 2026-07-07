@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideCodingAgentChat } from '@coding-agent/chat';
-import { CHAT_MEDIA_LIGHTBOX } from '@coding-agent/chat/shared';
+import { provideCodingAgentChat } from 'coding-agent-chat';
+import { CHAT_MEDIA_LIGHTBOX } from 'coding-agent-chat/shared';
 
 import { LabLightboxService } from './lab-lightbox.service';
 

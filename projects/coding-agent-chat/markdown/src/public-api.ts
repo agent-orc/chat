@@ -1,5 +1,5 @@
 /*
- * Public API surface of @coding-agent/chat/markdown
+ * Public API surface of coding-agent-chat/markdown
  *
  * The markdown kernel (GFM rendering with sanitised links, numbered code
  * blocks, image-source transforms and task-reference auto-linking — pure

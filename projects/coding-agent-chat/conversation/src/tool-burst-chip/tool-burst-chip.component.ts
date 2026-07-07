@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import type { ToolBurstEvent, ToolFamily, ToolOutputHit } from '@coding-agent/chat/core';
-import { TooltipDirective, type StructuredTooltip } from '@coding-agent/chat/shared';
+import type { ToolBurstEvent, ToolFamily, ToolOutputHit } from 'coding-agent-chat/core';
+import { TooltipDirective, type StructuredTooltip } from 'coding-agent-chat/shared';
 
 /**
  * Dense, collapsed-by-default renderer for `ToolBurst` events in the

@@ -1,4 +1,4 @@
-import { projectConversation } from '@coding-agent/chat/core';
+import { projectConversation } from 'coding-agent-chat/core';
 
 import { LAB_SCENARIOS, findScenario, type ReplayScenario } from './lab-scenarios';
 

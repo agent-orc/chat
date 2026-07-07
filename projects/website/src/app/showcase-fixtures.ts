@@ -14,7 +14,7 @@ import type {
   ConversationEvent,
   MessageEvent,
   RawLineRange,
-} from '@coding-agent/chat/core';
+} from 'coding-agent-chat/core';
 
 const SOURCE = 'website-demo-rendering.log';
 
