@@ -2,10 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   afterNextRender,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import type { ChatSubmitEvent, ConversationEvent } from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
@@ -144,6 +148,10 @@ export class App {
   protected readonly showcaseEvents = SHOWCASE_EVENTS;
   /** The site's CHAT_MEDIA_LIGHTBOX implementation; the overlay lives in the template. */
   protected readonly lightbox = inject(WebsiteLightboxService);
+  private readonly lightboxClose = viewChild<ElementRef<HTMLButtonElement>>('lightboxClose');
+  /** Element to give focus back to when the dialog closes. */
+  private lightboxReturnFocus: HTMLElement | null = null;
+  private lightboxWasOpen = false;
 
   /** 1s wall-clock tick for the "last contact Ns ago" readouts. */
   private readonly now = signal(Date.now());
@@ -180,6 +188,13 @@ export class App {
   private static readonly THEME_STORAGE_KEY = 'cac-site-theme';
 
   constructor() {
+    // Modal chrome for the lightbox (focus move/restore + scroll lock): the
+    // dialog markup itself lives in the template; this effect owns the parts
+    // aria-modal implies but HTML doesn't do by itself.
+    effect(() => {
+      const open = this.lightbox.current() !== null;
+      untracked(() => this.syncLightboxChrome(open));
+    });
     afterNextRender(() => {
       this.syncSiteThemeFromDom();
       this.observeSections();
@@ -198,7 +213,33 @@ export class App {
     this.demoTheme.update((t) => (t === 'dark' ? 'light' : 'dark'));
   }
 
-  /** Lightbox keyboard contract: Escape closes, arrows page the gallery. */
+  /**
+   * On open: remember the trigger, lock body scroll, move focus onto the
+   * dialog's close button (screen readers then announce the dialog). On
+   * close: unlock and give focus back to the trigger.
+   */
+  private syncLightboxChrome(open: boolean): void {
+    if (typeof document === 'undefined' || open === this.lightboxWasOpen) return;
+    this.lightboxWasOpen = open;
+    if (open) {
+      this.lightboxReturnFocus =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      document.body.style.overflow = 'hidden';
+      // The @if block renders after this effect settles — focus next tick.
+      setTimeout(() => this.lightboxClose()?.nativeElement.focus(), 0);
+    } else {
+      document.body.style.overflow = '';
+      const target = this.lightboxReturnFocus;
+      this.lightboxReturnFocus = null;
+      if (target?.isConnected) target.focus();
+    }
+  }
+
+  /**
+   * Lightbox keyboard contract: Escape closes, arrows page the gallery,
+   * Tab is trapped inside the dialog (aria-modal promises an inert
+   * background — the trap is what actually delivers it for keyboards).
+   */
   protected onLightboxKey(event: KeyboardEvent): void {
     if (this.lightbox.current() === null) return;
     switch (event.key) {
@@ -211,6 +252,25 @@ export class App {
       case 'ArrowLeft':
         this.lightbox.prev();
         break;
+      case 'Tab': {
+        const dialog = document.querySelector('.lightbox');
+        if (!(dialog instanceof HTMLElement)) return;
+        const buttons = Array.from(dialog.querySelectorAll<HTMLElement>('button'));
+        if (buttons.length === 0) return;
+        const first = buttons[0];
+        const last = buttons[buttons.length - 1];
+        const active = document.activeElement;
+        if (!(active instanceof HTMLElement) || !dialog.contains(active)) {
+          first.focus(); // focus escaped (or never arrived) — pull it back in
+        } else if (event.shiftKey && active === first) {
+          last.focus();
+        } else if (!event.shiftKey && active === last) {
+          first.focus();
+        } else {
+          return; // normal Tab movement between the dialog's own buttons
+        }
+        break;
+      }
       default:
         return;
     }

@@ -72,6 +72,36 @@
   --studio-row-gap: 3px;
 }
 
+[data-studio-theme=dark] {
+  --studio-bg-surface: var(--color-mocha-base-0);
+  --studio-bg-editor: var(--color-mocha-base-0);
+  --studio-bg-elevated: var(--color-mocha-base);
+  --studio-bg-hover: var(--alpha-white-04);
+  --studio-surface: var(--studio-bg-elevated);
+  --studio-border: var(--alpha-white-06);
+  --studio-border-strong: var(--alpha-white-10);
+  --studio-fg: var(--color-slate-200);
+  --studio-fg-strong: var(--color-slate-50);
+  --studio-fg-dim: var(--color-slate-400);
+  --studio-fg-muted: var(--color-slate-500);
+  --studio-accent: var(--color-orange-500);
+  --studio-accent-2: var(--color-green-vscode);
+  --studio-accent-3: var(--color-blue-400);
+  --studio-accent-4: var(--color-purple-vscode);
+  --studio-accent-warn: var(--color-yellow-vscode);
+  --studio-accent-success: var(--color-green-600);
+  --studio-accent-6: var(--color-red-500);
+  --studio-on-accent: var(--color-grey-950);
+  --severity-pending: var(--color-violet-300);
+  --severity-info: var(--color-mocha-blue);
+  --studio-tooltip-bg: rgba(15, 17, 28, 0.96);
+  --studio-tooltip-fg: var(--color-slate-200);
+  --studio-tooltip-fg-strong: var(--color-slate-50);
+  --studio-tooltip-fg-dim: var(--color-slate-400);
+  --studio-tooltip-border: rgba(148, 163, 184, 0.28);
+  --elevation-tooltip: var(--shadow-200);
+}
+
 [data-studio-theme=light] {
   --studio-bg-surface: #ffffff;
   --studio-bg-editor: var(--color-grey-50);
@@ -101,10 +131,7 @@
   background: color-mix(in srgb, var(--severity-info, #6da2f0) 30%, transparent);
 }
 
-.markdown-body {
-  /* -- Tunable density tokens -------------------------------------- */
-  --md-font-size: 14.5px;
-  --md-line-height: 1.65;
+:root {
   /* -- Palette (Catppuccin Mocha) ---------------------------------- */
   --md-fg: #cdd6f4; /* text       */
   --md-fg-strong: #f5e0dc; /* rosewater  */
@@ -137,6 +164,47 @@
   --md-hl-punct: #9399b2; /* overlay2   */
   --md-hl-addition: #a6e3a1; /* green      */
   --md-hl-deletion: #f38ba8; /* red        */
+}
+
+[data-studio-theme=dark] {
+  /* -- Palette (Catppuccin Mocha) ---------------------------------- */
+  --md-fg: #cdd6f4; /* text       */
+  --md-fg-strong: #f5e0dc; /* rosewater  */
+  --md-fg-em: #f2cdcd; /* flamingo   */
+  --md-fg-muted: #a6adc8; /* subtext0   */
+  --md-fg-link: #89dceb; /* sky        */
+  --md-fg-link-hov: #74c7ec; /* sapphire   */
+  --md-fg-code: #fab387; /* peach      */
+  --md-fg-h3: #b4befe; /* lavender   */
+  --md-fg-h4: #89b4fa; /* blue       */
+  --md-marker: #cba6f7; /* mauve      */
+  --md-border-soft: rgba(127, 132, 156, 0.30);
+  --md-border: rgba(127, 132, 156, 0.45);
+  --md-rule: rgba(127, 132, 156, 0.40);
+  --md-surface-soft: rgba(49, 50, 68, 0.45);
+  --md-surface: rgba(49, 50, 68, 0.70);
+  --md-code-bg: #181825; /* mantle     */
+  /* -- Syntax highlight tokens (Catppuccin Mocha) ------------------ */
+  --md-hl-keyword: #cba6f7; /* mauve      */
+  --md-hl-string: #a6e3a1; /* green      */
+  --md-hl-number: #fab387; /* peach      */
+  --md-hl-comment: #7f849c; /* overlay1   */
+  --md-hl-function: #89b4fa; /* blue       */
+  --md-hl-type: #f9e2af; /* yellow     */
+  --md-hl-variable: #bac2de; /* subtext1   */
+  --md-hl-builtin: #f38ba8; /* red        */
+  --md-hl-attr: #f9e2af; /* yellow     */
+  --md-hl-tag: #89b4fa; /* blue       */
+  --md-hl-meta: #f5c2e7; /* pink       */
+  --md-hl-punct: #9399b2; /* overlay2   */
+  --md-hl-addition: #a6e3a1; /* green      */
+  --md-hl-deletion: #f38ba8; /* red        */
+}
+
+.markdown-body {
+  /* -- Tunable density tokens -------------------------------------- */
+  --md-font-size: 14.5px;
+  --md-line-height: 1.65;
   color: var(--md-fg);
   font-family: var(--font-ui);
   font-size: var(--md-font-size);
@@ -603,8 +671,11 @@
   outline-offset: 2px;
 }
 
-/* -- Light-theme palette override --------------------------------- */
-html[data-studio-theme=light] .markdown-body {
+/* -- Light-theme palette override ---------------------------------
+   Attribute scope (not `html[…] .markdown-body`): the light values ride the
+   same custom-property scope as the studio tokens, so nested theme-pinned
+   frames resolve against their nearest themed ancestor. */
+[data-studio-theme=light] {
   --md-fg: #1a1a1a;
   --md-fg-strong: #1a1a1a;
   --md-fg-em: #1a1a1a;

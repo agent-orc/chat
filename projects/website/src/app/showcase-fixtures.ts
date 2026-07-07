@@ -81,19 +81,24 @@ const chartArtifact: ArtifactImageEvent = {
   rawRange: nextRange(),
 };
 
+// BOTH proofs live in ONE message on purpose: the lightbox directive collects
+// its gallery per message body, so this pair is what makes arrow-key paging
+// demonstrable on the page (the artifact row above opens as a single image).
 const agentInlineImage: MessageEvent = {
   id: 'sc-agent-2',
   kind: 'message.taskAgent',
   timestamp: at(4, 10),
   actor: 'Agent',
   body: [
-    'All 29 search specs stay green with the cache in place — proof attached inline:',
+    'All 29 search specs stay green with the cache in place — both proofs inline:',
+    '',
+    '![Latency p95 by route — before vs. after the tokenizer memo](media/latency-chart.svg)',
     '',
     '![Terminal — 29/29 search specs green, 94.2% coverage](media/spec-run.svg)',
     '',
-    'Click any image in this conversation to enlarge it; arrow keys page through the gallery.',
+    'Click an image to enlarge it — in this two-image message the arrow keys flip between them.',
   ].join('\n'),
-  rawRange: nextRange(8),
+  rawRange: nextRange(10),
 };
 
 export const SHOWCASE_EVENTS: readonly ConversationEvent[] = [

@@ -83,8 +83,16 @@
 
 // -----------------------------------------------------------------------------
 // Tier 2 — Semantic aliases — dark theme (the daily driver)
+//
+// Defined as a mixin and applied BOTH to `:root` (the default) and to
+// `[data-studio-theme='dark']`: custom properties resolve per element via the
+// nearest ancestor that sets them, so an explicit dark scope nested inside a
+// light page (a dark preview frame on a light site) re-establishes the dark
+// values locally. Without the attribute scope, "dark inside light" would be
+// unreachable — `:root` is always the outermost scope and always loses to an
+// ancestor with the light attribute.
 // -----------------------------------------------------------------------------
-:root {
+@mixin studio-tokens-dark {
   // Surfaces
   --studio-bg-surface:  var(--color-mocha-base-0); // chrome-less pane background
   --studio-bg-editor:   var(--color-mocha-base-0); // body surface
@@ -125,6 +133,12 @@
 
   // Elevation — tooltip drop shadow
   --elevation-tooltip: var(--shadow-200);
+}
+
+:root {
+  @include studio-tokens-dark;
+
+  // Theme-independent tokens (identical in both palettes) — root only.
 
   // Type families
   --font-ui:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -136,6 +150,10 @@
 
   // Density — compact row gap (host default: --studio-row-gap-compact)
   --studio-row-gap: 3px;
+}
+
+[data-studio-theme='dark'] {
+  @include studio-tokens-dark;
 }
 
 // -----------------------------------------------------------------------------
@@ -198,11 +216,11 @@
 // h/li/code/pre/table/a rules. Palette is Catppuccin Mocha on dark; the light
 // block at the bottom swaps to a contrast-safe palette on white.
 // -----------------------------------------------------------------------------
-.markdown-body {
-  /* -- Tunable density tokens -------------------------------------- */
-  --md-font-size: 14.5px;
-  --md-line-height: 1.65;
-
+// Markdown palette lives on the SAME theme scopes as the studio tokens (not on
+// `.markdown-body` itself), so a nested `data-studio-theme` attribute — a
+// theme-pinned preview frame — re-themes the markdown inside it via normal
+// custom-property inheritance (nearest scope wins).
+@mixin md-palette-dark {
   /* -- Palette (Catppuccin Mocha) ---------------------------------- */
   --md-fg:           #cdd6f4;            /* text       */
   --md-fg-strong:    #f5e0dc;            /* rosewater  */
@@ -236,6 +254,20 @@
   --md-hl-punct:     #9399b2;            /* overlay2   */
   --md-hl-addition:  #a6e3a1;            /* green      */
   --md-hl-deletion:  #f38ba8;            /* red        */
+}
+
+:root {
+  @include md-palette-dark;
+}
+
+[data-studio-theme='dark'] {
+  @include md-palette-dark;
+}
+
+.markdown-body {
+  /* -- Tunable density tokens -------------------------------------- */
+  --md-font-size: 14.5px;
+  --md-line-height: 1.65;
 
   color: var(--md-fg);
   font-family: var(--font-ui);
@@ -581,8 +613,11 @@
   outline-offset: 2px;
 }
 
-/* -- Light-theme palette override --------------------------------- */
-html[data-studio-theme='light'] .markdown-body {
+/* -- Light-theme palette override ---------------------------------
+   Attribute scope (not `html[…] .markdown-body`): the light values ride the
+   same custom-property scope as the studio tokens, so nested theme-pinned
+   frames resolve against their nearest themed ancestor. */
+[data-studio-theme='light'] {
   --md-fg:           #1a1a1a;
   --md-fg-strong:    #1a1a1a;
   --md-fg-em:        #1a1a1a;

@@ -33,11 +33,14 @@
         >Docs</a
       >
       <span class="site-nav__sep" aria-hidden="true"></span>
+      <!-- Action-phrased label, deliberately WITHOUT aria-pressed: combining a
+           state-swapped name with a pressed state announces contradictions
+           ("Switch to dark theme, pressed"). The label alone says what a press
+           does, which is the whole contract. -->
       <button
         type="button"
         class="site-nav__theme"
         (click)="toggleSiteTheme()"
-        [attr.aria-pressed]="siteTheme() === 'light'"
         [attr.aria-label]="
           siteTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
         "
@@ -396,10 +399,11 @@
       <h2 class="section__title reveal">Code and images, first-class</h2>
       <p class="section__lead reveal">
         Agent output is full of fenced code and screenshots, so the renderer treats both as
-        headline content: code is syntax-highlighted (24 curated grammars, class-based tokens
+        headline content: code is syntax-highlighted (23 curated grammars, class-based tokens
         that survive sanitization, theme-aware palette), and images — inline markdown or
         <code>artifact.image</code> events — open in a lightbox the host provides through one
-        injection token. <b>Click an image below</b>; arrow keys page through the gallery.
+        injection token. <b>Click an image below</b>; in the two-image message the arrow keys
+        page through the gallery.
       </p>
       <div
         class="demo-frame demo-frame--render reveal"
@@ -682,6 +686,7 @@
     </div>
     <div class="site-footer__links">
       <a href="impressum.html">Impressum</a>
+      <a href="datenschutz.html">Datenschutz</a>
       <a href="https://github.com/RobertMischke/coding-agent-chat" target="_blank" rel="noopener"
         >GitHub</a
       >
@@ -742,6 +747,7 @@
       </button>
     }
     <button
+      #lightboxClose
       type="button"
       class="lightbox__close"
       aria-label="Close"

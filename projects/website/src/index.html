@@ -19,7 +19,9 @@
 
     <!-- Theme boot: apply the stored / OS-preferred theme to <html> before the
          first paint so there is no dark→light flash on load. The App component
-         reads this attribute back and owns the in-page toggle afterwards. -->
+         reads this attribute back and owns the in-page toggle afterwards.
+         Also syncs the theme-color meta (browser UI chrome) — the static value
+         below is dark-only. -->
     <script>
       (function () {
         try {
@@ -33,13 +35,29 @@
           var root = document.documentElement;
           root.setAttribute('data-studio-theme', theme);
           root.style.colorScheme = theme;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', theme === 'light' ? '#ffffff' : '#0f0f1a');
         } catch (e) {}
       })();
     </script>
 
+    <!-- Critical light-theme surface. The build inlines critical CSS from the
+         PRERENDERED (dark) DOM only and loads the full stylesheet async, so
+         without this block a light-preference visitor gets a dark first paint
+         until styles-*.css arrives. Hand-authored style tags survive the
+         build untouched. -->
+    <style>
+      html[data-studio-theme='light'],
+      html[data-studio-theme='light'] body {
+        background: #ffffff;
+        color: #333333;
+      }
+    </style>
+
     <!-- Canonical + social. Absolute URLs (crawlers ignore <base>); the GitHub
-         Pages base is /coding-agent-chat/. The share image is an SVG card in
-         public/ — swap in a PNG export for maximum crawler coverage. -->
+         Pages base is /coding-agent-chat/. The share card is a PNG export of
+         og-card.svg (crawlers do not accept SVG); regenerate after editing the
+         SVG with: npx -y sharp-cli --input .../og-card.svg --output .../og-card.png -->
     <link rel="canonical" href="https://robertmischke.github.io/coding-agent-chat/" />
 
     <meta property="og:type" content="website" />
@@ -52,9 +70,9 @@
     <meta property="og:url" content="https://robertmischke.github.io/coding-agent-chat/" />
     <meta
       property="og:image"
-      content="https://robertmischke.github.io/coding-agent-chat/og-card.svg"
+      content="https://robertmischke.github.io/coding-agent-chat/og-card.png"
     />
-    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
@@ -70,7 +88,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://robertmischke.github.io/coding-agent-chat/og-card.svg"
+      content="https://robertmischke.github.io/coding-agent-chat/og-card.png"
     />
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
