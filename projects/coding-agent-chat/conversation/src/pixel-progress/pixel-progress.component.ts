@@ -27,9 +27,10 @@ export type PixelProgressState = 'working' | 'queued';
  *   family builds in its own colour — so a mid-task model switch literally
  *   changes the construction material mid-structure.
  * - slow pixel clouds drift across the sky; by day a sun hangs in the
- *   corner (real local time; night is told by its absence), rain passes
- *   through occasionally, and on lucky days a tree grows or a cat/deer
- *   strolls across the strip.
+ *   corner (real local time; night is told by its absence) and drifting
+ *   clouds pass in front of it, dimming the covered cells to a faint glow.
+ *   Rain passes through occasionally, and on lucky days a tree grows or a
+ *   cat/deer strolls across the strip.
  * - the scene reacts to the cursor: clouds get nudged aside and the worker
  *   waves back. Clicks are aimed: hit a structure to add a block, an animal
  *   to shoo it off, the sun to make it laugh, the worker to spook (or bowl
@@ -927,9 +928,28 @@ export class PixelProgressComponent {
   }
 
   /**
+   * True when a cloud occupies the given grid cell — mirrors the exact cells
+   * the cloud pass paints (full bottom row, inset top row), so the sun can be
+   * occluded by the same pixels the viewer sees as cloud.
+   */
+  private cloudAt(cx: number, cy: number): boolean {
+    for (const cloud of this.clouds) {
+      const left = Math.round(cloud.x);
+      const top = Math.round(cloud.y);
+      if (cy === top + 1 && cx >= left && cx <= left + cloud.w - 1) return true;
+      if (cy === top && cx >= left + 1 && cx <= left + cloud.w - 2) return true;
+    }
+    return false;
+  }
+
+  /**
    * Sun by day (06–18 local); a click makes it laugh for a bit. At night
    * the sky simply stays empty — pixel moons and lone star specks both
    * read as stray artifacts at this scale, so night is told by absence.
+   * Clouds pass IN FRONT of the sun: any sun cell under a cloud pixel is
+   * dimmed to a faint glow, so a drifting cloud visibly covers the disc
+   * (the clouds themselves are translucent, so without this the bright
+   * disc would simply shine through them).
    */
   private drawCelestial(): void {
     if (this.celestial !== 'sun') return;
@@ -937,29 +957,34 @@ export class PixelProgressComponent {
     const laughing = this.t < this.celestialLaughUntil;
     // A laughing sun bounces with joy.
     const y = laughing ? baseY - Math.abs(Math.sin(this.t * 8)) * 0.8 : baseY;
+    // Behind a cloud only a faint warm glow remains.
+    const sunCell = (sx: number, sy: number, color: string, alpha: number): void => {
+      const covered = this.cloudAt(Math.round(sx), Math.round(sy));
+      this.cell(sx, sy, color, covered ? alpha * 0.18 : alpha);
+    };
     // A chunky 3×3 disc with softened corners, plus a full ray crown —
     // unmistakably a sun even at 3px cells.
     const glow = 0.85 + 0.1 * Math.sin(this.t * 1.1);
     for (let dx = 0; dx < 3; dx++) {
       for (let dy = 0; dy < 3; dy++) {
         const corner = (dx === 0 || dx === 2) && (dy === 0 || dy === 2);
-        this.cell(x + dx, y + dy, this.warn, corner ? glow * 0.55 : glow);
+        sunCell(x + dx, y + dy, this.warn, corner ? glow * 0.55 : glow);
       }
     }
     const ray = 0.45 + 0.2 * Math.sin(this.t * 1.1 + 1);
-    this.cell(x - 2, y + 1, this.warn, ray);        // W
-    this.cell(x + 4, y + 1, this.warn, ray);        // E
-    this.cell(x + 1, y - 1.6, this.warn, ray);      // N (clipped at top edge is fine)
-    this.cell(x + 1, y + 3.6, this.warn, ray);      // S
-    this.cell(x - 1.4, y - 1, this.warn, ray * 0.7);  // NW
-    this.cell(x + 3.4, y - 1, this.warn, ray * 0.7);  // NE
-    this.cell(x - 1.4, y + 3, this.warn, ray * 0.7);  // SW
-    this.cell(x + 3.4, y + 3, this.warn, ray * 0.7);  // SE
+    sunCell(x - 2, y + 1, this.warn, ray);        // W
+    sunCell(x + 4, y + 1, this.warn, ray);        // E
+    sunCell(x + 1, y - 1.6, this.warn, ray);      // N (clipped at top edge is fine)
+    sunCell(x + 1, y + 3.6, this.warn, ray);      // S
+    sunCell(x - 1.4, y - 1, this.warn, ray * 0.7);  // NW
+    sunCell(x + 3.4, y - 1, this.warn, ray * 0.7);  // NE
+    sunCell(x - 1.4, y + 3, this.warn, ray * 0.7);  // SW
+    sunCell(x + 3.4, y + 3, this.warn, ray * 0.7);  // SE
     if (laughing) {
       // Squinted-with-joy eyes and an open smile on the disc.
-      this.cell(x, y + 0.6, this.ink, 0.85);
-      this.cell(x + 2, y + 0.6, this.ink, 0.85);
-      this.cell(x + 1, y + 2, this.ink, 0.8);
+      sunCell(x, y + 0.6, this.ink, 0.85);
+      sunCell(x + 2, y + 0.6, this.ink, 0.85);
+      sunCell(x + 1, y + 2, this.ink, 0.8);
     }
   }
 
