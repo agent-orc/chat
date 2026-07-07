@@ -236,18 +236,43 @@ function safeLinkUrl(raw: string): string {
  * to fall back to plain escaped text: no language, an unregistered grammar, or
  * a block over the size guard.
  */
-function highlightLines(source: string, lang: string | null): string[] | null {
+/**
+ * Bounded LRU cache of highlight output, keyed by (grammar, source). The chat
+ * re-renders the whole message body on every stream tick, so without this every
+ * settled code block in the message would be re-tokenised on every frame. On a
+ * hit we re-insert the key so frequently-touched (completed) blocks outlive the
+ * streaming tail's one-shot prefix entries. Keyed on the exact source, so the
+ * block currently growing still recomputes — but every block before it is a hit.
+ */
+const HIGHLIGHT_CACHE = new Map<string, readonly string[] | null>();
+const HIGHLIGHT_CACHE_MAX = 256;
+
+function highlightLines(source: string, lang: string | null): readonly string[] | null {
   if (!lang) return null;
   const grammar = HLJS_LANG[lang];
   if (!grammar || !lowlight.registered(grammar)) return null;
   if (source.length > MAX_HIGHLIGHT_CHARS) return null;
-  let tree: Root;
-  try {
-    tree = lowlight.highlight(grammar, source);
-  } catch {
-    return null;
+
+  const key = `${grammar} ${source}`;
+  const cached = HIGHLIGHT_CACHE.get(key);
+  if (cached !== undefined) {
+    HIGHLIGHT_CACHE.delete(key);
+    HIGHLIGHT_CACHE.set(key, cached);
+    return cached;
   }
-  return hastToLines(tree);
+
+  let result: readonly string[] | null;
+  try {
+    result = hastToLines(lowlight.highlight(grammar, source));
+  } catch {
+    result = null;
+  }
+  if (HIGHLIGHT_CACHE.size >= HIGHLIGHT_CACHE_MAX) {
+    const oldest = HIGHLIGHT_CACHE.keys().next().value;
+    if (oldest !== undefined) HIGHLIGHT_CACHE.delete(oldest);
+  }
+  HIGHLIGHT_CACHE.set(key, result);
+  return result;
 }
 
 /** Serialise a lowlight hast tree into per-line HTML with balanced spans. */
@@ -451,8 +476,21 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * Collapse insignificant whitespace between tags so the rendered markup stays
+ * compact — but never inside <pre> blocks. Syntax highlighting injects <span>
+ * tags into code, so a document-wide `>\s+<` collapse would delete the code's
+ * own indentation, inter-token spaces and line breaks (each sits between a
+ * tag-closing `>` and a tag-opening `<`). Split around <pre>…</pre> and only
+ * compact the segments outside them. Escaped code text has no literal `<`/`>`,
+ * so the closing `</pre>` inside a block can never be spoofed by source.
+ */
 function compactHtml(html: string): string {
-  return html.trim().replace(/>\s+</g, '><');
+  return html
+    .split(/(<pre[\s\S]*?<\/pre>)/i)
+    .map((part, i) => (i % 2 === 0 ? part.replace(/>\s+</g, '><') : part))
+    .join('')
+    .trim();
 }
 
 function escapeHtml(value: string): string {

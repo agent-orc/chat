@@ -278,6 +278,38 @@ describe('markdownToHtml', () => {
       expect(opens).toBe(closes);
     });
 
+    it('preserves inter-token whitespace in a highlighted block (compactHtml must skip <pre>)', () => {
+      // Regression: the document-wide `>\s+<` compaction used to run over the
+      // injected hljs spans and delete the space between `def` and `outer`,
+      // rendering `defouter():`.
+      const html = markdownToHtml(['```python', 'def outer():', '```'].join('\n'));
+      expect(html).toContain('md-code--hl');
+      expect(html).not.toContain('defouter');
+      expect(html).toContain('</span> <span');
+    });
+
+    it('keeps line breaks inside a multi-line highlighted block (no <pre> collapse)', () => {
+      // Regression: each source line was joined with `\n`, which sat between a
+      // line-ending `</span>` and the next line's `<span` and got collapsed, so
+      // the whole block rendered on one visual line.
+      const md = ['```js', '/* a', 'b */', 'const x = 1;', '```'].join('\n');
+      const html = markdownToHtml(md);
+      expect(html).toContain('md-code--hl');
+      const codeInner = html.slice(html.indexOf('<code>') + '<code>'.length, html.indexOf('</code>'));
+      // Three source lines → two newline separators survive.
+      expect((codeInner.match(/\n/g) ?? []).length).toBe(2);
+    });
+
+    it('keeps leading indentation in numbered highlighted rows (no <pre> collapse)', () => {
+      // Regression: the `md-code-text` cell open tag `>` directly preceded each
+      // line's leading spaces, so `>\s+<` ate the Python indentation flush-left.
+      const md = ['```python', 'def f():', '    x = 1', '    y = 2', '    z = 3', '    return x', '```'].join('\n');
+      const html = markdownToHtml(md, { codeLineNumbers: true, codeLineNumberThreshold: 2 });
+      expect(html).toContain('md-code--numbered');
+      expect(html).toContain('md-code--hl');
+      expect(html).toContain('<span class="md-code-text">    ');
+    });
+
     it('leaves an unknown fence language un-highlighted but still tagged', () => {
       const html = markdownToHtml(['```wat', 'noop', '```'].join('\n'));
       expect(html).toContain('data-lang="wat"');
