@@ -17,6 +17,10 @@
 
 html {
   scroll-behavior: smooth;
+  /* Slim, theme-following scrollbars page-wide (token flips with the theme). */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--studio-fg-muted, #64748b) 50%, transparent)
+    transparent;
 }
 
 html,
@@ -430,23 +434,23 @@ code {
   scroll-margin-top: calc(var(--nav-height) + 10px);
 }
 
-/* The demo sits directly under the compact hero: a tight top padding keeps
- * the first conversation frame inside the fold at 1440x900. */
+/* The demo follows the compact hero; enough top padding + lead margin that
+ * the intro text breathes before the first frame takes over. */
 #demo.section {
-  padding-top: clamp(22px, 2.5vw, 32px);
+  padding-top: clamp(34px, 4.5vw, 60px);
 }
 
 #demo .section__kicker {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 #demo .section__title {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 #demo .section__lead {
   max-width: 880px;
-  margin-bottom: 12px;
+  margin-bottom: clamp(30px, 4.5vw, 52px);
 }
 
 .section--alt {
@@ -504,12 +508,60 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(20px, 3vw, 32px);
+  gap: clamp(18px, 2.6vw, 26px);
 }
 
-.demo-stack > .demo-frame {
+.demo-stack > .demo-frame,
+.demo-stack > .demo-intro {
   width: 100%;
   max-width: 720px;
+}
+
+/* Numbered intro before each conversation: names the story and, for the
+ * second one, what makes it different. Extra top margin separates it from
+ * the previous frame so the pair (intro + frame) reads as one unit. */
+.demo-intro {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.demo-stack > .demo-intro + .demo-frame {
+  margin-top: calc(-1 * clamp(6px, 1vw, 10px));
+}
+
+.demo-stack > .demo-frame + .demo-intro {
+  margin-top: clamp(22px, 3.5vw, 40px);
+}
+
+.demo-intro__num {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: rgba(217, 119, 87, 0.14);
+  border: 1px solid rgba(217, 119, 87, 0.4);
+  color: var(--site-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.demo-intro__title {
+  margin: 0 0 4px;
+  font-size: 1.06rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--studio-fg-strong, #f8fafc);
+}
+
+.demo-intro__text {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--studio-fg-dim, #94a3b8);
 }
 
 .demo-chip {

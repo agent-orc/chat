@@ -209,6 +209,24 @@
 }
 
 // -----------------------------------------------------------------------------
+// Scrollbars: slim, rounded, token-driven. The UA default draws a chunky
+// light rail straight through dark chat surfaces. Scoped to the library's
+// own scroll containers (conversation view, chat timeline, composer editor,
+// code blocks) rather than `*`, so the host page keeps control of the rest.
+// Standard properties only — Chrome 121+/Firefox/Safari 18.2+ honour them,
+// older engines quietly keep their default.
+// -----------------------------------------------------------------------------
+.conv,
+.chat__body,
+.chat textarea,
+.markdown-body pre,
+.md-code {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--studio-fg-muted, #64748b) 45%, transparent)
+    transparent;
+}
+
+// -----------------------------------------------------------------------------
 // Shared markdown / rich-text typography.
 //
 // Every surface that renders markdown applies `class="markdown-body"` (plus the

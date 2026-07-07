@@ -131,6 +131,15 @@
   background: color-mix(in srgb, var(--severity-info, #6da2f0) 30%, transparent);
 }
 
+.conv,
+.chat__body,
+.chat textarea,
+.markdown-body pre,
+.md-code {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--studio-fg-muted, #64748b) 45%, transparent) transparent;
+}
+
 :root {
   /* -- Palette (Catppuccin Mocha) ---------------------------------- */
   --md-fg: #cdd6f4; /* text       */

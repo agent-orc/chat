@@ -11,7 +11,14 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { ChatSubmitEvent, ConversationEvent } from '@coding-agent/chat/core';
+import type {
+  ChatContextUsage,
+  ChatModelControl,
+  ChatModelSelection,
+  ChatPermissionControl,
+  ChatSubmitEvent,
+  ConversationEvent,
+} from '@coding-agent/chat/core';
 import { ChatComponent } from '@coding-agent/chat/composer';
 import { ConversationViewComponent } from '@coding-agent/chat/conversation';
 import { MarkdownViewComponent } from '@coding-agent/chat/markdown';
@@ -233,6 +240,73 @@ export class App {
     b: signal<'dark' | 'light'>('dark'),
     render: signal<'dark' | 'light'>('dark'),
   };
+
+  // --- Fully-loaded composer (frame A): model picker, permissions, context ---
+  /** Interactive model/CLI/thinking picker — commits update the signal. */
+  protected readonly demoModel = signal<ChatModelControl>({
+    cliOptions: [
+      { id: 'claude', label: 'Claude Code', icon: '✳' },
+      { id: 'codex', label: 'Codex CLI', icon: '▸' },
+    ],
+    cliType: 'claude',
+    model: 'claude-fable-5',
+    thinkingLevel: 'high',
+    catalog: [
+      {
+        id: 'claude-fable-5',
+        label: 'fable 5',
+        isDefault: true,
+        thinkingLevels: ['low', 'medium', 'high', 'max'],
+      },
+      { id: 'claude-sonnet-5', label: 'sonnet 5', thinkingLevels: ['low', 'medium', 'high'] },
+      { id: 'claude-haiku-4-5', label: 'haiku 4.5' },
+    ],
+  });
+
+  protected readonly demoPermission = signal<ChatPermissionControl>({
+    value: 'acceptEdits',
+    options: [
+      { id: 'default', label: 'Ask every time', description: 'Every tool call needs approval.' },
+      {
+        id: 'acceptEdits',
+        label: 'Accept edits',
+        description: 'File edits run unattended; commands still ask.',
+      },
+      {
+        id: 'bypass',
+        label: 'Bypass permissions',
+        description: 'Everything runs unattended — sandbox recommended.',
+        tone: 'warn',
+      },
+    ],
+  });
+
+  /** Context snapshot: what fills the window, incl. four attached documents. */
+  protected readonly demoContext: ChatContextUsage = {
+    usedTokens: 74_300,
+    maxTokens: 200_000,
+    sections: [
+      { label: 'System prompt + tools', tokens: 3_100 },
+      { label: 'CLAUDE.md + project rules', tokens: 4_800 },
+      { label: 'api.md · schema.sql · roadmap.md · adr-012.md', tokens: 22_600 },
+      { label: 'Conversation so far', tokens: 43_800 },
+    ],
+    capturedAt: '2026-07-02T14:07:00.000Z',
+    sourceLabel: 'demo snapshot — wire your /context probe here',
+  };
+
+  protected onDemoModelCommit(selection: ChatModelSelection): void {
+    this.demoModel.update((control) => ({
+      ...control,
+      cliType: selection.cliType,
+      model: selection.model,
+      thinkingLevel: selection.thinkingLevel,
+    }));
+  }
+
+  protected onDemoPermissionChange(id: string): void {
+    this.demoPermission.update((control) => ({ ...control, value: id }));
+  }
 
   // --- Rendering showcase: static transcript + image lightbox ----------------
   /** Static exchange showing highlighted code + clickable images. */

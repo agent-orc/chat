@@ -119,6 +119,18 @@
       </p>
 
       <div class="demo-stack">
+        <div class="demo-intro reveal">
+          <span class="demo-intro__num">1</span>
+          <div>
+            <h3 class="demo-intro__title">The happy path — a feature lands</h3>
+            <p class="demo-intro__text">
+              User asks, the agent plans, two tool bursts do the work, the answer arrives with a
+              highlighted code block — and the orchestrator signs the run off. The composer below
+              carries the full kit: <b>model &amp; thinking picker, permission mode, attachments,
+              and a context ring</b> — open it to see four attached documents.
+            </p>
+          </div>
+        </div>
         <div
           class="demo-frame reveal"
           id="demo-frame-a"
@@ -204,15 +216,24 @@
               </div>
             }
           </div>
+          <!-- The fully-loaded composer: model/thinking picker, permission
+               mode, context ring (open it — four documents are attached) and
+               file attachments. All host-fed, all interactive. -->
           <div class="demo-frame__composer">
             @defer (on viewport) {
               <cac-chat
                 [messages]="[]"
                 placeholder="Ask a follow-up — Enter sends"
-                emptyState="Follow-ups land in the transcript above; the reply here is scripted."
+                emptyState=""
                 submitLabel="Send"
                 bodyMaxHeight="6rem"
-                [allowAttachments]="false"
+                [allowAttachments]="true"
+                contextLabel="4 docs"
+                [modelControl]="demoModel()"
+                [permissionControl]="demoPermission()"
+                [contextUsage]="demoContext"
+                (modelCommit)="onDemoModelCommit($event)"
+                (permissionChange)="onDemoPermissionChange($event)"
                 (submitMessage)="onFrameSubmit('a', $event)"
               />
             } @placeholder {
@@ -223,6 +244,18 @@
           </div>
         </div>
 
+        <div class="demo-intro reveal">
+          <span class="demo-intro__num">2</span>
+          <div>
+            <h3 class="demo-intro__title">The unhappy path — same grammar, rough run</h3>
+            <p class="demo-intro__text">
+              What is different here: a command <b>fails</b> (the burst turns red), the watchdog
+              flags 96 quiet seconds, and the orchestrator rejects the first fix as a
+              symptom-patch and <i>reissues</i> the task — only then green. Failure states render
+              with the same calm as success.
+            </p>
+          </div>
+        </div>
         <div
           class="demo-frame reveal"
           id="demo-frame-b"
@@ -306,7 +339,7 @@
               <cac-chat
                 [messages]="[]"
                 placeholder="Ask a follow-up — Enter sends"
-                emptyState="Follow-ups land in the transcript above; the reply here is scripted."
+                emptyState=""
                 submitLabel="Send"
                 bodyMaxHeight="6rem"
                 [allowAttachments]="false"
