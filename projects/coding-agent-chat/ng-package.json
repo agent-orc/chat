@@ -2,7 +2,7 @@
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/coding-agent-chat",
   "allowedNonPeerDependencies": ["marked", "dompurify", "lowlight", "highlight.js", "devlop"],
-  "assets": ["./theme/cac-theme.css", "./theme/cac-theme.scss"],
+  "assets": ["./theme/cac-theme.css", "./theme/cac-theme.scss", "./LICENSE"],
   "lib": {
     "entryFile": "src/public-api.ts"
   }
