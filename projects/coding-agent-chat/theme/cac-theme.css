@@ -97,6 +97,10 @@
   --elevation-tooltip: var(--shadow-200-light);
 }
 
+::selection {
+  background: color-mix(in srgb, var(--severity-info, #6da2f0) 30%, transparent);
+}
+
 .markdown-body {
   /* -- Tunable density tokens -------------------------------------- */
   --md-font-size: 14.5px;
@@ -326,59 +330,30 @@
   position: relative;
 }
 
-/* Language hint badge — top-right pill when the block has `data-lang`. */
+/* Language hint badge — a solid chip tucked into the top-right corner. Solid
+ * (not translucent) so it stays legible over whatever code sits behind it;
+ * a single quiet foreground rather than the old double-dimmed grey that was
+ * hard to read against high-contrast syntax. */
 .markdown-body pre.md-code[data-lang]::before {
   content: attr(data-lang);
   position: absolute;
-  top: 2px;
-  right: 8px;
+  top: 0;
+  right: 0;
+  padding: 1px 7px 2px;
+  border-radius: 0 4px 0 6px;
+  background: var(--md-code-bg);
+  border-left: 1px solid var(--md-border-soft);
+  border-bottom: 1px solid var(--md-border-soft);
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--md-fg-meta, rgba(148, 163, 184, 0.65));
-  opacity: 0.65;
+  color: var(--md-fg-meta, color-mix(in srgb, currentColor 62%, transparent));
   pointer-events: none;
 }
 
-.markdown-body pre.md-code[data-lang]:hover::before {
-  opacity: 1;
-}
-
-/* Per-language 2px accent rail — flips with the theme via studio accents. */
-.markdown-body pre.md-code--lang-ts,
-.markdown-body pre.md-code--lang-js {
-  border-left: 2px solid var(--studio-accent-3, #569cd6);
-}
-
-.markdown-body pre.md-code--lang-py {
-  border-left: 2px solid var(--studio-accent-2, #4ec9b0);
-}
-
-.markdown-body pre.md-code--lang-bash,
-.markdown-body pre.md-code--lang-powershell {
-  border-left: 2px solid var(--studio-fg-muted, #64748b);
-}
-
-.markdown-body pre.md-code--lang-json,
-.markdown-body pre.md-code--lang-yaml {
-  border-left: 2px solid var(--studio-accent-warn, #cca700);
-}
-
-.markdown-body pre.md-code--lang-diff {
-  border-left: 2px solid var(--studio-accent-4, #c586c0);
-}
-
-.markdown-body pre.md-code--lang-csharp {
-  border-left: 2px solid var(--studio-accent-4, #c586c0);
-}
-
-.markdown-body pre.md-code--lang-html,
-.markdown-body pre.md-code--lang-scss,
-.markdown-body pre.md-code--lang-css {
-  border-left: 2px solid var(--studio-accent, #d97757);
-}
-
+/* The per-language coloured left rail was removed — it read as visual noise on
+ * every block. The block keeps only its neutral 1px box border above. */
 .markdown-body pre code {
   background: transparent;
   border: 0;
