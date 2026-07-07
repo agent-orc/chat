@@ -157,8 +157,16 @@ describe('StickToBottomDirective', () => {
     flushFrames();
 
     expect(setSpy).not.toHaveBeenCalled(); // the page stays where the user was
-    // Growth re-pins still work for genuinely document-scrolled hosts once
-    // the user is at the bottom — the guard only skips the INITIAL pin.
+
+    // The directive is fully inert on the document scroller: content
+    // mutations (streamed rows) must not re-pin the page either.
+    const host = (fixture.nativeElement as HTMLElement).querySelector('.inline-host')!;
+    const row = document.createElement('div');
+    row.textContent = 'streamed row';
+    host.appendChild(row);
+    await new Promise((resolve) => setTimeout(resolve, 0)); // deliver mutations
+    flushFrames();
+    expect(setSpy).not.toHaveBeenCalled();
     expect(fixture.componentInstance.stick().stuck()).toBe(true);
   });
 

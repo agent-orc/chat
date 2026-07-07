@@ -67,6 +67,14 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.container = this.resolveScrollContainer();
+    // A component must never drive the USER'S PAGE. When the nearest
+    // scrollable thing is the document itself — an inline conversation on a
+    // docs/marketing page, with no scrollable ancestor of its own — the
+    // directive stays fully inert: no listeners, no observers, no pins.
+    // (Not just the initial pin: resize/mutation re-pins would equally yank
+    // the viewport to the component's bottom whenever content changes.)
+    // Real chat surfaces own their scroll container and are unaffected.
+    if (this.isDocumentContainer()) return;
     if (this.container) {
       this.container.addEventListener('scroll', this.onScroll, { passive: true });
       this.container.addEventListener('focusin', this.onFocusIn);
@@ -90,14 +98,8 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
         characterData: true,
       });
     }
-    // Initial pin: land on the newest row the first time content paints —
-    // but NEVER when the resolved container is the document scroller. A
-    // component finishing its own init must not yank the user's page: an
-    // inline conversation on a docs/marketing page would otherwise scroll
-    // the whole viewport to its bottom on load and on every re-creation
-    // (tab switches). Document-scrolled hosts still get growth re-pins
-    // while the user is at the bottom.
-    if (!this.isDocumentContainer()) this.scheduleScrollToBottom();
+    // Initial pin: land on the newest row the first time content paints.
+    this.scheduleScrollToBottom();
   }
 
   /** True when the resolved scroll container is the page itself. */
@@ -190,6 +192,7 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
       this.scrollFrame = null;
       const el = this.container ?? (this.container = this.resolveScrollContainer());
       if (!el) return;
+      if (this.isDocumentContainer()) return; // never drive the user's page
       if (this.editableFocused) return;
       if (!this._stuck()) return;
       // The write fires exactly one scroll event (no smooth behaviour);
