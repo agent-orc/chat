@@ -9,6 +9,18 @@ import {
 } from '@angular/core';
 
 /**
+ * When re-pinning, skip the `scrollTop` write if the container already sits
+ * within this many pixels of the bottom. Rows are always far taller than this,
+ * so genuine streaming growth still pins tightly; only sub-pixel / 1px layout
+ * jitter (rounded spacer heights in a virtualised scroller) is swallowed —
+ * which is exactly what turned an unconditional re-pin into an observer
+ * feedback loop. Deliberately much smaller than {@link
+ * StickToBottomDirective.stickThreshold} (which governs user-scroll release,
+ * not pin idempotency).
+ */
+const PIN_TOLERANCE_PX = 1;
+
+/**
  * Shared stick-to-bottom scroll behaviour for the chat surfaces
  * (`conversation-view`, and — once ASS-673 lands — the orchestrator
  * `chat` and the activity log). Three near-identical hand-rolled copies of
@@ -36,6 +48,16 @@ import {
  * `scroll` event — only an actual position change does. So the
  * ResizeObserver re-pin and the scroll-driven release never fight; the only
  * programmatic write we make is guarded by {@link suppressScrollEvent}.
+ *
+ * Note on the absence of an observer feedback loop (the "nervous 1px
+ * flicker"): the re-pin write is idempotent — see {@link PIN_TOLERANCE_PX}.
+ * Inside a virtualised, fixed-height consumer (the windowed conversation
+ * view) our own `scrollTop` write makes the windowing math re-render the
+ * visible slice — adding/removing row nodes the MutationObserver catches, and
+ * nudging the spacer heights so `scrollHeight` rounds ±1px. An unconditional
+ * write would then re-pin against that shifted height, perturb the window
+ * again, and ping-pong by a single pixel forever. Skipping the write when
+ * there is nothing to correct breaks that cycle.
  */
 @Directive({
   selector: '[cacStickToBottom]',
@@ -195,6 +217,15 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
       if (this.isDocumentContainer()) return; // never drive the user's page
       if (this.editableFocused) return;
       if (!this._stuck()) return;
+      // Idempotent pin: if we're already at the bottom (within a 1px
+      // tolerance) there is nothing to correct, so don't write. An
+      // unconditional write perturbs a virtualised / subpixel scroller, whose
+      // reactive re-render the MutationObserver picks up and bounces straight
+      // back into this path — the two ping-pong by a single pixel (the
+      // reported nervous 1px flicker). No correction needed → no write → the
+      // loop cannot start. See PIN_TOLERANCE_PX.
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (distanceFromBottom <= PIN_TOLERANCE_PX) return;
       // The write fires exactly one scroll event (no smooth behaviour);
       // suppress it so handleScroll doesn't misread the transient position
       // and flip `stuck` off. Cleared on the next frame.

@@ -190,6 +190,52 @@ describe('StickToBottomDirective', () => {
     expect(scroller.scrollTop).toBe(1600); // followed to the new bottom
   });
 
+  it('does not thrash scrollTop when a virtualised re-render bounces back while pinned (no 1px flicker)', async () => {
+    // Regression (the reported "nervous 1px up/down flicker"): inside a
+    // virtualised, fixed-height consumer, pinning to the bottom makes the
+    // windowing math re-render the visible slice — a childList mutation the
+    // MutationObserver catches — while rounded spacer heights jitter
+    // scrollHeight by ±1px. An unconditional re-pin would write scrollTop
+    // again against the shifted height, perturb the window again, and
+    // ping-pong forever. Once we are already at the bottom the pin must be a
+    // no-op, so the loop can never start.
+    const { scroller, state, stick } = await setup();
+    flushFrames(); // initial pin
+    expect(scroller.scrollTop).toBe(1000);
+
+    // Emulate a real browser's clamp: after pinning, scrollTop rests at
+    // scrollHeight - clientHeight, i.e. distance-from-bottom 0.
+    state.scrollTop = state.scrollHeight - state.clientHeight; // 800
+
+    // Count every further scrollTop write; a stable pin makes none.
+    let scrollTopWrites = 0;
+    const backing = Object.getOwnPropertyDescriptor(scroller, 'scrollTop')!;
+    Object.defineProperty(scroller, 'scrollTop', {
+      configurable: true,
+      get: backing.get,
+      set(value: number) {
+        scrollTopWrites++;
+        (backing.set as (v: number) => void).call(this, value);
+      },
+    });
+
+    // Five rounds of the virtualiser bouncing back with a 1px height jitter,
+    // each delivered as a childList mutation (append + remove a windowed row).
+    for (let i = 0; i < 5; i++) {
+      state.scrollHeight = 1000 + (i % 2); // 1000 / 1001 / … — a ±1px jitter
+      const windowedRow = document.createElement('li');
+      scroller.appendChild(windowedRow); // childList mutation → MutationObserver
+      await new Promise((resolve) => setTimeout(resolve, 0)); // deliver mutations
+      flushFrames(); // run any scheduled pin rAF (must be a no-op)
+      scroller.removeChild(windowedRow);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      flushFrames();
+    }
+
+    expect(scrollTopWrites).toBe(0); // idempotent pin: the flicker loop never started
+    expect(stick.stuck()).toBe(true); // still following the bottom
+  });
+
   it('pins to the bottom initially and re-pins when content grows while stuck', async () => {
     const { scroller, state, stick } = await setup();
 
