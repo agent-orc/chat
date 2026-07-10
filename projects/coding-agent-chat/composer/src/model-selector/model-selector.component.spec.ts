@@ -170,4 +170,158 @@ describe('ModelSelectorComponent', () => {
     // A CLI switch resets the draft, so the new CLI's default fills in.
     expect(fixture.componentInstance.draftModel()).toBe('gpt-5-codex');
   });
+
+  // ── New-model contract: a host that surfaces GPT-5.6 with an extra-high
+  //    reasoning level must light up the model pill and every level pill
+  //    (incl. xhigh) purely from the catalog — nothing about "gpt-5.6" or
+  //    "xhigh" is hardcoded in the selector. The mirror case (a catalog that
+  //    omits 5.6) must not leave a ghost entry behind.
+  describe('GPT-5.6 host catalog (catalog-driven, no hardcoding)', () => {
+    // Levels run low..xhigh with xhigh as the default — exactly the shape the
+    // Codex CLI reports for gpt-5.6. `label` is intentionally distinct from
+    // `id` so pill text is asserted against the host label, not the id.
+    const GPT56: ChatModelOption = {
+      id: 'gpt-5.6',
+      label: 'GPT-5.6',
+      isDefault: true,
+      thinkingLevels: ['low', 'medium', 'high', 'xhigh'],
+      defaultThinkingLevel: 'xhigh',
+    };
+    const CODEX_WITH_56: ChatModelOption[] = [
+      GPT56,
+      { id: 'gpt-5-codex', label: 'GPT-5 Codex' },
+    ];
+    const CODEX_WITHOUT_56: ChatModelOption[] = [
+      { id: 'gpt-5-codex', label: 'GPT-5 Codex', isDefault: true },
+    ];
+
+    const modelPillId = 'cac-model-selector-picker-model-gpt-5.6';
+    const levelPillIds = ['low', 'medium', 'high', 'xhigh'].map(
+      (l) => `cac-model-selector-picker-thinking-${l}`,
+    );
+
+    // Only the pill buttons — not the radiogroup container div, which shares
+    // the `-thinking-`/`-model-` prefix via its `-pills` testid.
+    function pillTestids(fixture: ComponentFixture<ModelSelectorComponent>, prefix: string): string[] {
+      const nodes = fixture.nativeElement.querySelectorAll(
+        `button[data-testid^="${prefix}"]`,
+      ) as NodeListOf<HTMLElement>;
+      return Array.from(nodes).map((el) => el.getAttribute('data-testid')!);
+    }
+
+    it('renders the gpt-5.6 model pill and every level pill incl. xhigh from the catalog', async () => {
+      const fixture = await createSelector({
+        cliType: 'codex',
+        model: 'gpt-5.6',
+        thinkingLevel: 'xhigh',
+        models: CODEX_WITH_56,
+      });
+      open(fixture);
+
+      // Model pill is present and shows the host-provided label.
+      const modelPill = fixture.nativeElement.querySelector(`[data-testid="${modelPillId}"]`);
+      expect(modelPill).toBeTruthy();
+      expect(modelPill.textContent).toContain('GPT-5.6');
+      expect(modelPill.textContent).toContain('default');
+
+      // All four level pills render, xhigh included — sourced from
+      // ChatModelOption.thinkingLevels, not any per-model constant.
+      const rendered = pillTestids(fixture, 'cac-model-selector-picker-thinking-');
+      expect(rendered).toEqual(levelPillIds);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="cac-model-selector-picker-thinking-xhigh"]'),
+      ).toBeTruthy();
+    });
+
+    it('auto-commits gpt-5.6 with its catalog default level (xhigh) on a model click — commit semantics unchanged', async () => {
+      // Open on the CLI default so picking gpt-5.6 is a real model change; the
+      // CLI is unchanged (codex), so the pick auto-commits and closes.
+      const fixture = await createSelector({ cliType: 'codex', model: '', models: CODEX_WITH_56 });
+      const committed = vi.fn();
+      fixture.componentInstance.commit.subscribe(committed);
+      open(fixture);
+
+      const modelPill = fixture.nativeElement.querySelector(
+        `[data-testid="${modelPillId}"]`,
+      ) as HTMLButtonElement;
+      modelPill.click();
+
+      expect(committed).toHaveBeenCalledWith({
+        cliType: 'codex',
+        model: 'gpt-5.6',
+        thinkingLevel: 'xhigh',
+      } satisfies ChatModelSelection);
+      expect(fixture.componentInstance.pickerOpen()).toBe(false);
+    });
+
+    it('auto-commits an explicit xhigh level click for gpt-5.6', async () => {
+      const fixture = await createSelector({
+        cliType: 'codex',
+        model: 'gpt-5.6',
+        thinkingLevel: 'high',
+        models: CODEX_WITH_56,
+      });
+      const committed = vi.fn();
+      fixture.componentInstance.commit.subscribe(committed);
+      open(fixture);
+
+      const xhighPill = fixture.nativeElement.querySelector(
+        '[data-testid="cac-model-selector-picker-thinking-xhigh"]',
+      ) as HTMLButtonElement;
+      xhighPill.click();
+
+      expect(committed).toHaveBeenCalledWith({
+        cliType: 'codex',
+        model: 'gpt-5.6',
+        thinkingLevel: 'xhigh',
+      } satisfies ChatModelSelection);
+    });
+
+    it('leaves no ghost gpt-5.6 pill when the catalog omits it', async () => {
+      const fixture = await createSelector({
+        cliType: 'codex',
+        model: '',
+        models: CODEX_WITHOUT_56,
+      });
+      open(fixture);
+
+      // No pill, and the draft catalog genuinely does not list it.
+      expect(fixture.nativeElement.querySelector(`[data-testid="${modelPillId}"]`)).toBeNull();
+      expect(fixture.componentInstance.draftAvailableModels().map((m) => m.id)).not.toContain(
+        'gpt-5.6',
+      );
+      // The only concrete pill is the model the catalog does report.
+      expect(pillTestids(fixture, 'cac-model-selector-picker-model-')).toEqual([
+        'cac-model-selector-picker-model-default',
+        'cac-model-selector-picker-model-gpt-5-codex',
+      ]);
+    });
+
+    it('falls the trigger chip back to a readable label for the unknown gpt-5.6 id', async () => {
+      // shortModelLabel has no gpt rule; the id passes through unchanged, which
+      // is a readable fallback rather than an empty/crashing chip.
+      const fixture = await createSelector({
+        cliType: 'codex',
+        model: 'gpt-5.6',
+        models: CODEX_WITH_56,
+      });
+      const chip = fixture.nativeElement.querySelector(
+        '[data-testid="cac-model-selector-trigger"]',
+      );
+      expect(chip.textContent).toContain('gpt-5.6');
+    });
+
+    it('falls a labelless catalog entry back to its id in the pill', async () => {
+      // A host may surface a brand-new id before it has a friendly label.
+      const fixture = await createSelector({
+        cliType: 'codex',
+        model: '',
+        models: [{ id: 'gpt-5.6', isDefault: true }] satisfies ChatModelOption[],
+      });
+      open(fixture);
+      const pill = fixture.nativeElement.querySelector(`[data-testid="${modelPillId}"]`);
+      expect(pill).toBeTruthy();
+      expect(pill.textContent).toContain('gpt-5.6');
+    });
+  });
 });

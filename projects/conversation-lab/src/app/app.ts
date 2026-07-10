@@ -333,7 +333,11 @@ export class App {
       { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
     ],
     codex: [
-      { id: 'gpt-5-codex', label: 'GPT-5 Codex', isDefault: true },
+      // gpt-5.6 is the Codex default and ships an extra-high (xhigh) reasoning
+      // level. Nothing about this entry is special-cased in the library — the
+      // selector renders the pill and its levels straight from this catalog.
+      { id: 'gpt-5.6', label: 'GPT-5.6', isDefault: true, thinkingLevels: ['low', 'medium', 'high', 'xhigh'], defaultThinkingLevel: 'xhigh' },
+      { id: 'gpt-5-codex', label: 'GPT-5 Codex' },
     ],
   };
 
