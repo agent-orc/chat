@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/workbench/">
+    <Project Path="workbench/CodingAgentChat.Workbench.csproj" />
+  </Folder>
+</Solution>
