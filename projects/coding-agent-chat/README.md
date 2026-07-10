@@ -52,7 +52,6 @@ The `history` entry point adds two more optional seams, provided directly:
 `CHAT_HISTORY_CONFIRM` (guard prompt before loading an entire deep history —
 defaults to auto-confirm).
 
-<<<<<<< HEAD
 ## Model selector: the catalog contract
 
 The composer's model selector (`<cac-model-selector>`, surfaced automatically by
@@ -114,7 +113,7 @@ to `modelCatalogRequested` / `modelRefreshRequested`, and receives the user's
 choice as an atomic `ChatModelSelection` (`{ cliType, model, thinkingLevel }`,
 where `model === ''` means "CLI default") on `modelCommit`. See the
 Conversation Lab (`projects/conversation-lab`) for a worked host example.
-=======
+
 ## Inline reference renderers
 
 The conversation view exposes a **host-agnostic extension point** for turning
@@ -186,7 +185,6 @@ Contract guarantees:
 This composes with the task-reference auto-linker (`CHAT_TASK_REFERENCE_PROVIDER`),
 which remains a separate, anchor-based seam; inline renderers skip existing
 links, so the two never fight over the same token.
->>>>>>> 2df3520 (chore(wip): preserve uncommitted task work before teardown)
 
 ## Theme
 
