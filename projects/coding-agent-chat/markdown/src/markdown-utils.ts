@@ -455,6 +455,171 @@ export function linkTaskReferencesInHtml(
   return template.innerHTML;
 }
 
+/* ────────────────────────────────────────────────────────────────────────
+ * Host-agnostic inline-reference matching (the generic extension point).
+ *
+ * A host registers matchers — task keys, ticket ids, URLs, @mentions, … — and
+ * the library scans rendered message text (never inside code fences, inline
+ * code or links) and slots the host's component in place of each match. These
+ * pure helpers do the *matching* and *marker injection*; the Angular glue that
+ * hydrates the markers into live components lives in `MarkdownViewComponent`.
+ * Kept here, Angular-free, so precedence + code-fence-skipping are unit-tested
+ * without a TestBed.
+ *
+ * This generalises the task-reference auto-linker above: that seam bakes in one
+ * kind of reference (a task key → an anchor); this one lets the host decide
+ * both what a reference *is* and what its slot *renders*.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** The minimal matcher shape the pure marker-injector needs (id + pattern). */
+export interface InlineReferencePattern {
+  /** Stable id; also the precedence tiebreaker — an earlier matcher wins. */
+  readonly id: string;
+  /**
+   * Pattern whose whole match becomes a slot. Cloned (with the `g` flag
+   * forced on) before use, so its `lastIndex`/flags are never mutated and a
+   * caller may safely share one RegExp across renders.
+   */
+  readonly pattern: RegExp;
+}
+
+/** One matched inline reference, handed to the host renderer. */
+export interface InlineReferenceMatch {
+  /** `id` of the matcher that claimed this span. */
+  readonly matcherId: string;
+  /** Exact matched token, verbatim (`"AGT-1234"`, a URL, …). */
+  readonly token: string;
+  /** Named capture groups from the pattern (empty when it declares none). */
+  readonly groups: Readonly<Record<string, string>>;
+}
+
+interface PositionedInlineMatch extends InlineReferenceMatch {
+  readonly start: number;
+  readonly end: number;
+}
+
+/** Data attributes the injector stamps on each placeholder marker. */
+export const INLINE_REF_MARKER_ATTR = 'data-cac-ref';
+export const INLINE_REF_TOKEN_ATTR = 'data-cac-ref-token';
+export const INLINE_REF_GROUPS_ATTR = 'data-cac-ref-groups';
+
+/** Elements whose text is off-limits for inline-reference rewriting. */
+const INLINE_REF_SKIP_SELECTOR = 'a, code, pre, kbd, samp, script, style';
+
+function cloneGlobalRegExp(pattern: RegExp): RegExp {
+  const flags = pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`;
+  return new RegExp(pattern.source, flags);
+}
+
+/**
+ * Find the ordered, non-overlapping inline-reference matches in `text`.
+ *
+ * Precedence: the earliest match in reading order wins; when two matchers
+ * claim the same start, the one registered earlier (lower index) wins, then
+ * the longer match. Pure — no DOM — so precedence is unit-tested directly.
+ */
+export function findInlineReferenceMatches(
+  text: string,
+  matchers: readonly InlineReferencePattern[],
+): PositionedInlineMatch[] {
+  if (!text || !matchers.length) return [];
+  const candidates: Array<PositionedInlineMatch & { order: number }> = [];
+  matchers.forEach((matcher, order) => {
+    const re = cloneGlobalRegExp(matcher.pattern);
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      const token = m[0];
+      if (!token) {
+        // Zero-width match — advance one char so exec can't loop forever.
+        re.lastIndex += 1;
+        continue;
+      }
+      candidates.push({
+        matcherId: matcher.id,
+        token,
+        groups: m.groups ? { ...m.groups } : {},
+        start: m.index,
+        end: m.index + token.length,
+        order,
+      });
+    }
+  });
+  candidates.sort(
+    (a, b) => a.start - b.start || a.order - b.order || b.end - b.start - (a.end - a.start),
+  );
+  const chosen: PositionedInlineMatch[] = [];
+  let lastEnd = 0;
+  for (const c of candidates) {
+    if (c.start < lastEnd) continue; // overlaps an already-chosen match
+    chosen.push({
+      matcherId: c.matcherId,
+      token: c.token,
+      groups: c.groups,
+      start: c.start,
+      end: c.end,
+    });
+    lastEnd = c.end;
+  }
+  return chosen;
+}
+
+/**
+ * Replace every inline-reference match in `html` with an inert placeholder
+ * `<span data-cac-ref="…">token</span>` that `MarkdownViewComponent` later
+ * hydrates into the host's component. Matches inside code, links, `kbd`/`samp`
+ * or `script`/`style` are skipped, so the rewrite is markdown-safe. Returns
+ * `html` unchanged when there are no matchers, no matches, or no DOM (SSR).
+ */
+export function injectInlineReferenceMarkers(
+  html: string,
+  matchers: readonly InlineReferencePattern[],
+): string {
+  if (!html || !matchers.length || typeof document === 'undefined') return html;
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+      return parent.closest(INLINE_REF_SKIP_SELECTOR)
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  const textNodes: Text[] = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode as Text);
+
+  let changed = false;
+  for (const node of textNodes) {
+    const text = node.textContent ?? '';
+    const matches = findInlineReferenceMatches(text, matchers);
+    if (!matches.length) continue;
+    const fragment = document.createDocumentFragment();
+    let cursor = 0;
+    for (const match of matches) {
+      if (match.start > cursor) {
+        fragment.append(document.createTextNode(text.slice(cursor, match.start)));
+      }
+      const marker = document.createElement('span');
+      marker.setAttribute(INLINE_REF_MARKER_ATTR, match.matcherId);
+      marker.setAttribute(INLINE_REF_TOKEN_ATTR, match.token);
+      if (Object.keys(match.groups).length) {
+        marker.setAttribute(INLINE_REF_GROUPS_ATTR, JSON.stringify(match.groups));
+      }
+      // The token stays visible text, so a non-hydrated marker (SSR, or a
+      // host that never claims it) still reads as the plain token.
+      marker.textContent = match.token;
+      fragment.append(marker);
+      cursor = match.end;
+    }
+    if (cursor < text.length) fragment.append(document.createTextNode(text.slice(cursor)));
+    node.replaceWith(fragment);
+    changed = true;
+  }
+  return changed ? template.innerHTML : html;
+}
+
 function uniqueTaskReferences(references: readonly MarkdownTaskReference[]): MarkdownTaskReference[] {
   const byLabel = new Map<string, MarkdownTaskReference>();
   const duplicateLabels = new Set<string>();

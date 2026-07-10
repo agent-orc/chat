@@ -1,6 +1,11 @@
 import { EnvironmentProviders, Provider, Type, makeEnvironmentProviders } from '@angular/core';
 
-import { CHAT_TASK_REFERENCE_PROVIDER, ChatTaskReferenceProvider } from 'coding-agent-chat/markdown';
+import {
+  CHAT_TASK_REFERENCE_PROVIDER,
+  ChatTaskReferenceProvider,
+  INLINE_REFERENCE_RENDERERS,
+  InlineReferenceMatcher,
+} from 'coding-agent-chat/markdown';
 import { CHAT_MEDIA_LIGHTBOX, ChatMediaLightbox } from 'coding-agent-chat/shared';
 
 /**
@@ -20,6 +25,13 @@ export interface CodingAgentChatOptions {
    * focus trap). Bound via `useExisting` like {@link taskReferences}.
    */
   mediaLightbox?: Type<ChatMediaLightbox>;
+  /**
+   * Generic inline-reference renderers. The conversation view scans message
+   * prose (outside code fences + links) for each matcher's pattern and slots
+   * its component in place of the match, in registration (precedence) order.
+   * Omit to leave message text rendered exactly as before.
+   */
+  inlineReferences?: readonly InlineReferenceMatcher[];
 }
 
 /**
@@ -46,6 +58,9 @@ export function provideCodingAgentChat(options: CodingAgentChatOptions = {}): En
   }
   if (options.mediaLightbox) {
     providers.push({ provide: CHAT_MEDIA_LIGHTBOX, useExisting: options.mediaLightbox });
+  }
+  if (options.inlineReferences?.length) {
+    providers.push({ provide: INLINE_REFERENCE_RENDERERS, useValue: options.inlineReferences });
   }
   return makeEnvironmentProviders(providers);
 }

@@ -24,7 +24,7 @@ and `rxjs ~7.8`.
 |---|---|
 | `coding-agent-chat` | everything + `provideCodingAgentChat()` |
 | `coding-agent-chat/core` | wire contract + projection + pure helpers (zero Angular) |
-| `coding-agent-chat/markdown` | `<cac-markdown>` + markdown utils + task-reference seam |
+| `coding-agent-chat/markdown` | `<cac-markdown>` + markdown utils + task-reference seam + inline-reference renderers |
 | `coding-agent-chat/conversation` | `<cac-conversation-view>` + tool-burst chip + session card |
 | `coding-agent-chat/composer` | `<cac-chat>` composer + role badge + workforce/phase helpers |
 | `coding-agent-chat/history` | `<cac-project-chat-list>` virtualised history + `<cac-chat-row>` + minimap rail + phase summary strip |
@@ -52,6 +52,7 @@ The `history` entry point adds two more optional seams, provided directly:
 `CHAT_HISTORY_CONFIRM` (guard prompt before loading an entire deep history —
 defaults to auto-confirm).
 
+<<<<<<< HEAD
 ## Model selector: the catalog contract
 
 The composer's model selector (`<cac-model-selector>`, surfaced automatically by
@@ -113,6 +114,79 @@ to `modelCatalogRequested` / `modelRefreshRequested`, and receives the user's
 choice as an atomic `ChatModelSelection` (`{ cliType, model, thinkingLevel }`,
 where `model === ''` means "CLI default") on `modelCommit`. See the
 Conversation Lab (`projects/conversation-lab`) for a worked host example.
+=======
+## Inline reference renderers
+
+The conversation view exposes a **host-agnostic extension point** for turning
+plain tokens inside message text — task keys (`AGT-1234`), ticket ids, URLs,
+`@mentions` — into **live host components** (micro-cards, chips, links). The
+library owns only the mechanics: it scans the rendered prose, matches each
+registered pattern, and slots your component in place of the match. It never
+learns what a reference *means* — that stays with the host.
+
+Register one or more matchers via the `INLINE_REFERENCE_RENDERERS` token (or the
+`inlineReferences` option of `provideCodingAgentChat`). Each matcher is:
+
+```ts
+interface InlineReferenceMatcher {
+  id: string;                    // stable id; also the precedence tiebreaker
+  pattern: RegExp;               // whole-match becomes the slot (cloned; safe to share)
+  component: Type<unknown>;      // standalone host component slotted per match
+  inputs?: (match) => Record<string, unknown>; // defaults to { token, match }
+}
+```
+
+```ts
+import { INLINE_REFERENCE_RENDERERS } from 'coding-agent-chat/markdown';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideCodingAgentChat({
+      inlineReferences: [
+        { id: 'task', pattern: /\b[A-Z]{2,}-\d+\b/g, component: TaskMicroCardComponent },
+        { id: 'url',  pattern: /https?:\/\/\S+/g,    component: UrlChipComponent },
+      ],
+    }),
+    // …or provide the token directly:
+    // { provide: INLINE_REFERENCE_RENDERERS, useValue: [ …matchers… ] },
+  ],
+});
+```
+
+The slotted component receives the match through inputs. By default it is fed
+`token` (the matched string) and `match` (`{ matcherId, token, groups }`, where
+`groups` are the pattern's named capture groups); declare whichever inputs you
+need — a component with just a `token` input works with zero wiring:
+
+```ts
+@Component({
+  selector: 'task-micro-card',
+  standalone: true,
+  template: `<a class="ref-card" (click)="open(token())">{{ token() }}</a>`,
+})
+export class TaskMicroCardComponent {
+  readonly token = input<string>('');
+  readonly match = input<InlineReferenceMatch | null>(null);
+  // …fetch + render the live card for token()
+}
+```
+
+Contract guarantees:
+
+- **Markdown-safe.** Matches inside fenced code blocks, inline code and links
+  are left as plain text — only prose is rewritten.
+- **Zero cost by default.** With no matchers registered, message text renders
+  exactly as before; the extension point is fully inert for other hosts.
+- **Precedence.** Matchers are tried in registration order. The earliest match
+  in reading order wins; when two matchers claim the same span, the one listed
+  first wins.
+- **Multiple matchers.** Register as many as you like — task keys *and* ticket
+  ids *and* URLs — each mapped to its own component.
+
+This composes with the task-reference auto-linker (`CHAT_TASK_REFERENCE_PROVIDER`),
+which remains a separate, anchor-based seam; inline renderers skip existing
+links, so the two never fight over the same token.
+>>>>>>> 2df3520 (chore(wip): preserve uncommitted task work before teardown)
 
 ## Theme
 

@@ -1,17 +1,32 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
+  type ComponentRef,
   computed,
+  DestroyRef,
+  ElementRef,
   inject,
   input,
+  viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { MarkdownImageLightboxDirective } from 'coding-agent-chat/shared';
 import { CHAT_TASK_REFERENCE_PROVIDER } from './chat-task-reference.token';
 import {
+  INLINE_REFERENCE_RENDERERS,
+  type InlineReferenceMatcher,
+} from './inline-reference.token';
+import {
+  INLINE_REF_GROUPS_ATTR,
+  INLINE_REF_MARKER_ATTR,
+  INLINE_REF_TOKEN_ATTR,
+  injectInlineReferenceMarkers,
   linkTaskReferencesInHtml,
   markdownToHtml,
   sanitizeHtml,
+  type InlineReferenceMatch,
   type MarkdownImageOptions,
 } from './markdown-utils';
 
@@ -57,6 +72,12 @@ import {
  * Input precedence: [html] (pre-rendered, e.g. F22 server projection)
  * wins over [source] (raw markdown). Both end in the same `.markdown-body`
  * container so styling is render-path-independent.
+ *
+ * Inline-reference extension point: hosts may register
+ * {@link INLINE_REFERENCE_RENDERERS} to slot live components in place of
+ * matched tokens (task keys, ticket ids, URLs) found in the prose — never
+ * inside code fences or links. Inert by default (empty matcher set), so other
+ * hosts see no behaviour change and pay no cost.
  */
 @Component({
   selector: 'cac-markdown',
@@ -109,24 +130,91 @@ export class MarkdownViewComponent {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly taskReferences = inject(CHAT_TASK_REFERENCE_PROVIDER);
 
+  /**
+   * Host-registered inline-reference renderers (the generic extension point).
+   * A constant injected once — empty by default, so the whole seam is inert
+   * (and the hydration effect below is never even registered) for hosts that
+   * do not opt in.
+   */
+  private readonly inlineMatchers = inject(INLINE_REFERENCE_RENDERERS);
+  private readonly viewContainer = inject(ViewContainerRef);
+  private readonly bodyRef = viewChild<ElementRef<HTMLElement>>('body');
+  /** Live host components currently slotted into the rendered body. */
+  private slotted: ComponentRef<unknown>[] = [];
+
+  constructor() {
+    // Zero-cost default: with no matchers registered, nothing to hydrate — so
+    // don't even register the after-render effect. Other hosts pay nothing.
+    if (this.inlineMatchers.length) {
+      afterRenderEffect(() => this.hydrateInlineReferences());
+      inject(DestroyRef).onDestroy(() => this.clearSlotted());
+    }
+  }
+
   readonly safeHtml = computed<SafeHtml>(() => {
     const references = this.taskReferences.markdownReferences();
     const preRendered = this.html();
+    let html: string;
     if (typeof preRendered === 'string') {
-      return this.sanitizer.bypassSecurityTrustHtml(
-        sanitizeHtml(linkTaskReferencesInHtml(preRendered, references)),
-      );
+      html = sanitizeHtml(linkTaskReferencesInHtml(preRendered, references));
+    } else {
+      const options: MarkdownImageOptions = { taskReferences: references };
+      if (this.codeLineNumbers()) options.codeLineNumbers = true;
+      const threshold = this.codeLineNumberThreshold();
+      if (threshold != null) options.codeLineNumberThreshold = threshold;
+      const resolver = this.resolveImageSrc();
+      if (resolver) options.resolveImageSrc = resolver;
+      html = markdownToHtml(this.source() ?? '', options);
     }
-    const options: MarkdownImageOptions = { taskReferences: references };
-    if (this.codeLineNumbers()) options.codeLineNumbers = true;
-    const threshold = this.codeLineNumberThreshold();
-    if (threshold != null) options.codeLineNumberThreshold = threshold;
-    const resolver = this.resolveImageSrc();
-    if (resolver) options.resolveImageSrc = resolver;
-    return this.sanitizer.bypassSecurityTrustHtml(
-      markdownToHtml(this.source() ?? '', options),
-    );
+    // Stamp inert placeholder markers for host inline references (no-op when
+    // no matchers are registered, so the output is byte-identical by default).
+    if (this.inlineMatchers.length) {
+      html = injectInlineReferenceMarkers(html, this.inlineMatchers);
+    }
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   });
+
+  /**
+   * Replace the placeholder markers stamped by {@link injectInlineReferenceMarkers}
+   * with live host components. Runs after every render whose body changed
+   * (tracked via `safeHtml()`); old slots are destroyed first so a re-render
+   * never leaks a detached component.
+   */
+  private hydrateInlineReferences(): void {
+    // Establish the reactive dependency: re-hydrate whenever the body changes.
+    this.safeHtml();
+    this.clearSlotted();
+    const host = this.bodyRef()?.nativeElement;
+    if (!host) return;
+
+    const byId = new Map(this.inlineMatchers.map((m) => [m.id, m]));
+    const markers = host.querySelectorAll<HTMLElement>(`[${INLINE_REF_MARKER_ATTR}]`);
+    for (const marker of Array.from(markers)) {
+      const matcher = byId.get(marker.getAttribute(INLINE_REF_MARKER_ATTR) ?? '');
+      if (!matcher) continue;
+      const match = readMarkerMatch(marker, matcher);
+      const ref = this.viewContainer.createComponent(matcher.component);
+      const inputs = matcher.inputs ? matcher.inputs(match) : { token: match.token, match };
+      for (const [name, value] of Object.entries(inputs)) {
+        // A slot may declare only a subset of the default inputs; ignore the
+        // rest instead of throwing so `{ token, match }` fits a token-only
+        // component with no custom `inputs` mapper.
+        try {
+          ref.setInput(name, value);
+        } catch {
+          /* input not declared on this component — skip it */
+        }
+      }
+      marker.replaceWith(ref.location.nativeElement);
+      ref.changeDetectorRef.detectChanges();
+      this.slotted.push(ref);
+    }
+  }
+
+  private clearSlotted(): void {
+    for (const ref of this.slotted) ref.destroy();
+    this.slotted = [];
+  }
 
   onMarkdownClick(event: Event): void {
     const target = event.target;
@@ -138,4 +226,19 @@ export class MarkdownViewComponent {
     event.stopPropagation();
     this.taskReferences.openTaskKey(anchor.dataset['taskKey']);
   }
+}
+
+/** Rebuild the {@link InlineReferenceMatch} a marker element stands in for. */
+function readMarkerMatch(marker: HTMLElement, matcher: InlineReferenceMatcher): InlineReferenceMatch {
+  const token = marker.getAttribute(INLINE_REF_TOKEN_ATTR) ?? marker.textContent ?? '';
+  let groups: Record<string, string> = {};
+  const rawGroups = marker.getAttribute(INLINE_REF_GROUPS_ATTR);
+  if (rawGroups) {
+    try {
+      groups = JSON.parse(rawGroups) as Record<string, string>;
+    } catch {
+      groups = {};
+    }
+  }
+  return { matcherId: matcher.id, token, groups };
 }

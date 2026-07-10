@@ -4,9 +4,13 @@
 import { Injectable, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { Component } from '@angular/core';
+
 import {
   CHAT_TASK_REFERENCE_PROVIDER,
   ChatTaskReferenceProvider,
+  INLINE_REFERENCE_RENDERERS,
+  InlineReferenceMatcher,
   MarkdownTaskReference,
 } from 'coding-agent-chat/markdown';
 import {
@@ -94,5 +98,22 @@ describe('provideCodingAgentChat', () => {
     const refs = TestBed.inject(CHAT_TASK_REFERENCE_PROVIDER);
     expect(refs.markdownReferences()).toEqual([]);
     expect(refs.openTaskKey('ASS-9')).toBe(false);
+  });
+
+  it('leaves INLINE_REFERENCE_RENDERERS empty by default and registers the given matchers', () => {
+    @Component({ selector: 'host-ref', standalone: true, template: '' })
+    class HostRefComponent {}
+    const matchers: InlineReferenceMatcher[] = [
+      { id: 'task', pattern: /\b[A-Z]{2,}-\d+\b/g, component: HostRefComponent },
+    ];
+
+    TestBed.configureTestingModule({ providers: [provideCodingAgentChat()] });
+    expect(TestBed.inject(INLINE_REFERENCE_RENDERERS)).toEqual([]);
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideCodingAgentChat({ inlineReferences: matchers })],
+    });
+    expect(TestBed.inject(INLINE_REFERENCE_RENDERERS)).toBe(matchers);
   });
 });

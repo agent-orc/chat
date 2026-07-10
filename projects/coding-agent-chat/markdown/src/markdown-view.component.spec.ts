@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 
@@ -6,8 +6,33 @@ import {
   CHAT_TASK_REFERENCE_PROVIDER,
   type ChatTaskReferenceProvider,
 } from './chat-task-reference.token';
-import type { MarkdownTaskReference } from './markdown-utils';
+import {
+  INLINE_REFERENCE_RENDERERS,
+  type InlineReferenceMatcher,
+} from './inline-reference.token';
+import type { InlineReferenceMatch, MarkdownTaskReference } from './markdown-utils';
 import { MarkdownViewComponent } from './markdown-view.component';
+
+/** A minimal host slot component: renders the matched token in a marked chip. */
+@Component({
+  selector: 'test-inline-chip',
+  standalone: true,
+  template: `<mark data-slot [attr.data-kind]="'chip'">{{ token() }}</mark>`,
+})
+class InlineChipComponent {
+  readonly token = input<string>('');
+  readonly match = input<InlineReferenceMatch | null>(null);
+}
+
+/** A second, visually distinct slot so precedence is observable in the DOM. */
+@Component({
+  selector: 'test-inline-badge',
+  standalone: true,
+  template: `<b data-slot data-kind="badge">{{ token() }}</b>`,
+})
+class InlineBadgeComponent {
+  readonly token = input<string>('');
+}
 
 /**
  * Covers the <cac-markdown> render surface: GFM rendering + sanitisation for
@@ -132,5 +157,126 @@ describe('MarkdownViewComponent', () => {
       .querySelector<HTMLAnchorElement>('a[data-task-ref="true"]');
     expect(anchor).not.toBeNull();
     expect(anchor!.dataset['taskKey']).toBe('board::ass-738');
+  });
+
+  // ── Generic inline-reference extension point ────────────────────────────
+  describe('INLINE_REFERENCE_RENDERERS', () => {
+    function withRenderers(renderers: readonly InlineReferenceMatcher[]): void {
+      TestBed.configureTestingModule({
+        providers: [{ provide: INLINE_REFERENCE_RENDERERS, useValue: renderers }],
+      });
+    }
+
+    it('slots the host component in place of a matched token, fed the token', async () => {
+      withRenderers([
+        { id: 'task', pattern: /\b[A-Z]{2,}-\d+\b/g, component: InlineChipComponent },
+      ]);
+
+      const fixture = TestBed.createComponent(MarkdownViewComponent);
+      fixture.componentRef.setInput('source', 'Please look at AGT-1234 today.');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const slot = el.querySelector<HTMLElement>('test-inline-chip mark[data-slot]');
+      expect(slot).not.toBeNull();
+      expect(slot!.textContent).toBe('AGT-1234');
+      // The inert placeholder marker is gone once hydrated…
+      expect(el.querySelector('[data-cac-ref]')).toBeNull();
+      // …and the surrounding prose is intact.
+      expect(el.querySelector('p')?.textContent).toContain('Please look at');
+      expect(el.querySelector('p')?.textContent).toContain('today.');
+    });
+
+    it('passes the full match (token + named groups) to the slot', async () => {
+      const seen: InlineReferenceMatch[] = [];
+      withRenderers([
+        {
+          id: 'task',
+          pattern: /\b(?<board>[A-Z]{2,})-(?<num>\d+)\b/g,
+          component: InlineChipComponent,
+          inputs: (match) => {
+            seen.push(match);
+            return { token: match.token, match };
+          },
+        },
+      ]);
+
+      const fixture = TestBed.createComponent(MarkdownViewComponent);
+      fixture.componentRef.setInput('source', 'ticket CAR-2 here');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(seen).toHaveLength(1);
+      expect(seen[0]).toEqual({
+        matcherId: 'task',
+        token: 'CAR-2',
+        groups: { board: 'CAR', num: '2' },
+      });
+    });
+
+    it('leaves matches inside a code fence plain (no slot)', async () => {
+      withRenderers([
+        { id: 'task', pattern: /\b[A-Z]{2,}-\d+\b/g, component: InlineChipComponent },
+      ]);
+
+      const fixture = TestBed.createComponent(MarkdownViewComponent);
+      fixture.componentRef.setInput('source', '```\ndeploy AGT-1234\n```');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('test-inline-chip')).toBeNull();
+      expect(el.querySelector('pre code')?.textContent).toContain('AGT-1234');
+    });
+
+    it('renders plain text when no renderer is registered (default)', async () => {
+      const fixture = TestBed.createComponent(MarkdownViewComponent);
+      fixture.componentRef.setInput('source', 'Please look at AGT-1234 today.');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('[data-cac-ref]')).toBeNull();
+      expect(el.querySelector('test-inline-chip')).toBeNull();
+      expect(el.querySelector('p')?.textContent).toBe('Please look at AGT-1234 today.');
+    });
+
+    it('honours matcher precedence — the earlier matcher wins an overlapping span', async () => {
+      withRenderers([
+        { id: 'chip', pattern: /\bAGT-\d+\b/g, component: InlineChipComponent },
+        { id: 'badge', pattern: /\b[A-Z]+-\d+\b/g, component: InlineBadgeComponent },
+      ]);
+
+      const fixture = TestBed.createComponent(MarkdownViewComponent);
+      fixture.componentRef.setInput('source', 'see AGT-1234');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const el: HTMLElement = fixture.nativeElement;
+      // The higher-precedence (first-registered) chip claims AGT-1234.
+      expect(el.querySelector('test-inline-chip mark[data-slot]')?.textContent).toBe('AGT-1234');
+      expect(el.querySelector('test-inline-badge')).toBeNull();
+    });
+
+    it('re-hydrates slots when [source] changes and cleans up the old ones', async () => {
+      withRenderers([
+        { id: 'task', pattern: /\b[A-Z]{2,}-\d+\b/g, component: InlineChipComponent },
+      ]);
+
+      const fixture = TestBed.createComponent(MarkdownViewComponent);
+      fixture.componentRef.setInput('source', 'first AGT-1');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelectorAll('test-inline-chip')).toHaveLength(1);
+      expect(el.querySelector('test-inline-chip mark')?.textContent).toBe('AGT-1');
+
+      fixture.componentRef.setInput('source', 'second CAR-2 and CAR-3');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const chips = el.querySelectorAll('test-inline-chip mark');
+      expect(Array.from(chips).map((c) => c.textContent)).toEqual(['CAR-2', 'CAR-3']);
+    });
   });
 });
