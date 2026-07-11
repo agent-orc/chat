@@ -1,7 +1,7 @@
 # coding-agent-chat
 
 Best-in-class Angular library for rendering **coding-agent conversations** — the
-frontend counterpart to [`coding-agent-runner`](https://github.com/RobertMischke/coding-agent-runner).
+frontend counterpart to [`coding-agent-runner`](https://github.com/agent-orc/runner).
 The runner produces the server-side event stream; `coding-agent-chat` renders it
 client-side: from raw evidence (CLI output lines, run timeline, tokens, screenshots,
 commits) to a fully grouped, progressively-disclosed conversation.

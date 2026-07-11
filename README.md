@@ -2,7 +2,7 @@
 
 A standalone, best-in-class **Angular library** that renders the chat UI of a
 coding agent — plus a demo/playground ("Conversation Lab"). The frontend
-counterpart to [`coding-agent-runner`](https://github.com/RobertMischke/coding-agent-runner):
+counterpart to [`coding-agent-runner`](https://github.com/agent-orc/runner):
 the runner produces the server-side event stream, this library renders it.
 
 This is an Angular CLI workspace (Angular 21.2, `ng-packagr`):

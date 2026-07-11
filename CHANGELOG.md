@@ -38,5 +38,5 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
   `<cac-markdown>`, `<cac-project-chat-list>`, the `core` wire contract, the
   studio theme, and the `provideCodingAgentChat()` host-wiring helper.
 
-[0.2.0]: https://github.com/RobertMischke/coding-agent-chat/releases/tag/v0.2.0
-[0.1.0]: https://github.com/RobertMischke/coding-agent-chat/releases/tag/v0.1.0
+[0.2.0]: https://github.com/agent-orc/chat/releases/tag/v0.2.0
+[0.1.0]: https://github.com/agent-orc/chat/releases/tag/v0.1.0

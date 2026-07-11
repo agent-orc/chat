@@ -6,7 +6,7 @@ name: release
 # Auth uses npm **Trusted Publishing** (OIDC): no long-lived token in secrets.
 # GitHub Actions mints a short-lived OIDC token; npm (CLI >= 11.5) exchanges it
 # against the Trusted Publisher policy configured on npmjs.com for this
-# package (repo RobertMischke/coding-agent-chat, workflow release.yml).
+# package (repo agent-orc/chat, workflow release.yml).
 #
 # ONE-TIME SETUP (npm requires the package to exist before a Trusted
 # Publisher can be configured): the very first publish must be manual —
