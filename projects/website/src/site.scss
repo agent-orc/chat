@@ -437,16 +437,25 @@ code {
   padding-top: clamp(34px, 4.5vw, 60px);
 }
 
+#demo .section__kicker,
+#demo .section__title,
+#demo .section__lead {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
 #demo .section__kicker {
   margin-bottom: 8px;
 }
 
 #demo .section__title {
   margin-bottom: 12px;
+  max-width: 22ch;
 }
 
 #demo .section__lead {
-  max-width: 880px;
+  max-width: 760px;
   margin-bottom: clamp(30px, 4.5vw, 52px);
 }
 
@@ -518,9 +527,14 @@ code {
  * second one, what makes it different. Extra top margin separates it from
  * the previous frame so the pair (intro + frame) reads as one unit. */
 .demo-intro {
-  display: flex;
+  display: grid;
+  justify-items: center;
   gap: 14px;
-  align-items: flex-start;
+  text-align: center;
+}
+
+.demo-intro > div {
+  width: min(100%, 62ch);
 }
 
 .demo-stack > .demo-intro + .demo-frame {
@@ -532,12 +546,10 @@ code {
 }
 
 .demo-intro__num {
-  flex: none;
   display: inline-grid;
   place-items: center;
   width: 26px;
   height: 26px;
-  margin-top: 1px;
   border-radius: 50%;
   background: rgba(217, 119, 87, 0.14);
   border: 1px solid rgba(217, 119, 87, 0.4);
@@ -559,6 +571,21 @@ code {
   font-size: 0.94rem;
   line-height: 1.6;
   color: var(--studio-fg-dim, #94a3b8);
+}
+
+@media (max-width: 720px) {
+  #demo .section__title {
+    max-width: none;
+  }
+
+  .demo-intro {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .demo-intro > div {
+    width: 100%;
+  }
 }
 
 .demo-chip {
