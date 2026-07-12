@@ -261,10 +261,18 @@ function projectGroup(
   const ts = firstLine.timestamp;
   const baseId = `${range.source}:${range.start}-${range.end}`;
   const runId = currentRun?.run?.index;
-  const visibleBody = normalizeVisibleChatBody(group.lines).text;
+  const normalizedBody = normalizeVisibleChatBody(group.lines);
+  const visibleBody = normalizedBody.text;
+  const diagnostics = normalizedBody.strippedEnvelopes.length > 0
+    ? {
+        rawBody: group.lines.map((line) => line.text ?? '').join('\n'),
+        strippedEnvelopes: normalizedBody.strippedEnvelopes
+      }
+    : undefined;
 
   // User messages are always their own turn.
   if (firstLine.stream === 'user') {
+    if (!visibleBody) return null;
     return [
       {
         id: `${baseId}:user`,
@@ -273,7 +281,8 @@ function projectGroup(
         runId,
         rawRange: range,
         actor: 'You',
-        body: visibleBody || group.title,
+        body: visibleBody,
+        diagnostics,
         target: extractUserTarget(firstLine.text)
       }
     ];
@@ -418,6 +427,7 @@ function projectGroup(
   }
 
   if (firstLine.stream === 'supervisor') {
+    if (!visibleBody) return null;
     return [
       {
         id: `${baseId}:supervisor`,
@@ -427,7 +437,8 @@ function projectGroup(
         rawRange: range,
         severity: group.status === 'error' ? 'error' : 'info',
         actor: 'Supervisor',
-        body: visibleBody || group.title
+        body: visibleBody,
+        diagnostics
       }
     ];
   }
@@ -527,6 +538,7 @@ function projectGroup(
         }
       ];
     }
+    if (!visibleBody) return null;
     return [
       {
         id: `${baseId}:agent-error`,
@@ -538,12 +550,14 @@ function projectGroup(
         rawRange: range,
         severity: 'error',
         actor: 'Agent',
-        body: visibleBody || joinGroupBody(group)
+        body: visibleBody,
+        diagnostics
       }
     ];
   }
 
   // Default: a regular task-agent message turn.
+  if (!visibleBody) return null;
   return [
     {
       id: `${baseId}:agent`,
@@ -554,7 +568,8 @@ function projectGroup(
       thinkingLevel,
       rawRange: range,
       actor: 'Agent',
-      body: visibleBody || joinGroupBody(group)
+      body: visibleBody,
+      diagnostics
     }
   ];
 }

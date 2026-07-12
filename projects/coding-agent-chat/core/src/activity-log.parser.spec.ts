@@ -396,11 +396,20 @@ describe('buildConversationTurns', () => {
     expect(turns[0].text).not.toContain('2026-07-01 09:00 Supervisor:');
     expect(turns[0].text).not.toContain('2026-07-01 09:00 Orchestrator:');
 
-    expect(messages).toHaveLength(1);
-    const rendered = messages[0].body.map((entry) => entry.text).join('\n');
+    const rendered = messages.flatMap((message) => message.body).map((entry) => entry.text).join('\n');
     expect(rendered).toContain('Keep the clean prose and hide the transport frame.');
     expect(rendered).toContain('The word Supervisor is part of the answer here, not a prefix.');
     expect(rendered).not.toContain('2026-07-01 09:00 Supervisor:');
+  });
+
+  it('reports recognized stripped frames separately from semantic text', () => {
+    const normalized = normalizeVisibleChatBody(envelopePrefixedReplyFragment());
+
+    expect(normalized.strippedEnvelopes).toEqual(expect.arrayContaining([
+      '2026-07-01 09:00 Supervisor:',
+      '2026-07-01 09:00 Orchestrator:'
+    ]));
+    expect(normalized.text).not.toContain('2026-07-01 09:00 Supervisor:');
   });
 });
 

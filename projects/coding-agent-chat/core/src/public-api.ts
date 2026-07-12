@@ -25,6 +25,8 @@ export * from './conversation-projection';
 export {
   parseActivityLog,
   buildConversationTurns,
+  normalizeVisibleChatBody,
   type ActivityLogGroup,
   type ActivityLogKind,
+  type NormalizedChatBody,
 } from './activity-log.parser';

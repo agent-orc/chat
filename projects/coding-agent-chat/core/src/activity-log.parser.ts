@@ -348,6 +348,8 @@ function withText(line: CliOutputLine, text: string): CliOutputLine {
 export interface NormalizedChatBody {
   text: string;
   lines: CliOutputLine[];
+  /** Recognized transport frames removed from the semantic body. */
+  strippedEnvelopes: readonly string[];
 }
 
 /**
@@ -364,6 +366,7 @@ export interface NormalizedChatBody {
  */
 export function normalizeVisibleChatBody(lines: readonly CliOutputLine[]): NormalizedChatBody {
   const outputLines: CliOutputLine[] = [];
+  const strippedEnvelopes: string[] = [];
   let inFence = false;
 
   for (const line of lines) {
@@ -378,7 +381,13 @@ export function normalizeVisibleChatBody(lines: readonly CliOutputLine[]): Norma
 
     if (!inFence) {
       const stripped = stripTransportEnvelope(text);
-      if (stripped === null) continue;
+      if (stripped === null) {
+        strippedEnvelopes.push(text);
+        continue;
+      }
+      if (stripped !== text) {
+        strippedEnvelopes.push(text.slice(0, text.length - stripped.length).trimEnd());
+      }
       outputLines.push(stripped === text ? line : withText(line, stripped));
       continue;
     }
@@ -388,7 +397,8 @@ export function normalizeVisibleChatBody(lines: readonly CliOutputLine[]): Norma
 
   return {
     text: outputLines.map((entry) => entry.text).join('\n').trim(),
-    lines: outputLines
+    lines: outputLines,
+    strippedEnvelopes
   };
 }
 

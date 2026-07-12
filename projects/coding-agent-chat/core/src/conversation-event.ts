@@ -170,6 +170,11 @@ export interface MessageEvent extends ConversationEventBase {
   target?: string;
   /** Attachment paths or URIs the host already resolved. */
   attachments?: readonly string[];
+  /** Raw transport evidence retained for a per-turn diagnostics/details view. */
+  diagnostics?: {
+    rawBody: string;
+    strippedEnvelopes: readonly string[];
+  };
 }
 
 export interface ToolBurstEvent extends ConversationEventBase {

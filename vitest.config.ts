@@ -11,6 +11,12 @@ import { defineConfig } from 'vitest/config';
  * so component specs are excluded here.
  */
 export default defineConfig({
+  resolve: {
+    // Orchestrated Windows worktrees are directory junctions. Keep Vite on
+    // the checkout path instead of resolving to a physical path it cannot
+    // serve through /@fs/.
+    preserveSymlinks: true,
+  },
   test: {
     globals: true,
     environment: 'jsdom',

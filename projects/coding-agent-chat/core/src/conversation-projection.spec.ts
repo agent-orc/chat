@@ -157,10 +157,9 @@ describe('projectConversation', () => {
 
   it('strips transport envelopes from visible agent answers but keeps prose timestamps and code', () => {
     const events = projectConversation({ source: SOURCE, lines: envelopePrefixedReplyFragment() });
-    expect(events).toHaveLength(1);
-    expect(events[0].kind).toBe('message.taskAgent');
+    expect(events.every((event) => event.kind === 'message.taskAgent')).toBe(true);
 
-    const body = probe(events[0]).body ?? '';
+    const body = events.map((event) => probe(event).body ?? '').join('\n');
     expect(body).toContain('Keep the clean prose and hide the transport frame.');
     expect(body).toContain('The word Supervisor is part of the answer here, not a prefix.');
     expect(body).not.toContain('2026-07-01 09:00 Supervisor:');
@@ -176,6 +175,44 @@ describe('projectConversation', () => {
     expect(body).toContain('Supervisor: this is code, so it must stay verbatim.');
     expect(body).toContain('2026-07-01 09:00 Orchestrator: keep this timestamp in code too.');
     expect(body).not.toContain('2026-07-01 09:00 Supervisor:');
+  });
+
+  it('does not resurrect a frame-only streaming chunk through the raw-title fallback', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [{
+        timestamp: '2026-07-01T09:00:00.000Z',
+        stream: 'stdout',
+        text: '2026-07-01 09:00 Supervisor:'
+      }]
+    });
+
+    expect(events).toEqual([]);
+  });
+
+  it('retains stripped transport evidence as structured message diagnostics', () => {
+    const events = projectConversation({ source: SOURCE, lines: envelopePrefixedReplyFragment() });
+    const messages = events.filter((event) => event.kind === 'message.taskAgent');
+    const rawBody = messages.map((message) => message.diagnostics?.rawBody ?? '').join('\n');
+    const strippedEnvelopes = messages.flatMap(
+      (message) => message.diagnostics?.strippedEnvelopes ?? []
+    );
+
+    expect(rawBody).toContain('2026-07-01 09:00 Supervisor:');
+    expect(strippedEnvelopes).toEqual(expect.arrayContaining([
+      '2026-07-01 09:00 Supervisor:',
+      '2026-07-01 09:00 Orchestrator:'
+    ]));
+    expect(messages.map((message) => message.body).join('\n')).not.toContain(
+      '2026-07-01 09:00 Supervisor:'
+    );
+  });
+
+  it('does not add diagnostics to already-clean legacy messages', () => {
+    const events = projectConversation({ source: SOURCE, lines: agentTextFragment() });
+    const message = events.find((event) => event.kind === 'message.taskAgent');
+
+    expect(message?.diagnostics).toBeUndefined();
   });
 
   it('classifies an orchestrator reissue line as decision.orchestrator', () => {
