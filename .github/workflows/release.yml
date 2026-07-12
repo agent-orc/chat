@@ -1,31 +1,31 @@
 name: release
 
 # Publishes coding-agent-chat to npmjs.com when a version tag is pushed
-# (e.g. v0.1.0). The version is derived from the tag.
+# (e.g. v0.2.0). The version is derived from the tag and must match the
+# package SemVer in projects/coding-agent-chat/package.json.
 #
-# Auth uses npm **Trusted Publishing** (OIDC): no long-lived token in secrets.
+# Auth uses npm Trusted Publishing (OIDC): no long-lived token in secrets.
 # GitHub Actions mints a short-lived OIDC token; npm (CLI >= 11.5) exchanges it
 # against the Trusted Publisher policy configured on npmjs.com for this
 # package (repo agent-orc/chat, workflow release.yml).
 #
 # ONE-TIME SETUP (npm requires the package to exist before a Trusted
-# Publisher can be configured): the very first publish must be manual —
+# Publisher can be configured): the very first publish must be manual -
 #   npm login && npm run build
-#   cd dist/coding-agent-chat && npm version 0.1.0 --no-git-tag-version
-#   npm publish --access public
-# — then add the Trusted Publisher on npmjs.com > package > Settings.
+#   cd dist/coding-agent-chat && npm publish --access public
+# - then add the Trusted Publisher on npmjs.com > package > Settings.
 #
-# To cut a release: `scripts/release.sh 0.1.0` (or push a `v0.1.0` tag).
+# To cut a release: `scripts/release.sh 0.2.0` (or push a `v0.2.0` tag).
 on:
   push:
-    tags: [ 'v*.*.*' ]
+    tags: ['v*.*.*']
 
 jobs:
   publish:
     name: build, test & publish to npmjs.com
     runs-on: ubuntu-latest
     permissions:
-      id-token: write   # required for Trusted Publishing / provenance
+      id-token: write # required for Trusted Publishing / provenance
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +39,19 @@ jobs:
         id: ver
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Validate tag matches package SemVer
+        run: |
+          package_version="$(node -p "require('./projects/coding-agent-chat/package.json').version")"
+          release_version="${{ steps.ver.outputs.version }}"
+          if [ "$package_version" != "$release_version" ]; then
+            echo "error: package version $package_version does not match tag version $release_version" >&2
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$GITHUB_SHA" ]; then
+            echo "error: checkout is not pinned to the tagged commit" >&2
+            exit 1
+          fi
+
       - name: Install
         run: npm ci
 
@@ -48,9 +61,8 @@ jobs:
       - name: Build library
         run: npm run build
 
-      - name: Stamp version
-        working-directory: dist/coding-agent-chat
-        run: npm version ${{ steps.ver.outputs.version }} --no-git-tag-version
+      - name: Stamp release metadata + manifest
+        run: node scripts/stamp-release.mjs --dist dist/coding-agent-chat --version "${{ steps.ver.outputs.version }}" --tag "${GITHUB_REF_NAME}" --commit "${GITHUB_SHA}"
 
       - name: Publish (Trusted Publishing / provenance)
         working-directory: dist/coding-agent-chat

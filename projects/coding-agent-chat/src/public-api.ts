@@ -14,4 +14,5 @@ export * from 'coding-agent-chat/conversation';
 export * from 'coding-agent-chat/composer';
 export * from 'coding-agent-chat/history';
 
+export * from './release-info';
 export * from './provide-coding-agent-chat';

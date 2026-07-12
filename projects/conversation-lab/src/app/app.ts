@@ -11,6 +11,10 @@ import type {
   ConversationEvent,
   RawLineRange,
 } from 'coding-agent-chat/core';
+import {
+  CODING_AGENT_CHAT_RELEASE_INFO,
+  codingAgentChatReleaseLabel,
+} from 'coding-agent-chat';
 import { shortModelLabel } from 'coding-agent-chat/core';
 import { ChatComponent } from 'coding-agent-chat/composer';
 import { ConversationViewComponent } from 'coding-agent-chat/conversation';
@@ -47,6 +51,8 @@ const SETTINGS_STORAGE_KEY = 'conversation-lab.settings';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+  protected readonly releaseInfo = CODING_AGENT_CHAT_RELEASE_INFO;
+  protected readonly releaseLabel = codingAgentChatReleaseLabel();
   protected readonly live = inject(WorkbenchLiveSession);
   protected readonly player = inject(ScenarioPlayer);
   protected readonly lightbox = inject(LabLightboxService);

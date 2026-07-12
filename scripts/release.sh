@@ -31,6 +31,12 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
+package_version="$(node -p "require('./projects/coding-agent-chat/package.json').version")"
+if [[ "$package_version" != "$version" ]]; then
+  echo "error: package version $package_version does not match release version $version" >&2
+  exit 1
+fi
+
 tag="v$version"
 if git rev-parse "$tag" >/dev/null 2>&1; then
   echo "error: tag $tag already exists" >&2

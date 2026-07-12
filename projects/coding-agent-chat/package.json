@@ -15,6 +15,9 @@
     "./theme/cac-theme.scss": {
       "sass": "./theme/cac-theme.scss",
       "default": "./theme/cac-theme.scss"
+    },
+    "./release-manifest.json": {
+      "default": "./release-manifest.json"
     }
   },
   "peerDependencies": {
