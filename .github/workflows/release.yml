@@ -69,6 +69,9 @@ jobs:
       - name: Stamp release metadata + manifest
         run: node scripts/stamp-release.mjs --dist dist/coding-agent-chat --version "${{ steps.ver.outputs.version }}" --tag "${GITHUB_REF_NAME}" --commit "${GITHUB_SHA}"
 
+      - name: Verify publish payload integrity
+        run: npm run release:verify
+
       - name: Publish (Trusted Publishing / provenance)
         working-directory: dist/coding-agent-chat
         run: npm publish --provenance --access public

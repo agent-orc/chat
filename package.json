@@ -11,6 +11,7 @@
     "workbench": "dotnet run --project workbench",
     "website": "ng serve website",
     "release:stamp": "node scripts/stamp-release.mjs",
+    "release:verify": "node scripts/verify-release.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "website:live": "ng serve website --configuration live"

@@ -103,6 +103,10 @@ artifact location, then use `npm install --save-exact
 ./artifacts/coding-agent-chat-0.2.0.tgz`. Do not point Studio at a mutable local
 `dist/` directory or an unversioned tarball.
 
+After unpacking a downloaded artifact, its payload can be checked with
+`node scripts/verify-release.mjs <unpacked-package-directory>`. The verifier
+checks both npm's effective publish file list and every recorded SHA-512 digest.
+
 Compatibility follows SemVer: patch upgrades are fixes, minor upgrades are
 backward-compatible additions, and major upgrades may require host changes.
 CAC 0.2.x requires Angular 21 (`>=21 <22`) and RxJS `~7.8`; check

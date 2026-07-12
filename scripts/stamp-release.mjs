@@ -85,7 +85,8 @@ if (packageJson.version !== effectiveVersion) {
   );
 }
 
-const releaseInfoPattern = /tag:\s*null[\s\S]*?commit:\s*null[\s\S]*?buildTimestamp:\s*null/;
+const releaseInfoPattern =
+  /tag:\s*(?:null|"[^"]*")[\s\S]*?commit:\s*(?:null|"[^"]*")[\s\S]*?buildTimestamp:\s*(?:null|"[^"]*")/;
 const replacement = [
   `tag: ${JSON.stringify(effectiveTag)}`,
   `commit: ${JSON.stringify(effectiveCommit)}`,
@@ -95,9 +96,9 @@ const replacement = [
 async function patchReleaseInfo(filePath) {
   const content = await fs.readFile(filePath, 'utf8');
   if (!content.includes('CODING_AGENT_CHAT_RELEASE_INFO')) return false;
+  if (!releaseInfoPattern.test(content)) return false;
   const next = content.replace(releaseInfoPattern, replacement);
-  if (next === content) return false;
-  await fs.writeFile(filePath, next);
+  if (next !== content) await fs.writeFile(filePath, next);
   return true;
 }
 
@@ -122,28 +123,43 @@ if (stampedFileCount === 0) {
   fail('release metadata placeholder was not found in any built JavaScript artifact');
 }
 
-// Hash the exact publishable files. The manifest is intentionally excluded
-// from this list because a file cannot contain its own digest. Consumers can
-// verify every shipped payload file independently after unpacking.
+// Ask npm for its effective packlist rather than walking dist. npm applies
+// package.json "files", .npmignore and its own always-included/excluded rules;
+// hashing a filesystem walk would therefore describe files that are not in
+// the released tarball. The manifest itself is excluded because a file cannot
+// contain its own digest.
 async function sha512(filePath) {
   return createHash('sha512').update(await fs.readFile(filePath)).digest('base64');
 }
 
-const publishFiles = [];
-async function collectPublishFiles(dir) {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    const entryPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) await collectPublishFiles(entryPath);
-    else if (entry.isFile() && entry.name !== 'release-manifest.json') {
-      publishFiles.push({
-        path: path.relative(distDir, entryPath).split(path.sep).join('/'),
-        sha512: await sha512(entryPath),
-      });
-    }
-  }
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+let packReport;
+try {
+  packReport = JSON.parse(
+    execFileSync(npmCommand, ['pack', '--dry-run', '--json', '--ignore-scripts'], {
+      cwd: distDir,
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+    })
+  );
+} catch (error) {
+  fail(`could not determine npm publish file list: ${error.message}`);
 }
-await collectPublishFiles(distDir);
+const packedPaths = packReport?.[0]?.files?.map((file) => file.path);
+if (!Array.isArray(packedPaths) || packedPaths.length === 0) {
+  fail('npm returned an empty or invalid publish file list');
+}
+
+const publishFiles = [];
+for (const relativePath of packedPaths
+  .filter((file) => file !== 'release-manifest.json')
+  .sort((a, b) => a.localeCompare(b))) {
+  const filePath = path.resolve(distDir, relativePath);
+  if (!filePath.startsWith(`${distDir}${path.sep}`)) {
+    fail(`npm publish file escapes package directory: ${relativePath}`);
+  }
+  publishFiles.push({ path: relativePath, sha512: await sha512(filePath) });
+}
 
 const manifest = {
   schemaVersion: 1,
