@@ -26,6 +26,7 @@ import {
   parseActivityLog,
   type ActivityLogGroup,
   type ActivityLogKind,
+  normalizeVisibleChatBody,
 } from './activity-log.parser';
 import { shortModelLabel } from './composer-controls';
 import type {
@@ -260,6 +261,7 @@ function projectGroup(
   const ts = firstLine.timestamp;
   const baseId = `${range.source}:${range.start}-${range.end}`;
   const runId = currentRun?.run?.index;
+  const visibleBody = normalizeVisibleChatBody(group.lines).text;
 
   // User messages are always their own turn.
   if (firstLine.stream === 'user') {
@@ -271,19 +273,20 @@ function projectGroup(
         runId,
         rawRange: range,
         actor: 'You',
-        body: group.title,
+        body: visibleBody || group.title,
         target: extractUserTarget(firstLine.text)
       }
     ];
   }
 
   if (firstLine.stream === 'orchestrator') {
+    const orchestratorText = visibleBody || firstLine.text;
     // [watchdog] orchestrator messages get classified as supervisor.wait so
     // the chat row uses the correct family. The parser already filters them
     // out of conversation mode but the projection is the single source of
     // truth here, so it must classify on its own.
-    if (/\[watchdog[^\]]*\]/i.test(firstLine.text)) {
-      const wait = parseWatchdogText(firstLine.text);
+    if (/\[watchdog[^\]]*\]/i.test(orchestratorText)) {
+      const wait = parseWatchdogText(orchestratorText);
       if (wait) {
         return [
           {
@@ -301,7 +304,7 @@ function projectGroup(
       }
     }
 
-    const status = parseOrchestratorStatus(firstLine.text);
+    const status = parseOrchestratorStatus(orchestratorText);
     if (status) {
       return [
         {
@@ -321,8 +324,8 @@ function projectGroup(
 
     // Heuristic / capture-fail / parser-warning all arrive as orchestrator
     // lines. Inspect the text to pick the right kind.
-    if (/\[capture-fail\]/i.test(firstLine.text)) {
-      const cliMatch = /from\s+(\w+)/i.exec(firstLine.text);
+    if (/\[capture-fail\]/i.test(orchestratorText)) {
+      const cliMatch = /from\s+(\w+)/i.exec(orchestratorText);
       return [
         {
           id: `${baseId}:capture-fail`,
@@ -336,13 +339,13 @@ function projectGroup(
         }
       ];
     }
-    if (/\[schema-drift\]/i.test(firstLine.text) || /report is unstructured/i.test(firstLine.text) || /failed to parse/i.test(firstLine.text)) {
-      const dedupeKey = `schema-drift:${firstLine.text.trim()}`;
+    if (/\[schema-drift\]/i.test(orchestratorText) || /report is unstructured/i.test(orchestratorText) || /failed to parse/i.test(orchestratorText)) {
+      const dedupeKey = `schema-drift:${orchestratorText.trim()}`;
       if (seenParserDedupeKeys.has(dedupeKey)) return null;
       seenParserDedupeKeys.add(dedupeKey);
-      const expectedRaw = /expected\s+([A-Za-z][\w-]*)/i.exec(firstLine.text)?.[1];
+      const expectedRaw = /expected\s+([A-Za-z][\w-]*)/i.exec(orchestratorText)?.[1];
       const expected = expectedRaw
-        ?? (/MetaCycle/i.test(firstLine.text) ? 'MetaCycleReport' : 'structured-report');
+        ?? (/MetaCycle/i.test(orchestratorText) ? 'MetaCycleReport' : 'structured-report');
       return [
         {
           id: `${baseId}:schema-drift`,
@@ -352,15 +355,15 @@ function projectGroup(
           rawRange: range,
           severity: 'warn',
           expectedSchema: expected,
-          message: firstLine.text.trim(),
+          message: orchestratorText.trim(),
           recovery: 'Open raw report and regenerate',
           rawLink: { range, label: 'Open raw report' },
           collapsedByDefault: true
         }
       ];
     }
-    if (/could not classify/i.test(firstLine.text) || /\[heuristic\]/i.test(firstLine.text)) {
-      const dedupeKey = `heuristic:${firstLine.text.trim()}`;
+    if (/could not classify/i.test(orchestratorText) || /\[heuristic\]/i.test(orchestratorText)) {
+      const dedupeKey = `heuristic:${orchestratorText.trim()}`;
       if (seenParserDedupeKeys.has(dedupeKey)) return null;
       seenParserDedupeKeys.add(dedupeKey);
       return [
@@ -372,14 +375,14 @@ function projectGroup(
           rawRange: range,
           severity: 'warn',
           expectedKind: 'sentinel',
-          message: firstLine.text.trim(),
+          message: orchestratorText.trim(),
           dedupeKey,
           collapsedByDefault: true
         }
       ];
     }
-    if (/\[\[TASK_NEEDS_INPUT/i.test(firstLine.text) || /needs[- ]input/i.test(firstLine.text)) {
-      const question = extractNeedsInputQuestion(firstLine.text);
+    if (/\[\[TASK_NEEDS_INPUT/i.test(orchestratorText) || /needs[- ]input/i.test(orchestratorText)) {
+      const question = extractNeedsInputQuestion(orchestratorText);
       return [
         {
           id: `${baseId}:needs-input`,
@@ -388,7 +391,7 @@ function projectGroup(
           runId,
           rawRange: range,
           severity: 'warn',
-          question: question ?? firstLine.text.trim(),
+          question: question ?? orchestratorText.trim(),
           loopIndex: 0,
           loopLimit: 0,
           answerSource: null,
@@ -398,8 +401,8 @@ function projectGroup(
     }
 
     // Fall back to a generic orchestrator decision row.
-    const reason = firstLine.text.replace(/^\s*\[[^\]]+\]\s*/, '').trim();
-    const decisionType = (/^\s*\[([^\]]+)\]/.exec(firstLine.text)?.[1] ?? 'decision').toLowerCase();
+    const reason = orchestratorText.replace(/^\s*\[[^\]]+\]\s*/, '').trim();
+    const decisionType = (/^\s*\[([^\]]+)\]/.exec(orchestratorText)?.[1] ?? 'decision').toLowerCase();
     return [
       {
         id: `${baseId}:decision`,
@@ -424,7 +427,7 @@ function projectGroup(
         rawRange: range,
         severity: group.status === 'error' ? 'error' : 'info',
         actor: 'Supervisor',
-        body: group.title
+        body: visibleBody || group.title
       }
     ];
   }
@@ -535,7 +538,7 @@ function projectGroup(
         rawRange: range,
         severity: 'error',
         actor: 'Agent',
-        body: joinGroupBody(group)
+        body: visibleBody || joinGroupBody(group)
       }
     ];
   }
@@ -551,7 +554,7 @@ function projectGroup(
       thinkingLevel,
       rawRange: range,
       actor: 'Agent',
-      body: joinGroupBody(group)
+      body: visibleBody || joinGroupBody(group)
     }
   ];
 }
@@ -1115,7 +1118,7 @@ function extractUserTarget(text: string): string | undefined {
 }
 
 function joinGroupBody(group: ActivityLogGroup): string {
-  return group.lines.map((l) => l.text).filter((t) => t !== undefined).join('\n').trim();
+  return normalizeVisibleChatBody(group.lines).text || group.lines.map((l) => l.text).filter((t) => t !== undefined).join('\n').trim();
 }
 
 /**

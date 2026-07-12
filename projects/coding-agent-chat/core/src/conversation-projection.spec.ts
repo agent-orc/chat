@@ -8,6 +8,8 @@ import {
   modelSwitchFragment,
   needsInputLoopFragment,
   orchestratorReissueFragment,
+  envelopePrefixedReplyFragment,
+  envelopeStreamingBoundaryFragment,
   resetFixtureClock,
   runTimelineForComposite,
   runTimelineForModelSwitch,
@@ -151,6 +153,29 @@ describe('projectConversation', () => {
     expect((joined.match(/```/g) ?? []).length).toBe(2);
     expect(joined).toContain('```markdown\n# Sandbox');
     expect(joined).toContain('A small folder for throwaway scripts.\n\n```');
+  });
+
+  it('strips transport envelopes from visible agent answers but keeps prose timestamps and code', () => {
+    const events = projectConversation({ source: SOURCE, lines: envelopePrefixedReplyFragment() });
+    expect(events).toHaveLength(1);
+    expect(events[0].kind).toBe('message.taskAgent');
+
+    const body = probe(events[0]).body ?? '';
+    expect(body).toContain('Keep the clean prose and hide the transport frame.');
+    expect(body).toContain('The word Supervisor is part of the answer here, not a prefix.');
+    expect(body).not.toContain('2026-07-01 09:00 Supervisor:');
+    expect(body).not.toContain('2026-07-01 09:00 Orchestrator:');
+  });
+
+  it('keeps code fences and streaming boundaries verbatim while removing only the envelope line', () => {
+    const events = projectConversation({ source: SOURCE, lines: envelopeStreamingBoundaryFragment() });
+    const body = events.map((event) => probe(event).body ?? '').join('\n');
+
+    expect(body).toContain('Proceed with the parser normalization.');
+    expect(body).toContain('```markdown');
+    expect(body).toContain('Supervisor: this is code, so it must stay verbatim.');
+    expect(body).toContain('2026-07-01 09:00 Orchestrator: keep this timestamp in code too.');
+    expect(body).not.toContain('2026-07-01 09:00 Supervisor:');
   });
 
   it('classifies an orchestrator reissue line as decision.orchestrator', () => {

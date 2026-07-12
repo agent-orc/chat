@@ -11,9 +11,14 @@ import {
   formatLiveSince,
   parseActivityLog,
   parseOrchestratorSteer,
+  normalizeVisibleChatBody,
   summarizeToolBurst
 } from './activity-log.parser';
 import { CliOutputLine } from './projection-inputs';
+import {
+  envelopePrefixedReplyFragment,
+  envelopeStreamingBoundaryFragment,
+} from './conversation-projection.fixtures';
 
 describe('parseActivityLog', () => {
   it('compresses adjacent read entries into a single expandable group', () => {
@@ -322,6 +327,80 @@ describe('buildConversationTurns', () => {
 
     const defaultVisibleTurns = turns.filter((turn) => turn.kind !== 'tools');
     expect(defaultVisibleTurns.map((turn) => turn.kind)).toEqual(['agent']);
+  });
+
+  it('normalizes transport envelopes without stripping prose timestamps or code fences', () => {
+    const cases = [
+      {
+        name: 'timestamped speaker headers are removed',
+        lines: envelopePrefixedReplyFragment(),
+        includes: [
+          'Keep the clean prose and hide the transport frame.',
+          'The word Supervisor is part of the answer here, not a prefix.'
+        ],
+        excludes: [
+          '2026-07-01 09:00 Supervisor:',
+          '2026-07-01 09:00 Orchestrator:'
+        ]
+      },
+      {
+        name: 'plain prose keeps real times and words intact',
+        lines: [
+          line('The meeting starts at 09:00 and the Supervisor role stays in the prose.'),
+          line('No transport frame should be stripped here.')
+        ],
+        includes: [
+          'The meeting starts at 09:00 and the Supervisor role stays in the prose.',
+          'No transport frame should be stripped here.'
+        ],
+        excludes: [
+          'Supervisor:',
+          '09:00 Supervisor:'
+        ]
+      },
+      {
+        name: 'markdown code blocks stay verbatim across chunk boundaries',
+        lines: envelopeStreamingBoundaryFragment(),
+        includes: [
+          '```markdown',
+          'Supervisor: this is code, so it must stay verbatim.',
+          '2026-07-01 09:00 Orchestrator: keep this timestamp in code too.',
+          'Proceed with the parser normalization.'
+        ],
+        excludes: [
+          '2026-07-01 09:00 Supervisor:'
+        ]
+      }
+    ] as const;
+
+    for (const sample of cases) {
+      const normalized = normalizeVisibleChatBody(sample.lines).text;
+      for (const expected of sample.includes) {
+        expect(normalized, sample.name).toContain(expected);
+      }
+      for (const forbidden of sample.excludes) {
+        expect(normalized, sample.name).not.toContain(forbidden);
+      }
+    }
+  });
+
+  it('replays enveloped answers as clean legacy conversation turns and chat messages', () => {
+    const groups = parseActivityLog(envelopePrefixedReplyFragment());
+    const turns = buildConversationTurns(groups);
+    const messages = buildChatMessages(groups);
+
+    expect(turns).toHaveLength(1);
+    expect(turns[0].kind).toBe('agent');
+    expect(turns[0].text).toContain('Keep the clean prose and hide the transport frame.');
+    expect(turns[0].text).toContain('The word Supervisor is part of the answer here, not a prefix.');
+    expect(turns[0].text).not.toContain('2026-07-01 09:00 Supervisor:');
+    expect(turns[0].text).not.toContain('2026-07-01 09:00 Orchestrator:');
+
+    expect(messages).toHaveLength(1);
+    const rendered = messages[0].body.map((entry) => entry.text).join('\n');
+    expect(rendered).toContain('Keep the clean prose and hide the transport frame.');
+    expect(rendered).toContain('The word Supervisor is part of the answer here, not a prefix.');
+    expect(rendered).not.toContain('2026-07-01 09:00 Supervisor:');
   });
 });
 

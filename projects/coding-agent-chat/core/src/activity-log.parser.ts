@@ -345,6 +345,116 @@ function withText(line: CliOutputLine, text: string): CliOutputLine {
   return { ...line, text };
 }
 
+export interface NormalizedChatBody {
+  text: string;
+  lines: CliOutputLine[];
+}
+
+/**
+ * Collapse transport / speaker envelopes from visible chat text while
+ * preserving timestamps or role words that are part of actual prose/code.
+ *
+ * The normaliser only strips recognized headers:
+ * - optional timestamp + known speaker label (`Supervisor:`, `2026-... Agent:`)
+ * - known role labels in bracket form (`[orchestrator] ...`)
+ * - standalone frame lines that carry only the envelope
+ *
+ * Markdown fences are respected so literal examples in code blocks survive
+ * untouched.
+ */
+export function normalizeVisibleChatBody(lines: readonly CliOutputLine[]): NormalizedChatBody {
+  const outputLines: CliOutputLine[] = [];
+  let inFence = false;
+
+  for (const line of lines) {
+    const text = line.text ?? '';
+    const trimmed = text.trim();
+
+    if (isFenceLine(trimmed)) {
+      outputLines.push(line);
+      inFence = !inFence;
+      continue;
+    }
+
+    if (!inFence) {
+      const stripped = stripTransportEnvelope(text);
+      if (stripped === null) continue;
+      outputLines.push(stripped === text ? line : withText(line, stripped));
+      continue;
+    }
+
+    outputLines.push(line);
+  }
+
+  return {
+    text: outputLines.map((entry) => entry.text).join('\n').trim(),
+    lines: outputLines
+  };
+}
+
+/**
+ * Strip a recognized transport / speaker frame from one raw line. Returns
+ * `null` when the whole line is just an envelope and should not render at all.
+ */
+function stripTransportEnvelope(text: string): string | null {
+  const trimmed = text.trim();
+  if (!trimmed) return text;
+
+  const speakerOnly = /^\[(?<role>orchestrator|supervisor|agent|assistant|system|user)\]\s*(?:[:|>—–-]\s*)?$/i.exec(trimmed);
+  if (speakerOnly) return null;
+
+  const bracketSpeaker = /^\[(?<speaker>orchestrator|supervisor|agent|assistant|system|user)\]\s*(?<sep>[:|>—–-]\s*|$)(?<rest>[\s\S]*)$/i.exec(trimmed);
+  if (bracketSpeaker?.groups) {
+    const sep = bracketSpeaker.groups['sep'] ?? '';
+    const rest = bracketSpeaker.groups['rest'] ?? '';
+    if (sep || rest.trim().length === 0) {
+      if (!rest.trim()) return null;
+      return rest.trimStart();
+    }
+  }
+
+  const timestamped = /^(?:[●•◦◆]\s*)?(?<timestamp>\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:?\d{2})?)?|\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)\s+(?<rest>[\s\S]*)$/i.exec(trimmed);
+  if (timestamped?.groups) {
+    const rest = timestamped.groups['rest'] ?? '';
+    const afterTimestamp = stripSpeakerPrefix(rest);
+    if (afterTimestamp !== null) return afterTimestamp;
+    if (isSpeakerEnvelopeOnly(rest)) return null;
+  }
+
+  return text;
+}
+
+function isSpeakerEnvelopeOnly(text: string): boolean {
+  const trimmed = text.trim();
+  return /^\[(?:orchestrator|supervisor|agent|assistant|system|user)\]\s*(?:[:|>—–-]\s*)?$/i.test(trimmed)
+    || /^(?:orchestrator|supervisor|agent|assistant|system|user)\s*(?:[:|>—–-]\s*)?$/i.test(trimmed);
+}
+
+function stripSpeakerPrefix(text: string): string | null {
+  const trimmed = text.trimStart();
+  const bracketSpeaker = /^\[(?<speaker>orchestrator|supervisor|agent|assistant|system|user)\]\s*(?<sep>[:|>—–-]\s*|$)(?<rest>[\s\S]*)$/i.exec(trimmed);
+  if (bracketSpeaker?.groups) {
+    const sep = bracketSpeaker.groups['sep'] ?? '';
+    const rest = bracketSpeaker.groups['rest'] ?? '';
+    if (sep || rest.trim().length === 0) {
+      if (!rest.trim()) return null;
+      return rest.trimStart();
+    }
+  }
+
+  const plainSpeaker = /^(?<speaker>orchestrator|supervisor|agent|assistant|system|user)\s*(?<sep>[:|>—–-]\s*|$)(?<rest>[\s\S]*)$/i.exec(trimmed);
+  if (plainSpeaker?.groups) {
+    const sep = plainSpeaker.groups['sep'] ?? '';
+    const rest = plainSpeaker.groups['rest'] ?? '';
+    if (sep || rest.trim().length === 0) {
+      if (!rest.trim()) return null;
+      return rest.trimStart();
+    }
+  }
+
+  return null;
+}
+
 export function filterActivityGroups(groups: ActivityLogGroup[], filters: ActivityLogFilters): ActivityLogGroup[] {
   return groups.filter((group) => filters[group.kind]);
 }
@@ -427,7 +537,7 @@ function groupToChatMessage(group: ActivityLogGroup, index: number): ChatMessage
     subtitle: group.subtitle,
     status: group.status,
     timestamp,
-    body: group.lines,
+    body: normalizeVisibleChatBody(group.lines).lines,
     collapsedByDefault: isTool || group.collapsedByDefault
   };
 }
@@ -638,7 +748,7 @@ function turnTextFromGroups(run: ActivityLogGroup[], kind: ConversationTurnKind)
   const segments: string[] = [];
   for (const group of run) {
     if (kind === 'user') {
-      segments.push(group.title);
+      segments.push(normalizeVisibleChatBody(group.lines).text || group.title);
       continue;
     }
     if (isModelChangeMarker(group)) {
@@ -649,8 +759,7 @@ function turnTextFromGroups(run: ActivityLogGroup[], kind: ConversationTurnKind)
     // For agent / system turns, the model's text was emitted as a sequence of
     // lines that the backend split per newline. Re-join them with single
     // newlines so paragraph structure (blank line = new <p>) survives.
-    const lines = group.lines.map((l) => l.text).filter((t) => t !== undefined);
-    segments.push(lines.join('\n'));
+    segments.push(normalizeVisibleChatBody(group.lines).text);
   }
   return segments.join('\n\n').trim();
 }

@@ -67,6 +67,38 @@ export function agentTextFragment(): CliOutputLine[] {
   ];
 }
 
+/**
+ * Realistic transport-envelope samples from Agent Studio / orchestrator chat.
+ * The body is still the user-visible answer, but the first line carries a
+ * timestamp + speaker prefix that the parser must strip before rendering.
+ */
+export function envelopePrefixedReplyFragment(): CliOutputLine[] {
+  resetFixtureClock();
+  return [
+    line('2026-07-01 09:00 Supervisor: Keep the clean prose and hide the transport frame.'),
+    line('2026-07-01 09:00 Orchestrator: The word Supervisor is part of the answer here, not a prefix.'),
+    line('The word Supervisor is part of the answer here, not a prefix.'),
+  ];
+}
+
+/**
+ * Envelope-style streaming boundaries: the first chunk is only the frame, the
+ * second chunk carries the visible payload, and a fenced code block must stay
+ * untouched.
+ */
+export function envelopeStreamingBoundaryFragment(): CliOutputLine[] {
+  resetFixtureClock();
+  return [
+    line('2026-07-01 09:00 Supervisor:'),
+    line('Proceed with the parser normalization.'),
+    line(''),
+    line('```markdown'),
+    line('Supervisor: this is code, so it must stay verbatim.'),
+    line('2026-07-01 09:00 Orchestrator: keep this timestamp in code too.'),
+    line('```'),
+  ];
+}
+
 /** Orchestrator decides to reissue the task. */
 export function orchestratorReissueFragment(): CliOutputLine[] {
   resetFixtureClock();
