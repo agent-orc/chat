@@ -14,13 +14,7 @@ import type {
 } from 'coding-agent-chat/core';
 
 export type EntryPointKey =
-  | 'core'
-  | 'markdown'
-  | 'conversation'
-  | 'composer'
-  | 'history'
-  | 'shared'
-  | 'theme';
+  'core' | 'markdown' | 'conversation' | 'composer' | 'history' | 'shared' | 'theme';
 
 export interface EntryPointTab {
   readonly key: EntryPointKey;
@@ -115,7 +109,7 @@ export const EXPLORER_MARKDOWN: string = [
 /** Copy-paste snippet per tab. */
 export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: string }> = {
   core: {
-    label: 'zero Angular — runs in Node, tests, your backend',
+    label: 'Angular-free. Runs in Node, tests, and backends.',
     code: [
       "import { projectConversation } from 'coding-agent-chat/core';",
       "import type { ConversationEvent } from 'coding-agent-chat/core';",
@@ -144,7 +138,7 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
     code: [
       '<cac-project-chat-list project="my-app" />',
       '',
-      '// app.config.ts — where the data comes from:',
+      '// app.config.ts: data source',
       '{ provide: PROJECT_CHAT_DATA_SOURCE, useClass: MyHttpChatSource }',
     ].join('\n'),
   },
@@ -162,7 +156,7 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
     code: [
       "@use 'coding-agent-chat/theme/cac-theme.css';",
       '',
-      '<!-- light/dark per subtree — nest them freely: -->',
+      '<!-- Set light or dark on any parent scope. -->',
       '<div data-studio-theme="light"> …chat surfaces… </div>',
     ].join('\n'),
   },

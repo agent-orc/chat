@@ -16,8 +16,7 @@ html {
   scroll-behavior: smooth;
   /* Slim, theme-following scrollbars page-wide (token flips with the theme). */
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--studio-fg-muted, #64748b) 50%, transparent)
-    transparent;
+  scrollbar-color: color-mix(in srgb, var(--studio-fg-muted, #64748b) 50%, transparent) transparent;
 }
 
 html,
@@ -198,8 +197,7 @@ code {
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 1px 10px rgba(217, 119, 87, 0.35);
   color: #16100d;
-  font:
-    700 11px/1 var(--font-mono, monospace);
+  font: 700 11px/1 var(--font-mono, monospace);
 }
 
 .site-nav__logo::after {
@@ -490,6 +488,17 @@ code {
   font-size: clamp(0.98rem, 1.6vw, 1.08rem);
   color: var(--studio-fg-dim, #94a3b8);
   text-wrap: pretty;
+}
+
+.section-intro--center {
+  text-align: center;
+}
+
+.section-intro--center .section__kicker,
+.section-intro--center .section__title,
+.section-intro--center .section__lead {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .section__foot {
@@ -830,7 +839,6 @@ code {
 .demo-frame .demo-frame__composer .chat__empty {
   padding: 8px 12px;
 }
-
 
 /* --------------------------------------------- defer-block skeletons -- */
 /* Static placeholders shown in the prerendered HTML while the interactive
@@ -1287,7 +1295,10 @@ code {
 }
 
 .docs-theme {
-  max-width: 680px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  align-items: start;
 }
 
 /* ---------------------------------------------------------- code cards -- */
@@ -1363,8 +1374,8 @@ code {
    * mid-token. The `local` cover layers scroll with the content and hide the
    * `scroll`-attached shadows once that end is reached (Lea Verou technique). */
   background:
-    linear-gradient(90deg, var(--site-code-bg) 45%, rgba(20, 20, 31, 0)) 0 0 / 44px 100%
-      no-repeat local,
+    linear-gradient(90deg, var(--site-code-bg) 45%, rgba(20, 20, 31, 0)) 0 0 / 44px 100% no-repeat
+      local,
     linear-gradient(270deg, var(--site-code-bg) 45%, rgba(20, 20, 31, 0)) 100% 0 / 44px 100%
       no-repeat local,
     linear-gradient(90deg, rgba(0, 0, 0, 0.6), transparent) 0 0 / 18px 100% no-repeat scroll,

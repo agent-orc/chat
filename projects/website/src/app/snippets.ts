@@ -13,7 +13,7 @@ import { provideCodingAgentChat } from 'coding-agent-chat';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Every seam defaults to a safe no-op — call without options to start.
+    // Every integration point has a safe default.
     provideCodingAgentChat(),
   ],
 };`;
@@ -30,8 +30,7 @@ export class RunView {
   readonly events = signal<readonly ConversationEvent[]>([]);
 }`;
 
-export const SNIPPET_SEAM_PROVIDE = `// Light seams up from your bootstrap providers — both bind via useExisting,
-// so a providedIn: 'root' service shares its instance with the rest of the app.
+export const SNIPPET_SEAM_PROVIDE = `// Both services bind via useExisting and retain their root instances.
 provideCodingAgentChat({
   taskReferences: TaskReferenceNavigationService, // implements ChatTaskReferenceProvider
   mediaLightbox: MediaLightboxService,            // implements ChatMediaLightbox
@@ -47,7 +46,7 @@ providers: [
   { provide: CHAT_HISTORY_CONFIRM, useClass: MyHistoryConfirm },
 ];`;
 
-export const SNIPPET_DATA_SOURCE = `// The seam is four read methods — this page implements it in-memory.
+export const SNIPPET_DATA_SOURCE = `// Four read methods. This page implements them in memory.
 export interface ProjectChatDataSource {
   scroll(project: string, request: ProjectChatScrollRequest): Observable<ProjectChatScrollResponse>;
   search(project: string, query: string, limit: number): Observable<ProjectChatSearchResponse>;
@@ -55,17 +54,26 @@ export interface ProjectChatDataSource {
   turn(project: string, turnId: string): Observable<ProjectChatTurnResponse>;
 }`;
 
-export const SNIPPET_THEME = `/* styles.scss — optional drop-in stylesheet with the studio look */
-@import 'coding-agent-chat/theme/cac-theme.css';
+export const SNIPPET_THEME = `/* styles.scss */
+@import 'coding-agent-chat/theme/cac-theme.css';`;
 
-/* Dark by default. Light theme via an attribute on any parent: */
-/* <html data-studio-theme="light"> */`;
+export const SNIPPET_THEME_SCOPE = `<!-- Dark is the default. Use "dark" to force it. -->
+<html lang="en" data-studio-theme="light">
+  ...
+</html>`;
 
-export const SNIPPET_CORE_ONLY = `// Zero-Angular kernel: backends, SSR and tests can import the wire
+export const SNIPPET_THEME_OVERRIDE = `/* styles.scss, after the theme import */
+:root {
+  --studio-accent: #7c3aed;
+  --studio-on-accent: #ffffff;
+  --studio-accent-2: #0f766e;
+}`;
+
+export const SNIPPET_CORE_ONLY = `// Angular-free core for backends, SSR, and tests.
 // contract + projection without pulling in the renderer.
 import { projectConversation } from 'coding-agent-chat/core';
 import type { ConversationEvent } from 'coding-agent-chat/core';
 
-// Raw evidence in (CLI log lines, run timeline, tokens, screenshots, commits) —
-// a flat, ordered ConversationEvent[] out.
+// Convert CLI lines, timeline data, tokens, screenshots, and commits
+// into an ordered ConversationEvent[].
 const events: ConversationEvent[] = projectConversation({ source: jobId, lines });`;

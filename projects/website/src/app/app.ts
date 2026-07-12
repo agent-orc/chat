@@ -53,6 +53,8 @@ import {
   SNIPPET_SEAM_HISTORY,
   SNIPPET_SEAM_PROVIDE,
   SNIPPET_THEME,
+  SNIPPET_THEME_OVERRIDE,
+  SNIPPET_THEME_SCOPE,
 } from './snippets';
 
 /** Section ids the sticky nav highlights while scrolling. */
@@ -226,6 +228,8 @@ export class App {
   protected readonly snippetSeamHistory = SNIPPET_SEAM_HISTORY;
   protected readonly snippetDataSource = SNIPPET_DATA_SOURCE;
   protected readonly snippetTheme = SNIPPET_THEME;
+  protected readonly snippetThemeScope = SNIPPET_THEME_SCOPE;
+  protected readonly snippetThemeOverride = SNIPPET_THEME_OVERRIDE;
   protected readonly snippetCoreOnly = SNIPPET_CORE_ONLY;
   protected readonly heroInstall = 'npm install coding-agent-chat';
 
@@ -276,7 +280,7 @@ export class App {
       {
         id: 'bypass',
         label: 'Bypass permissions',
-        description: 'Everything runs unattended — sandbox recommended.',
+        description: 'Everything runs unattended. Use a sandbox.',
         tone: 'warn',
       },
     ],
@@ -290,25 +294,25 @@ export class App {
       id: 'doc-api',
       glyph: 'api.md',
       variant: 'pill',
-      label: 'api.md — REST contract the change must honour · 6.2k tokens',
+      label: 'api.md: REST contract · 6.2k tokens',
     },
     {
       id: 'doc-schema',
       glyph: 'schema.sql',
       variant: 'pill',
-      label: 'schema.sql — current tables and indexes · 8.1k tokens',
+      label: 'schema.sql: current tables and indexes · 8.1k tokens',
     },
     {
       id: 'doc-roadmap',
       glyph: 'roadmap.md',
       variant: 'pill',
-      label: 'roadmap.md — Q3 scope guardrails · 3.4k tokens',
+      label: 'roadmap.md: Q3 scope · 3.4k tokens',
     },
     {
       id: 'doc-adr',
       glyph: 'adr-012.md',
       variant: 'pill',
-      label: 'adr-012.md — decision record: cache invalidation · 4.9k tokens',
+      label: 'adr-012.md: cache invalidation decision · 4.9k tokens',
     },
   ];
 
@@ -323,7 +327,7 @@ export class App {
       { label: 'Conversation so far', tokens: 43_800 },
     ],
     capturedAt: '2026-07-02T14:07:00.000Z',
-    sourceLabel: 'demo snapshot — wire your /context probe here',
+    sourceLabel: 'Demo snapshot. Connect your /context probe here.',
   };
 
   protected onDemoModelCommit(selection: ChatModelSelection): void {
