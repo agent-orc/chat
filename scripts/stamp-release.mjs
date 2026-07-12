@@ -101,6 +101,8 @@ async function patchReleaseInfo(filePath) {
   return true;
 }
 
+let stampedFileCount = 0;
+
 async function walk(dir) {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
@@ -110,12 +112,15 @@ async function walk(dir) {
       continue;
     }
     if (entry.isFile() && /\.(mjs|js)$/i.test(entry.name)) {
-      await patchReleaseInfo(entryPath);
+      if (await patchReleaseInfo(entryPath)) stampedFileCount += 1;
     }
   }
 }
 
 await walk(distDir);
+if (stampedFileCount === 0) {
+  fail('release metadata placeholder was not found in any built JavaScript artifact');
+}
 
 // Hash the exact publishable files. The manifest is intentionally excluded
 // from this list because a file cannot contain its own digest. Consumers can
