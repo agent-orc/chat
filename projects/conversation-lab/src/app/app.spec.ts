@@ -30,6 +30,9 @@ describe('App', () => {
     expect(compiled.querySelector('cac-chat')).toBeTruthy();
     // The project-chat-history panel was retired — one view only.
     expect(compiled.querySelector('cac-project-chat-list')).toBeNull();
+    expect(compiled.querySelector('[data-testid="lab-release"]')?.textContent).toContain(
+      'coding-agent-chat@0.2.0'
+    );
   });
 
   it('renders one chip per catalog scenario', async () => {

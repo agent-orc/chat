@@ -2,7 +2,7 @@
 
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
-import os from 'node:os';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 const args = new Map();
@@ -44,6 +44,7 @@ const version = readArg('version');
 const tag = readArg('tag');
 const commit = readArg('commit');
 const buildTimestamp = readArg('build-timestamp');
+const semverPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 if (!(await exists(packageJsonPath))) {
   fail(`package.json not found in ${distDir}`);
@@ -64,6 +65,19 @@ const effectiveTimestamp =
       }).trim()
     ) * 1000
   ).toISOString();
+
+if (!semverPattern.test(effectiveVersion)) {
+  fail(`package version ${effectiveVersion} is not valid SemVer`);
+}
+if (effectiveTag !== `v${effectiveVersion}`) {
+  fail(`release tag ${effectiveTag} does not match version ${effectiveVersion} (expected v${effectiveVersion})`);
+}
+if (!/^[0-9a-f]{40}$/i.test(effectiveCommit)) {
+  fail(`build commit ${effectiveCommit} is not a full 40-character git commit`);
+}
+if (Number.isNaN(Date.parse(effectiveTimestamp))) {
+  fail(`build timestamp ${effectiveTimestamp} is not a valid ISO-8601 timestamp`);
+}
 
 if (packageJson.version !== effectiveVersion) {
   fail(
@@ -103,34 +117,38 @@ async function walk(dir) {
 
 await walk(distDir);
 
-const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cac-release-pack-'));
-let packInfo;
-try {
-  const packOutput = execFileSync(
-    'npm',
-    ['pack', '--json', '--pack-destination', tempDir],
-    {
-      cwd: distDir,
-      encoding: 'utf8',
-    }
-  );
-  const parsed = JSON.parse(packOutput);
-  packInfo = Array.isArray(parsed) ? parsed[0] : parsed;
-} finally {
-  await fs.rm(tempDir, { recursive: true, force: true });
+// Hash the exact publishable files. The manifest is intentionally excluded
+// from this list because a file cannot contain its own digest. Consumers can
+// verify every shipped payload file independently after unpacking.
+async function sha512(filePath) {
+  return createHash('sha512').update(await fs.readFile(filePath)).digest('base64');
 }
 
+const publishFiles = [];
+async function collectPublishFiles(dir) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) await collectPublishFiles(entryPath);
+    else if (entry.isFile() && entry.name !== 'release-manifest.json') {
+      publishFiles.push({
+        path: path.relative(distDir, entryPath).split(path.sep).join('/'),
+        sha512: await sha512(entryPath),
+      });
+    }
+  }
+}
+await collectPublishFiles(distDir);
+
 const manifest = {
+  schemaVersion: 1,
   name: packageJson.name,
   version: effectiveVersion,
   tag: effectiveTag,
   commit: effectiveCommit,
   buildTimestamp: effectiveTimestamp,
-  packageTarball: {
-    filename: packInfo?.filename ?? null,
-    integrity: packInfo?.integrity ?? null,
-    shasum: packInfo?.shasum ?? null,
-  },
+  integrityAlgorithm: 'sha512',
+  files: publishFiles,
 };
 
 await fs.writeFile(

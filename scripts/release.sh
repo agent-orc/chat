@@ -26,8 +26,13 @@ if [[ "$branch" != "main" ]]; then
   echo "error: releases are cut from 'main' (you are on '$branch')" >&2
   exit 1
 fi
-if ! git diff --quiet || ! git diff --cached --quiet; then
+if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
   echo "error: working tree is not clean — commit or stash first" >&2
+  exit 1
+fi
+
+if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
+  echo "error: HEAD is not a buildable commit" >&2
   exit 1
 fi
 

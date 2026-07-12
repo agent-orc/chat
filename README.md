@@ -84,6 +84,35 @@ mismatches early. The Conversation Lab demo follows the same rule: its
 tsconfig paths resolve `coding-agent-chat/*` to `dist/`, so rebuild the
 library before serving the demo.
 
+## Versioned releases and consumer upgrades
+
+`coding-agent-chat` uses SemVer and immutable `v<version>` git tags. A tagged
+release is built from that exact commit by `.github/workflows/release.yml`; the
+workflow rejects a tag/package-version mismatch and publishes with npm's
+provenance attestation. The package exports `CODING_AGENT_CHAT_RELEASE_INFO`,
+and includes `release-manifest.json` with the version, tag, full commit, the
+commit-derived UTC build timestamp, and SHA-512 hashes for every publishable
+payload file. npm adds the final tarball integrity at publication. The Conversation Lab prints this exact identity in its
+header.
+
+Upgrade a registry consumer with `npm install --save-exact
+coding-agent-chat@0.2.0` and commit `package-lock.json`. Agent Studio may instead
+consume a reviewed, pinned artifact: download `coding-agent-chat-0.2.0.tgz`,
+verify it against the release manifest/provenance, store it in the Studio
+artifact location, then use `npm install --save-exact
+./artifacts/coding-agent-chat-0.2.0.tgz`. Do not point Studio at a mutable local
+`dist/` directory or an unversioned tarball.
+
+Compatibility follows SemVer: patch upgrades are fixes, minor upgrades are
+backward-compatible additions, and major upgrades may require host changes.
+CAC 0.2.x requires Angular 21 (`>=21 <22`) and RxJS `~7.8`; check
+`CHANGELOG.md`, update the pinned version, run the host tests/build, and verify
+the Lab/Studio runtime release label before deployment.
+
+This release packages the CAC-6 public library surface, CAC-7 host integration,
+and CAC-8 Conversation Lab validation into the reproducible delivery contract
+tracked by CAC-9.
+
 ## License
 
 [Apache-2.0](LICENSE)
