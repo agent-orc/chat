@@ -195,7 +195,7 @@
    floats. */
 .chat__msg-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 6px;
   font-size: 9.5px;
   letter-spacing: 0.04em;
@@ -214,14 +214,77 @@
   // badge so the two read as siblings.
   color: var(--studio-fg-dim, #94a3b8);
 }
-.chat__msg-time {
+.chat__msg-head-meta {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.chat__msg-time {
   font-weight: 400;
   color: var(--studio-fg-muted, #64748b);
   letter-spacing: 0;
   text-transform: none;
   font-size: 10.5px;
   font-variant-numeric: tabular-nums;
+}
+.chat__msg-meta-chip,
+.chat__msg-details-toggle,
+.chat__msg-details-close,
+.chat__msg-detail-copy,
+.chat__msg-details-copy-all {
+  border-radius: 999px;
+  border: 1px solid var(--studio-border, rgba(255, 255, 255, 0.12));
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.04));
+  color: var(--studio-fg-muted, #94a3b8);
+  font: inherit;
+}
+.chat__msg-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.chat__msg-meta-label {
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--studio-fg-dim, #94a3b8);
+}
+.chat__msg-meta-value {
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--studio-fg, #e2e8f0);
+  font-variant-numeric: tabular-nums;
+}
+.chat__msg-details-toggle {
+  padding: 2px 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--studio-accent, #d97757);
+}
+.chat__msg-details-toggle:hover:not(:disabled),
+.chat__msg-details-close:hover,
+.chat__msg-detail-copy:hover,
+.chat__msg-details-copy-all:hover:not(:disabled) {
+  background: var(--studio-bg-hover, rgba(217, 119, 87, 0.12));
+  border-color: var(--studio-accent, #d97757);
+  color: var(--studio-fg, #e2e8f0);
+}
+.chat__msg-details-toggle:focus-visible,
+.chat__msg-details-close:focus-visible,
+.chat__msg-detail-copy:focus-visible,
+.chat__msg-details-copy-all:focus-visible {
+  outline: 2px solid var(--studio-accent-3, #569cd6);
+  outline-offset: 2px;
 }
 
 .chat__msg-body {
@@ -237,33 +300,6 @@
    (`src/styles/_markdown-body.scss`). The chat template adds the
    class alongside `.chat__msg-body--markdown` so this surface no
    longer duplicates list / heading / code / numbered-code rules. */
-
-/* Collapse: clip the body to ~12 visual rows; the show-more button
-   below it offers the toggle and doubles as the expand affordance. */
-.chat__msg-body--collapsed {
-  max-height: 18em;
-  overflow: hidden;
-  position: relative;
-  mask-image: linear-gradient(to bottom, #000 70%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
-}
-.chat__msg-toggle {
-  align-self: flex-start;
-  margin-top: 4px;
-  padding: 2px 10px;
-  font-size: 10.5px;
-  letter-spacing: 0.04em;
-  color: var(--studio-accent, #d97757);
-  background: transparent;
-  border: 1px solid var(--studio-border, rgba(196, 181, 253, 0.32));
-  border-radius: 999px;
-  cursor: pointer;
-  font-family: inherit;
-}
-.chat__msg-toggle:hover {
-  background: var(--studio-bg-hover, rgba(99, 102, 241, 0.10));
-  border-color: var(--studio-accent, #d97757);
-}
 
 /* ─────────────────────────────────────────────────────────────────
    Event cards (system events, tool-use callouts)
@@ -557,6 +593,111 @@
   border: 1px solid var(--studio-accent-6, rgba(239, 68, 68, 0.35));
   border-radius: 6px;
   padding: 6px 8px;
+}
+.chat__msg-details-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  background: transparent;
+}
+.chat__msg-details {
+  z-index: 13;
+  width: min(34rem, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  border: 1px solid var(--studio-border, rgba(148, 163, 184, 0.22));
+  border-radius: 10px;
+  background: var(--studio-bg-editor, rgba(8, 10, 18, 0.98));
+  box-shadow: var(--elevation-tooltip, 0 12px 32px rgba(0, 0, 0, 0.45));
+  color: var(--studio-fg, #e2e8f0);
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+}
+.chat__msg-details-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--studio-border, rgba(148, 163, 184, 0.14));
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--studio-fg-muted, #94a3b8);
+}
+.chat__msg-details-head strong {
+  font-size: 11px;
+  color: var(--studio-fg, #e2e8f0);
+}
+.chat__msg-details-close {
+  padding: 2px 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--studio-fg-muted, #94a3b8);
+}
+.chat__msg-details-rows {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 8px;
+}
+.chat__msg-detail-row {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  padding: 6px 8px;
+  border: 1px solid var(--studio-border, rgba(148, 163, 184, 0.10));
+  border-radius: 8px;
+  background: var(--studio-bg-hover, rgba(255, 255, 255, 0.03));
+}
+.chat__msg-detail-row--mono .chat__msg-detail-value {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 11px;
+}
+.chat__msg-detail-label {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--studio-fg-dim, #94a3b8);
+  padding-top: 1px;
+}
+.chat__msg-detail-value {
+  min-width: 0;
+  color: var(--studio-fg, #e2e8f0);
+  font-size: 11.5px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.chat__msg-detail-copy {
+  padding: 2px 8px;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--studio-accent, #d97757);
+}
+.chat__msg-details-empty {
+  padding: 12px;
+  font-size: 11.5px;
+  color: var(--studio-fg-muted, #64748b);
+}
+.chat__msg-details-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 12px 12px;
+}
+.chat__msg-details-copy-all {
+  padding: 3px 10px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--studio-accent, #d97757);
+}
+.chat__msg-details-copy-all:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .chat__typing {

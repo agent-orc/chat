@@ -38,6 +38,30 @@ function query<T extends Element>(fixture: ComponentFixture<ChatComponent>, sele
   return (fixture.nativeElement as HTMLElement).querySelector<T>(selector);
 }
 
+const TURN_PROVENANCE: ChatMessage['provenance'] = {
+  cli: 'Codex CLI',
+  provider: 'OpenAI',
+  model: 'gpt-5.4-mini',
+  thinkingLevel: 'high',
+  durationMs: 98_000,
+  tokenUsage: {
+    inputTokens: 12_345,
+    outputTokens: 6_789,
+    reasoningTokens: 432,
+    totalTokens: 19_566,
+    cost: 0.1234,
+  },
+  taskKey: 'CAC-6',
+  taskId: '000',
+  project: 'coding-agent-chat',
+  contextKey: 'conversation',
+  contextType: 'task',
+  turnId: 'turn-77',
+  sessionId: 'sess-abc',
+  runId: 7,
+  navigationContext: ['project chat', 'side sheet'],
+};
+
 /** Type into the composer textarea through the DOM so ngModel updates. */
 async function typeDraft(fixture: ComponentFixture<ChatComponent>, text: string): Promise<HTMLTextAreaElement> {
   const textarea = query<HTMLTextAreaElement>(fixture, '[data-testid="chat-input"]')!;
@@ -65,6 +89,12 @@ describe('ChatComponent', () => {
     Object.assign(URL, {
       createObjectURL: vi.fn(() => `blob:test-${++counter}`),
       revokeObjectURL: vi.fn(),
+    });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: vi.fn(() => Promise.resolve()),
+      },
     });
   });
 
@@ -99,6 +129,20 @@ describe('ChatComponent', () => {
     // the bare 'agent' author resolves to the Task Executor.
     expect(agentRow.querySelector('[data-testid="role-badge-task-executor"]')).toBeTruthy();
     expect(agentRow.textContent).toContain('On it.');
+    expect(query(fixture, '[data-testid="chat-msg-details-toggle-m2"]')).toBeNull();
+  });
+
+  it('renders long messages completely with no collapse affordance', async () => {
+    const fixture = await createChat({
+      messages: [
+        message('m1', 'agent', Array.from({ length: 34 }, (_, i) => `line ${i + 1}`).join('\n')),
+      ],
+    });
+
+    const row = query(fixture, '[data-testid="chat-msg-agent"]')!;
+    expect(row.textContent).toContain('line 34');
+    expect(query(fixture, '[data-testid="chat-msg-toggle-m1"]')).toBeNull();
+    expect(query(fixture, '.chat__msg-body--collapsed')).toBeNull();
   });
 
   it('renders migrated attachment tombstones as explicitly unavailable', async () => {
@@ -350,5 +394,52 @@ describe('ChatComponent', () => {
     expect(notice?.textContent).toContain('Model changed: Sonnet 5 → Opus 4.8');
     // The notice replaces the bubble — no system-role article for this turn.
     expect(query(fixture, '[data-testid="chat-msg-system"]')).toBeNull();
+  });
+
+  it('shows compact provenance and a details popover when the host supplies immutable turn metadata', async () => {
+    const clipboard = navigator.clipboard.writeText as unknown as ReturnType<typeof vi.fn>;
+    const fixture = await createChat({
+      messages: [
+        {
+          ...message('m1', 'agent', 'Working the task.'),
+          provenance: TURN_PROVENANCE,
+          attachments: [{ url: 'https://example.test/shot.png', alt: 'shot' }],
+          error: 'Command failed: exit 1',
+        },
+      ],
+    });
+
+    expect(query(fixture, '[data-testid="chat-msg-details-toggle-m1"]')).toBeTruthy();
+    const chips = Array.from(fixture.nativeElement.querySelectorAll<HTMLElement>('.chat__msg-meta-chip'))
+      .map((el) => el.textContent ?? '');
+    expect(chips.join(' | ')).toContain('Codex CLI');
+    expect(chips.join(' | ')).toContain('gpt-5.4-mini');
+
+    query<HTMLButtonElement>(fixture, '[data-testid="chat-msg-details-toggle-m1"]')!.click();
+    await fixture.whenStable();
+
+    const popover = query(fixture, '[data-testid="chat-msg-details-m1"]');
+    expect(popover).toBeTruthy();
+    expect(popover?.textContent).toContain('CAC-6');
+    expect(popover?.textContent).toContain('conversation');
+    expect(popover?.textContent).toContain('sess-abc');
+    expect(popover?.textContent).toContain('Timestamp');
+    expect(popover?.textContent).toContain('Run');
+    expect(popover?.textContent).toContain('shot.png');
+    expect(popover?.textContent).toContain('Technical error');
+
+    query<HTMLButtonElement>(fixture, '[data-testid="chat-msg-details-m1"] .chat__msg-detail-copy')!.click();
+    await fixture.whenStable();
+    expect(clipboard).toHaveBeenCalled();
+  });
+
+  it('renders legacy turns cleanly without metadata chrome', async () => {
+    const fixture = await createChat({
+      messages: [message('m1', 'orchestrator', 'Legacy turn with no provenance.')],
+    });
+
+    expect(query(fixture, '[data-testid="chat-msg-details-toggle-m1"]')).toBeNull();
+    expect(query(fixture, '[data-testid="chat-msg-details-m1"]')).toBeNull();
+    expect(query(fixture, '.chat__msg-meta-chip')).toBeNull();
   });
 });

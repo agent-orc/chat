@@ -23,6 +23,30 @@ interface ChatAttachmentBase {
   pending?: boolean;
 }
 
+export interface ChatTurnProvenance {
+  cli?: string | null;
+  provider?: string | null;
+  model?: string | null;
+  thinkingLevel?: string | null;
+  durationMs?: number | null;
+  tokenUsage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    reasoningTokens?: number;
+    totalTokens?: number;
+    cost?: number;
+  } | null;
+  taskKey?: string | null;
+  taskId?: string | null;
+  project?: string | null;
+  contextKey?: string | null;
+  contextType?: string | null;
+  turnId?: string | null;
+  sessionId?: string | null;
+  runId?: string | number | null;
+  navigationContext?: readonly string[];
+}
+
 /**
  * Versioned, durable attachment identity stored in a ChatMessage.
  *
@@ -83,6 +107,8 @@ export interface ChatMessage {
   pending?: boolean;
   /** When set, the message bubble shows an inline error footer. */
   error?: string;
+  /** Immutable provenance / turn metadata. Omit for legacy turns. */
+  provenance?: ChatTurnProvenance | null;
   /**
    * `bubble` (default) renders the normal chat bubble. `notice` renders a
    * centered divider line instead — for meta events that belong in the

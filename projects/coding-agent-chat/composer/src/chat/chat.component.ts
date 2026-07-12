@@ -15,6 +15,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import {
   ArrowKeyScrollDirective,
+  AnchoredPopoverDirective,
   MarkdownImageLightboxDirective,
   TooltipDirective,
 } from 'coding-agent-chat/shared';
@@ -32,6 +33,7 @@ import {
   ChatRole,
   ChatSubmitEvent,
   ChatToolbarItem,
+  ChatTurnProvenance,
 } from 'coding-agent-chat/core';
 import { RoleBadgeComponent } from '../role-badge/role-badge.component';
 import { ModelSelectorComponent } from '../model-selector/model-selector.component';
@@ -55,13 +57,15 @@ interface RenderedMessage {
    * recomputes — never per change-detection pass — so a keystroke in the
    * composer (which dirties this view) does not re-run the expensive
    * `toLocaleTimeString`/Intl path for every row. See the typing-perf note.
-   */
+  */
   formattedTime: string;
   message: ChatMessage;
-  /** True when the message body exceeds COLLAPSE_LINE_THRESHOLD lines. */
-  collapsible: boolean;
-  /** Resolved collapsed state: collapsible AND not user-expanded. */
-  collapsed: boolean;
+  /** Top-right provenance chips shown inline when values exist. */
+  provenanceChips: readonly MessageProvenanceChip[];
+  /** True when the details popover has anything useful to show. */
+  hasDetails: boolean;
+  /** Rich details rendered in the popover. */
+  detailRows: readonly MessageDetailRow[];
   /**
    * F7: true when this is an error message that belongs to an older
    * super-phase (i.e. session). Stale errors get a dimmed look so the
@@ -88,14 +92,20 @@ interface RenderedEvent {
   staleError: boolean;
 }
 
-type RenderedItem = RenderedMessage | RenderedEvent;
+interface MessageProvenanceChip {
+  label: string;
+  value: string;
+  tooltip?: string;
+}
 
-/**
- * Source-line threshold above which non-user turns auto-collapse with a
- * "show more" caret. Tuned to roughly two screens of agent prose at the
- * chat's 1.55 line-height; under it, even chatty agents look fine inline.
- */
-const COLLAPSE_LINE_THRESHOLD = 24;
+interface MessageDetailRow {
+  label: string;
+  value: string;
+  copyText?: string;
+  mono?: boolean;
+}
+
+type RenderedItem = RenderedMessage | RenderedEvent;
 
 /**
  * Reusable chat surface. Pure presentation layer: owns the draft and
@@ -119,6 +129,7 @@ const COLLAPSE_LINE_THRESHOLD = 24;
   imports: [
     FormsModule,
     RoleBadgeComponent,
+    AnchoredPopoverDirective,
     MarkdownImageLightboxDirective,
     MarkdownViewComponent,
     TooltipDirective,
@@ -242,8 +253,10 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   readonly attachmentError = signal<string | null>(null);
   readonly stickToBottom = signal(true);
   readonly isDragging = signal(false);
-  /** Per-message-id override: ids the user has explicitly expanded. */
-  readonly expandedIds = signal<ReadonlySet<string>>(new Set());
+  /** Per-message-id overrides for the turn-details popover. */
+  readonly openMessageDetailsIds = signal<ReadonlySet<string>>(new Set());
+  /** Anchor element for the currently open turn-details popover. */
+  readonly activeMessageDetailsAnchor = signal<HTMLElement | null>(null);
   /** Per-event-id override: ids of events the user has expanded. */
   readonly expandedEventIds = signal<ReadonlySet<string>>(new Set());
 
@@ -289,7 +302,6 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   readonly visibleEnd = signal<number>(50);
 
   readonly rendered = computed<RenderedItem[]>(() => {
-    const expanded = this.expandedIds();
     const expandedEvents = this.expandedEventIds();
     // F7: cutoff = start ts of the latest super-phase. Errors before
     // this point belong to a previous session and render dimmed so
@@ -308,21 +320,17 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       // canonical <app-markdown> renderer so operator-pasted tables/lists and
       // orchestrator replies render with the same GFM, code, link, and
       // sanitisation path used elsewhere.
-      const isUser = message.role === 'user';
-      // Source-line count is a cheap, deterministic proxy for visual height
-      // that survives signal recomputes; we don't need exact rendered geometry
-      // for the collapse decision since the CSS max-height clips below the fold.
-      const sourceLines = countSourceLines(message.text);
-      const collapsible = !isUser && !message.pending && sourceLines > COLLAPSE_LINE_THRESHOLD;
-      const collapsed = collapsible && !expanded.has(message.id);
+      const provenanceChips = this.messageProvenanceChips(message);
+      const detailRows = this.messageDetailRows(message);
       return {
         kind: 'message',
         id: message.id,
         timestamp: message.timestamp,
         formattedTime: this.formatTime(message.timestamp),
         message,
-        collapsible,
-        collapsed,
+        provenanceChips,
+        hasDetails: provenanceChips.length > 0 || detailRows.length > 0,
+        detailRows,
         staleError: isStaleError(message.timestamp, !!message.error),
       };
     });
@@ -459,6 +467,20 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  formatDateTime(iso: string): string {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      return d.toLocaleString([], {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+    } catch {
+      return iso;
+    }
+  }
+
   onSubmit(event: Event): void {
     event.preventDefault();
     if (this.disabled() || !this.canSend()) return;
@@ -586,14 +608,41 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     this.scheduleScrollToBottom();
   }
 
-  toggleCollapsed(messageId: string): void {
-    const next = new Set(this.expandedIds());
-    if (next.has(messageId)) {
-      next.delete(messageId);
-    } else {
-      next.add(messageId);
+  toggleMessageDetails(messageId: string, event: MouseEvent): void {
+    const anchor = event.currentTarget as HTMLElement | null;
+    const isOpen = this.openMessageDetailsIds().has(messageId);
+    if (isOpen) {
+      this.closeMessageDetails(messageId);
+      return;
     }
-    this.expandedIds.set(next);
+    this.openMessageDetailsIds.set(new Set([messageId]));
+    this.activeMessageDetailsAnchor.set(anchor);
+  }
+
+  closeMessageDetails(messageId: string): void {
+    if (!this.openMessageDetailsIds().has(messageId)) return;
+    this.openMessageDetailsIds.set(new Set());
+    this.activeMessageDetailsAnchor.set(null);
+  }
+
+  isMessageDetailsOpen(messageId: string): boolean {
+    return this.openMessageDetailsIds().has(messageId);
+  }
+
+  async copyToClipboard(text: string): Promise<void> {
+    if (!text) return;
+    const clip = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
+    if (clip?.writeText) {
+      await clip.writeText(text);
+    }
+  }
+
+  copyMessageDetail(messageId: string, text: string): void {
+    void this.copyToClipboard(text);
+  }
+
+  copyMessageSummary(message: ChatMessage): void {
+    void this.copyToClipboard(this.messageDetailsCopyText(message));
   }
 
   onEventAction(event: Event, eventId: string): void {
@@ -622,6 +671,230 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       next.add(eventId);
     }
     this.expandedEventIds.set(next);
+  }
+
+  private messageProvenanceChips(message: ChatMessage): readonly MessageProvenanceChip[] {
+    const provenance = message.provenance ?? null;
+    if (!provenance) return [];
+    const chips: MessageProvenanceChip[] = [];
+    const cli = this.cleanText(provenance.cli);
+    const provider = this.cleanText(provenance.provider);
+    const model = this.cleanText(provenance.model);
+    const thinkingLevel = this.cleanText(provenance.thinkingLevel);
+    const totalTokens = this.totalTokens(provenance.tokenUsage);
+    const duration = this.formatDuration(provenance.durationMs);
+
+    if (cli) chips.push({ label: 'CLI', value: cli });
+    if (provider && provider !== cli) chips.push({ label: 'Provider', value: provider });
+    if (model) chips.push({ label: 'Model', value: this.shortModel(model), tooltip: model });
+    if (thinkingLevel) chips.push({ label: 'Think', value: thinkingLevel });
+    if (totalTokens !== null) chips.push({ label: 'Tokens', value: this.formatCompactNumber(totalTokens), tooltip: this.formatTokenTooltip(provenance.tokenUsage) });
+    if (duration) chips.push({ label: 'Duration', value: duration, tooltip: this.formatDurationTooltip(provenance.durationMs) });
+    return chips;
+  }
+
+  private messageDetailRows(message: ChatMessage): readonly MessageDetailRow[] {
+    const provenance = message.provenance ?? null;
+    const rows: MessageDetailRow[] = [];
+    if (message.timestamp) {
+      rows.push({
+        label: 'Timestamp',
+        value: this.formatDateTime(message.timestamp),
+        copyText: message.timestamp,
+        mono: true,
+      });
+    }
+    if (provenance) {
+      const taskBits = [
+        this.cleanText(provenance.taskKey),
+        this.cleanText(provenance.taskId),
+        this.cleanText(provenance.project),
+      ].filter((bit): bit is string => !!bit);
+      if (taskBits.length > 0) {
+        rows.push({
+          label: 'Task',
+          value: taskBits.join(' · '),
+          copyText: taskBits.join(' | '),
+          mono: false,
+        });
+      }
+
+      const contextBits = [
+        this.cleanText(provenance.contextKey),
+        this.cleanText(provenance.contextType),
+      ].filter((bit): bit is string => !!bit);
+      if (contextBits.length > 0) {
+        rows.push({
+          label: 'Context',
+          value: contextBits.join(' · '),
+          copyText: contextBits.join(' | '),
+          mono: false,
+        });
+      }
+
+      const cliBits = [this.cleanText(provenance.cli), this.cleanText(provenance.provider)].filter((bit): bit is string => !!bit);
+      if (cliBits.length > 0) {
+        rows.push({
+          label: 'CLI',
+          value: cliBits.join(' · '),
+          copyText: cliBits.join(' | '),
+        });
+      }
+
+      const model = this.cleanText(provenance.model);
+      if (model) {
+        rows.push({ label: 'Model', value: model, copyText: model, mono: true });
+      }
+
+      const thinkingLevel = this.cleanText(provenance.thinkingLevel);
+      if (thinkingLevel) {
+        rows.push({ label: 'Thinking', value: thinkingLevel, copyText: thinkingLevel });
+      }
+
+      const tokenUsage = provenance.tokenUsage ?? null;
+      if (tokenUsage) {
+        const tokenBits = [
+          this.formatTokenMetric('input', tokenUsage.inputTokens),
+          this.formatTokenMetric('output', tokenUsage.outputTokens),
+          this.formatTokenMetric('reasoning', tokenUsage.reasoningTokens),
+        ].filter((bit): bit is string => !!bit);
+        const total = this.totalTokens(tokenUsage);
+        const tokenSummary = total !== null ? `${this.formatCount(total)} total` : tokenBits.join(' · ');
+        rows.push({
+          label: 'Tokens',
+          value: tokenSummary || 'Unavailable',
+          copyText: [
+            total !== null ? `total=${total}` : null,
+            tokenBits.join(' '),
+            tokenUsage.cost !== undefined && tokenUsage.cost !== null ? `cost=$${tokenUsage.cost.toFixed(4)}` : null,
+          ].filter((bit): bit is string => !!bit).join(' | '),
+        });
+        if (tokenUsage.cost !== undefined && tokenUsage.cost !== null) {
+          rows.push({
+            label: 'Cost',
+            value: `$${tokenUsage.cost.toFixed(4)}`,
+            copyText: `$${tokenUsage.cost.toFixed(4)}`,
+          });
+        }
+      }
+
+      if (provenance.durationMs !== undefined && provenance.durationMs !== null) {
+        rows.push({
+          label: 'Duration',
+          value: this.formatDuration(provenance.durationMs),
+          copyText: this.formatDurationTooltip(provenance.durationMs),
+        });
+      }
+
+      const turnId = this.cleanText(provenance.turnId);
+      if (turnId) {
+        rows.push({ label: 'Turn', value: turnId, copyText: turnId, mono: true });
+      }
+
+      const sessionId = this.cleanText(provenance.sessionId);
+      if (sessionId) {
+        rows.push({ label: 'Session', value: sessionId, copyText: sessionId, mono: true });
+      }
+
+      const runId = this.cleanText(provenance.runId);
+      if (runId) {
+        rows.push({ label: 'Run', value: runId, copyText: runId, mono: true });
+      }
+
+      if (provenance.navigationContext?.length) {
+        const nav = provenance.navigationContext.map((item) => item.trim()).filter(Boolean);
+        if (nav.length > 0) {
+          rows.push({
+            label: 'Navigation',
+            value: nav.join(' · '),
+            copyText: nav.join(' | '),
+          });
+        }
+      }
+    }
+
+    if (message.attachments?.length) {
+      rows.push({
+        label: 'Attachments',
+        value: message.attachments.map((att) => att.alt || att.url).join(' · '),
+        copyText: message.attachments.map((att) => att.url).join('\n'),
+      });
+    }
+    if (message.error) {
+      rows.push({
+        label: 'Technical error',
+        value: message.error,
+        copyText: message.error,
+      });
+    }
+    return rows;
+  }
+
+  messageDetailsCopyText(message: ChatMessage): string {
+    return this.messageDetailRows(message)
+      .map((row) => `${row.label}: ${row.copyText ?? row.value}`)
+      .join('\n');
+  }
+
+  private cleanText(value: string | number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    const text = String(value).trim();
+    return text;
+  }
+
+  private totalTokens(tokenUsage: NonNullable<ChatTurnProvenance['tokenUsage']> | null | undefined): number | null {
+    if (!tokenUsage) return null;
+    if (tokenUsage.totalTokens !== undefined && tokenUsage.totalTokens !== null) {
+      return tokenUsage.totalTokens;
+    }
+    const parts = [tokenUsage.inputTokens, tokenUsage.outputTokens, tokenUsage.reasoningTokens]
+      .filter((part): part is number => typeof part === 'number' && Number.isFinite(part));
+    if (parts.length === 0) return null;
+    return parts.reduce((sum, part) => sum + part, 0);
+  }
+
+  private formatCount(value: number): string {
+    return new Intl.NumberFormat([], { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+  }
+
+  private formatCompactNumber(value: number): string {
+    return `${this.formatCount(value)}`;
+  }
+
+  private shortModel(model: string): string {
+    const parts = model.split('/').filter(Boolean);
+    return parts[parts.length - 1] ?? model;
+  }
+
+  private formatTokenMetric(label: string, value: number | undefined | null): string {
+    if (value === undefined || value === null) return '';
+    return `${label} ${this.formatCount(value)}`;
+  }
+
+  private formatDuration(durationMs: number | null | undefined): string {
+    if (durationMs === undefined || durationMs === null || !Number.isFinite(durationMs)) return '';
+    const totalSeconds = Math.max(0, Math.round(durationMs / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes === 0) return `${seconds}s`;
+    return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+  }
+
+  private formatDurationTooltip(durationMs: number | null | undefined): string {
+    if (durationMs === undefined || durationMs === null || !Number.isFinite(durationMs)) return '';
+    return `${durationMs} ms`;
+  }
+
+  private formatTokenTooltip(tokenUsage: NonNullable<ChatTurnProvenance['tokenUsage']> | null | undefined): string {
+    if (!tokenUsage) return '';
+    const parts = [
+      tokenUsage.inputTokens !== undefined ? `input=${tokenUsage.inputTokens}` : null,
+      tokenUsage.outputTokens !== undefined ? `output=${tokenUsage.outputTokens}` : null,
+      tokenUsage.reasoningTokens !== undefined ? `reasoning=${tokenUsage.reasoningTokens}` : null,
+      tokenUsage.totalTokens !== undefined ? `total=${tokenUsage.totalTokens}` : null,
+      tokenUsage.cost !== undefined && tokenUsage.cost !== null ? `cost=$${tokenUsage.cost.toFixed(4)}` : null,
+    ].filter((part): part is string => !!part);
+    return parts.join(' · ');
   }
 
   eventIcon(event: ChatEvent): string {
