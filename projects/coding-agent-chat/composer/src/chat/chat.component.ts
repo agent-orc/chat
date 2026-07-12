@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  ArrowKeyScrollDirective,
   MarkdownImageLightboxDirective,
   TooltipDirective,
 } from 'coding-agent-chat/shared';
@@ -113,7 +114,17 @@ const COLLAPSE_LINE_THRESHOLD = 24;
 @Component({
   selector: 'cac-chat',
   standalone: true,
-  imports: [FormsModule, RoleBadgeComponent, MarkdownImageLightboxDirective, MarkdownViewComponent, TooltipDirective, ModelSelectorComponent, PermissionSelectComponent, ContextRingComponent],
+  imports: [
+    FormsModule,
+    RoleBadgeComponent,
+    MarkdownImageLightboxDirective,
+    MarkdownViewComponent,
+    TooltipDirective,
+    ArrowKeyScrollDirective,
+    ModelSelectorComponent,
+    PermissionSelectComponent,
+    ContextRingComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'

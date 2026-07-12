@@ -4,6 +4,7 @@
       @if (rendered().length > 0 || emptyState()) {
       <div #body
            class="chat__body"
+           cacArrowKeyScroll
            [style.max-height]="bodyMaxHeight()"
            data-testid="chat-body"
            (scroll)="onBodyScroll()">

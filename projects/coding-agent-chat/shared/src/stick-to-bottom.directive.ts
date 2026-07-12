@@ -8,6 +8,8 @@ import {
   signal,
 } from '@angular/core';
 
+import { resolveScrollContainer } from './scroll-container.util';
+
 /**
  * When re-pinning, skip the `scrollTop` write if the container already sits
  * within this many pixels of the bottom. Rows are always far taller than this,
@@ -252,13 +254,6 @@ export class StickToBottomDirective implements AfterViewInit, OnDestroy {
    * to the document scrolling element so a detached/edge layout still pins.
    */
   private resolveScrollContainer(): HTMLElement | null {
-    if (typeof window === 'undefined') return null;
-    let el: HTMLElement | null = this.host.nativeElement;
-    while (el) {
-      const oy = getComputedStyle(el).overflowY;
-      if (oy === 'auto' || oy === 'scroll' || oy === 'overlay') return el;
-      el = el.parentElement;
-    }
-    return (document.scrollingElement as HTMLElement | null) ?? null;
+    return resolveScrollContainer(this.host.nativeElement);
   }
 }

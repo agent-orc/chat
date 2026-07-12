@@ -6,6 +6,7 @@ import { ConversationSessionCardComponent } from '../conversation-session-card/c
 import { PixelProgressComponent } from '../pixel-progress/pixel-progress.component';
 import { PlanChecklistComponent } from '../plan-checklist/plan-checklist.component';
 import {
+  ArrowKeyScrollDirective,
   MarkdownImageLightboxDirective,
   StickToBottomDirective,
   TooltipDirective,
@@ -220,6 +221,7 @@ function classifyMessageBody(body: string): ClassifiedBody {
     PlanChecklistComponent,
     TooltipDirective,
     StickToBottomDirective,
+    ArrowKeyScrollDirective,
     MarkdownImageLightboxDirective,
   ],
   templateUrl: './conversation-view.component.html',
