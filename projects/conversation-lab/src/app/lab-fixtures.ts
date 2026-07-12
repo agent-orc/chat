@@ -17,6 +17,8 @@ import type {
   OrchestratorDecisionEvent,
   RawLineRange,
   RunMarkerEvent,
+  SystemStatusEvent,
+  TaskMarkerEvent,
   ToolBurstEvent,
 } from 'coding-agent-chat/core';
 
@@ -185,6 +187,200 @@ const runComplete: RunMarkerEvent = {
   rawRange: nextRange(1),
 };
 
+const agt2149RunStart: RunMarkerEvent = {
+  id: 'agt-2149-run-start',
+  kind: 'runMarker',
+  timestamp: at(14),
+  marker: 'start',
+  runId: 2149,
+  cli: 'codex',
+  model: 'gpt-5.4-mini',
+  thinkingLevel: 'high',
+  sessionId: 'agt-2149-sess-01',
+  rawRange: nextRange(1),
+};
+
+const agt2149UserTurn: MessageEvent = {
+  id: 'agt-2149-user',
+  kind: 'message.user',
+  timestamp: at(14, 10),
+  actor: 'You',
+  body:
+    'Replay AGT-2149 with structured warnings, turn metrics, and the mixed-height scroll fix check.',
+  rawRange: nextRange(1),
+};
+
+const agt2149Recovery: MessageEvent = {
+  id: 'agt-2149-agent-recovery',
+  kind: 'message.taskAgent',
+  timestamp: at(14, 20),
+  actor: 'Agent',
+  body: 'Quota recovery: the previous session dropped, so I resumed from the captured turn.',
+  rawRange: nextRange(1),
+};
+
+const agt2149StreamingUpdate1: MessageEvent = {
+  id: 'agt-2149-agent-stream-1',
+  kind: 'message.taskAgent',
+  timestamp: at(14, 30),
+  actor: 'Agent',
+  body: 'Streaming update 1/3: rebuilding the semantic result as structured diagnostics, not freeform noise.',
+  rawRange: nextRange(1),
+};
+
+const agt2149StreamingUpdate2: MessageEvent = {
+  id: 'agt-2149-agent-stream-2',
+  kind: 'message.taskAgent',
+  timestamp: at(14, 40),
+  actor: 'Agent',
+  body:
+    'Streaming update 2/3: PATH warning, repeated plugin warnings, and the timeout detail should stay readable.',
+  rawRange: nextRange(1),
+};
+
+const agt2149SemanticResult: MessageEvent = {
+  id: 'agt-2149-agent-result',
+  kind: 'message.taskAgent',
+  timestamp: at(14, 50),
+  actor: 'Agent',
+  body:
+    'Semantic result: the replay now separates warnings from metadata and preserves the final task state.\n\n' +
+    '```json\n' +
+    '{\n' +
+    '  "scenario": "AGT-2149",\n' +
+    '  "warnings": ["PATH", "plugin", "plugin"],\n' +
+    '  "result": "semantic-pass"\n' +
+    '}\n' +
+    '```',
+  rawRange: nextRange(3),
+};
+
+const agt2149TurnUsage: MetricTokenEvent = {
+  id: 'agt-2149-turn-usage',
+  kind: 'metric.token',
+  timestamp: at(14, 55),
+  scope: 'turn',
+  inputTokens: 74192,
+  outputTokens: 8331,
+  reasoningTokens: 1024,
+  rawRange: nextRange(1),
+};
+
+const agt2149TaskComplete: TaskMarkerEvent = {
+  id: 'agt-2149-task-complete',
+  kind: 'taskMarker',
+  timestamp: at(14, 58),
+  marker: 'complete',
+  jobId: 'AGT-2149',
+  lane: '3-progress',
+  title: 'AGT-2149 replay',
+  durationSeconds: 412,
+  tokens: { inputTokens: 74192, outputTokens: 8331 },
+  rawRange: nextRange(1),
+};
+
+const agt2149RunComplete: RunMarkerEvent = {
+  id: 'agt-2149-run-complete',
+  kind: 'runMarker',
+  timestamp: at(15),
+  marker: 'complete',
+  runId: 2149,
+  cli: 'codex',
+  model: 'gpt-5.4-mini',
+  durationSeconds: 412,
+  exitCode: 0,
+  tokens: { inputTokens: 74192, outputTokens: 8331 },
+  sessionId: 'agt-2149-sess-01',
+  rawRange: nextRange(1),
+};
+
+const agt2149PathWarning: SystemStatusEvent = {
+  id: 'agt-2149-path-warning',
+  kind: 'system.status',
+  timestamp: at(14, 22),
+  category: 'environment-blocker',
+  label: 'PATH warning',
+  explanation: '/opt/homebrew/bin was missing from PATH, so the shell fell back to a portable lookup.',
+  severity: 'warn',
+  rawRange: nextRange(1),
+};
+
+const agt2149PluginWarning1: SystemStatusEvent = {
+  id: 'agt-2149-plugin-warning-1',
+  kind: 'system.status',
+  timestamp: at(14, 24),
+  category: 'plugin-warning',
+  label: 'Plugin warning',
+  explanation: 'The sandbox plugin returned an empty payload on attempt 1/2.',
+  severity: 'warn',
+  rawRange: nextRange(1),
+};
+
+const agt2149PluginWarning2: SystemStatusEvent = {
+  id: 'agt-2149-plugin-warning-2',
+  kind: 'system.status',
+  timestamp: at(14, 26),
+  category: 'plugin-warning',
+  label: 'Plugin warning',
+  explanation: 'The sandbox plugin returned an empty payload again on attempt 2/2.',
+  severity: 'warn',
+  rawRange: nextRange(1),
+};
+
+const agt2149TimeoutDetail: SystemStatusEvent = {
+  id: 'agt-2149-timeout',
+  kind: 'system.status',
+  timestamp: at(14, 52),
+  category: 'watchdog-timeout',
+  label: 'Timeout detail',
+  explanation: 'Timed out waiting for the raw detail stream after 30s of silence.',
+  nextStep: 'Retry the semantic pass or open the raw trace.',
+  severity: 'error',
+  rawRange: nextRange(1),
+};
+
+const agt2149RecoveryStatus: SystemStatusEvent = {
+  id: 'agt-2149-recovery',
+  kind: 'system.status',
+  timestamp: at(14, 21),
+  category: 'recovery',
+  label: 'Recovery',
+  explanation: 'Session loss was recovered by resuming from the captured turn history.',
+  severity: 'info',
+  rawRange: nextRange(1),
+};
+
+const agt2149ResultStatus: SystemStatusEvent = {
+  id: 'agt-2149-result',
+  kind: 'system.status',
+  timestamp: at(14, 51),
+  category: 'result',
+  label: 'Semantic result',
+  explanation: 'The structured output now reads as a clean pass instead of a noisy failure tail.',
+  severity: 'info',
+  rawRange: nextRange(1),
+};
+
+const agt2149SessionMeta: MessageEvent = {
+  id: 'agt-2149-session-meta',
+  kind: 'message.taskAgent',
+  timestamp: at(14, 16),
+  actor: 'Agent',
+  body: 'Session metadata: session agt-2149-sess-01 · model gpt-5.4-mini · turn 2149.',
+  rawRange: nextRange(1),
+};
+
+const agt2149Notes: MessageEvent = {
+  id: 'agt-2149-notes',
+  kind: 'message.taskAgent',
+  timestamp: at(14, 44),
+  actor: 'Agent',
+  body:
+    'Task aggregate: 1 run, 1 recovery, 2 plugin warnings, 1 PATH warning, and 82,523 tokens total.\n\n' +
+    'The mixed-height replay is intentional: short warnings and a taller semantic result exercise the bottom lock.',
+  rawRange: nextRange(3),
+};
+
 export const LAB_CONVERSATION_EVENTS: readonly ConversationEvent[] = [
   runStart,
   userAsk,
@@ -198,6 +394,26 @@ export const LAB_CONVERSATION_EVENTS: readonly ConversationEvent[] = [
   agentFix,
   tokenMetric,
   runComplete,
+];
+
+export const LAB_AGT2149_EVENTS: readonly ConversationEvent[] = [
+  agt2149RunStart,
+  agt2149UserTurn,
+  agt2149Recovery,
+  agt2149RecoveryStatus,
+  agt2149SessionMeta,
+  agt2149PathWarning,
+  agt2149PluginWarning1,
+  agt2149PluginWarning2,
+  agt2149StreamingUpdate1,
+  agt2149StreamingUpdate2,
+  agt2149ResultStatus,
+  agt2149TimeoutDetail,
+  agt2149SemanticResult,
+  agt2149TurnUsage,
+  agt2149Notes,
+  agt2149TaskComplete,
+  agt2149RunComplete,
 ];
 
 /**
