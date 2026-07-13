@@ -18,6 +18,7 @@ import { CliOutputLine } from './projection-inputs';
 import {
   envelopePrefixedReplyFragment,
   envelopeStreamingBoundaryFragment,
+  codexTextModeStderrTranscriptFragment,
 } from './conversation-projection.fixtures';
 
 describe('parseActivityLog', () => {
@@ -227,6 +228,24 @@ describe('parseActivityLog', () => {
     expect(groups[0].title).toBe('Codex session.created');
     expect(groups[0].collapsedByDefault).toBe(true);
     expect(groups[0].lines[0].text).toContain('"session.created"');
+  });
+
+  it('collapses Codex text-mode stderr into one trace-only debug group before replay projection', () => {
+    const groups = parseActivityLog(codexTextModeStderrTranscriptFragment());
+
+    expect(groups).toHaveLength(2);
+    expect(groups[0].kind).toBe('other');
+    expect(groups[0].title).toBe('Codex exec transcript');
+    expect(groups[0].subtitle).toContain('OpenAI Codex v0.144.1');
+    expect(groups[0].subtitle).toContain('12,345 tokens');
+    expect(groups[0].collapsedByDefault).toBe(true);
+    expect(groups[0].lines).toHaveLength(11);
+    expect(groups[1].kind).toBe('message');
+
+    const turns = buildConversationTurns(groups);
+    expect(turns.map((turn) => turn.kind)).toEqual(['agent']);
+    expect(turns[0].text).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(turns[0].text).not.toContain('OpenAI Codex v0.144.1');
   });
 });
 

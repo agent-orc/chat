@@ -499,6 +499,7 @@ function projectGroup(
   }
 
   if (isCodexDebugGroup(group)) {
+    const transcript = /exec transcript/i.test(group.title) || /text-mode stderr transcript/i.test(group.title);
     return [
       {
         id: `${baseId}:codex-status`,
@@ -507,10 +508,12 @@ function projectGroup(
         runId,
         rawRange: range,
         severity: 'info',
-        category: 'codex',
-        label: group.title.replace(/^Codex\s+/i, 'Codex '),
+        category: transcript ? 'codex-transcript' : 'codex',
+        label: transcript ? 'Codex transcript' : group.title.replace(/^Codex\s+/i, 'Codex '),
         explanation: codexLifecycleExplanation(group.title),
-        nextStep: 'No action needed; raw frame is available in Trace.'
+        nextStep: transcript
+          ? 'Open raw transcript in Trace.'
+          : 'No action needed; raw frame is available in Trace.'
       }
     ];
   }
@@ -539,19 +542,19 @@ function projectGroup(
       ];
     }
     if (!visibleBody) return null;
+    const firstLine = visibleBody.split(/\r?\n/)[0].trim();
     return [
       {
         id: `${baseId}:agent-error`,
-        kind: 'message.taskAgent',
+        kind: 'system.status',
         timestamp: ts,
         runId,
-        model,
-        thinkingLevel,
         rawRange: range,
         severity: 'error',
-        actor: 'Agent',
-        body: visibleBody,
-        diagnostics
+        category: 'cli-failure',
+        label: 'CLI failed',
+        explanation: firstLine || visibleBody,
+        nextStep: 'Open raw transcript in Trace.'
       }
     ];
   }
@@ -767,6 +770,9 @@ function isCodexDebugGroup(group: ActivityLogGroup): boolean {
 
 function codexLifecycleExplanation(title: string): string {
   const label = title.replace(/^Codex\s+/i, '').trim();
+  if (/exec transcript/i.test(label) || /text-mode stderr transcript/i.test(label)) {
+    return 'Codex captured a text-mode stderr transcript.';
+  }
   if (/turn\.started/i.test(label)) return 'Codex started a model turn.';
   if (/turn\.completed/i.test(label)) return 'Codex completed the model turn.';
   if (/thread|session/i.test(label)) return 'Codex emitted session lifecycle metadata.';

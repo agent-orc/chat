@@ -36,6 +36,7 @@ export const defaultActivityLogFilters: ActivityLogFilters = {
 export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
   const groups: ActivityLogGroup[] = [];
   let current: ActivityLogGroup | null = null;
+  let codexTranscript: ActivityLogGroup | null = null;
   // True while inside a ``` fenced code block. Fenced content (blank lines,
   // prose, even `*`-prefixed lines that look like tool markers) must stay in
   // ONE group, or the block is rendered as separate items and the fence
@@ -44,6 +45,27 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
   const completedCodexCommandIds = collectCompletedCodexCommandIds(lines);
 
   for (const line of lines) {
+    if (codexTranscript) {
+      if (line.stream === 'stderr' || isBlank(line.text)) {
+        codexTranscript.lines.push(line);
+        const banner = codexTranscriptBanner(line.text);
+        if (banner && !codexTranscript.subtitle.includes(banner)) {
+          codexTranscript.subtitle = codexTranscript.subtitle
+            ? `${codexTranscript.subtitle} - ${banner}`
+            : banner;
+        }
+        const tokenCount = codexTranscriptTokenCount(line.text);
+        if (tokenCount) {
+          codexTranscript.subtitle = codexTranscript.subtitle
+            ? `${codexTranscript.subtitle} - ${tokenCount} tokens`
+            : `${tokenCount} tokens`;
+        }
+        continue;
+      }
+      codexTranscript = null;
+      current = null;
+    }
+
     if (inFence) {
       // Agent stdout (and blank lines) belong to the open block; a switch to
       // another stream (user / orchestrator) ends it and is handled normally.
@@ -109,6 +131,38 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
       };
       groups.push(supervisorGroup);
       current = null;
+      continue;
+    }
+
+    if (line.stream === 'system' && isCodexExecRunnerMarker(line.text)) {
+      const transcript: ActivityLogGroup = {
+        id: `${groups.length}-${line.timestamp}-codex-transcript`,
+        kind: 'other',
+        title: 'Codex exec transcript',
+        subtitle: line.text.trim(),
+        status: 'neutral',
+        lines: [line],
+        collapsedByDefault: true
+      };
+      groups.push(transcript);
+      current = transcript;
+      codexTranscript = transcript;
+      continue;
+    }
+
+    if (line.stream === 'stderr' && isCodexTextModeTranscriptStart(line.text)) {
+      const transcript: ActivityLogGroup = {
+        id: `${groups.length}-${line.timestamp}-codex-transcript`,
+        kind: 'other',
+        title: 'Codex exec transcript',
+        subtitle: codexTranscriptBanner(line.text) ?? '',
+        status: 'neutral',
+        lines: [line],
+        collapsedByDefault: true
+      };
+      groups.push(transcript);
+      current = transcript;
+      codexTranscript = transcript;
       continue;
     }
 
@@ -306,6 +360,28 @@ function codexDebugGroup(
     lines: [line],
     collapsedByDefault: true
   };
+}
+
+const CODEX_TEXT_MODE_BANNER_RE = /^OpenAI Codex\b/i;
+const CODEX_EXEC_RUNNER_RE = /^\[runner\]\s+spawning\s+codex\s+exec\b/i;
+const CODEX_TEXT_MODE_TOKEN_RE = /\b(?:final\s+)?token\s+count\s*[:=]\s*(?<count>[\d,]+)/i;
+
+function isCodexExecRunnerMarker(text: string): boolean {
+  return CODEX_EXEC_RUNNER_RE.test(text.trim());
+}
+
+function isCodexTextModeTranscriptStart(text: string): boolean {
+  return CODEX_TEXT_MODE_BANNER_RE.test(text.trim());
+}
+
+function codexTranscriptBanner(text: string): string | null {
+  const trimmed = text.trim();
+  return CODEX_TEXT_MODE_BANNER_RE.test(trimmed) ? trimmed : null;
+}
+
+function codexTranscriptTokenCount(text: string): string | null {
+  const match = CODEX_TEXT_MODE_TOKEN_RE.exec(text);
+  return match?.groups?.['count'] ?? null;
 }
 
 function commandDisplayLines(
@@ -918,6 +994,7 @@ export function deriveLiveStatus(
 function isLiveStatusNoise(group: ActivityLogGroup): boolean {
   if (isTaskboardRuntimeMarker(group)) return true;
   if (isWatchdogMetaLine(group)) return true;
+  if (isCodexDebugFrame(group)) return true;
   // A blank-only group has nothing to say about current activity.
   if (group.lines.every((l) => !l.text || l.text.trim() === '')) return true;
   return false;

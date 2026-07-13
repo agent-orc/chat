@@ -3,6 +3,7 @@ import {
   agentTextFragment,
   captureFailFragment,
   compositeFragment,
+  codexTextModeStderrTranscriptFragment,
   heuristicWarningFragment,
   imageArtifactFragment,
   modelSwitchFragment,
@@ -26,7 +27,7 @@ import {
   watchdogQuietResumeFragment
 } from './conversation-projection.fixtures';
 import { CONVERSATION_EVENT_KINDS } from './conversation-event';
-import type { ConversationEvent, RawLineRange } from './conversation-event';
+import type { ConversationEvent, MessageEvent as ConversationMessageEvent, RawLineRange } from './conversation-event';
 import { projectConversation } from './conversation-projection';
 import type { CliOutputLine } from './projection-inputs';
 
@@ -104,6 +105,10 @@ interface EventProbe {
 function probe(event: ConversationEvent | undefined): EventProbe {
   expect(event).toBeDefined();
   return event as unknown as EventProbe;
+}
+
+function isTaskAgentEvent(event: ConversationEvent): event is ConversationMessageEvent {
+  return event.kind === 'message.taskAgent';
 }
 
 describe('projectConversation', () => {
@@ -190,9 +195,29 @@ describe('projectConversation', () => {
     expect(events).toEqual([]);
   });
 
+  it('collapses Codex text-mode stderr transcripts into trace-only system evidence and keeps stdout visible', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: codexTextModeStderrTranscriptFragment()
+    });
+
+    expect(events[0].kind).toBe('system.status');
+    expect(probe(events[0]).category).toBe('codex-transcript');
+    expect(probe(events[0]).label).toBe('Codex transcript');
+    expect(probe(events[0]).explanation).toBe('Codex captured a text-mode stderr transcript.');
+    expect(probe(events[0]).nextStep).toBe('Open raw transcript in Trace.');
+    expect(events.some((event) => event.kind === 'message.taskAgent' && probe(event).body?.includes('/**'))).toBe(false);
+
+    const agent = events.find((event) => event.kind === 'message.taskAgent');
+    expect(agent).toBeDefined();
+    expect(probe(agent).body).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(probe(agent).body).not.toContain('OpenAI Codex v0.144.1');
+    expect(probe(agent).body).not.toContain('/**');
+  });
+
   it('retains stripped transport evidence as structured message diagnostics', () => {
     const events = projectConversation({ source: SOURCE, lines: envelopePrefixedReplyFragment() });
-    const messages = events.filter((event) => event.kind === 'message.taskAgent');
+    const messages = events.filter(isTaskAgentEvent);
     const rawBody = messages.map((message) => message.diagnostics?.rawBody ?? '').join('\n');
     const strippedEnvelopes = messages.flatMap(
       (message) => message.diagnostics?.strippedEnvelopes ?? []
@@ -210,7 +235,7 @@ describe('projectConversation', () => {
 
   it('does not add diagnostics to already-clean legacy messages', () => {
     const events = projectConversation({ source: SOURCE, lines: agentTextFragment() });
-    const message = events.find((event) => event.kind === 'message.taskAgent');
+    const message = events.find(isTaskAgentEvent);
 
     expect(message?.diagnostics).toBeUndefined();
   });
@@ -329,6 +354,20 @@ describe('projectConversation', () => {
     expect(events).toHaveLength(1);
     expect(events[0].kind).toBe('system.parserWarning');
     expect(probe(events[0]).expectedKind).toBe('tool-result');
+  });
+
+  it('renders a genuine stderr failure as a concise system status instead of a Markdown agent turn', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [line('Build failed: syntax error in src/app.ts', 'stderr')]
+    });
+
+    expect(events).toHaveLength(1);
+    expect(events[0].kind).toBe('system.status');
+    expect(probe(events[0]).category).toBe('cli-failure');
+    expect(probe(events[0]).severity).toBe('error');
+    expect(probe(events[0]).explanation).toContain('Build failed: syntax error in src/app.ts');
+    expect(events.some((event) => event.kind === 'message.taskAgent')).toBe(false);
   });
 
   it('renders codex silent-completion as a typed status event instead of raw bracket text', () => {

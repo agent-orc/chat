@@ -15,7 +15,8 @@ import type {
   RawLineRange,
   RunMarkerEvent,
   ToolBurstEvent,
-} from 'coding-agent-chat/core';
+} from '../../../core/src/public-api';
+import { codexTextModeStderrTranscriptFragment, projectConversation } from '../../../core/src/public-api';
 
 import { ConversationViewComponent } from './conversation-view.component';
 
@@ -78,6 +79,27 @@ async function render(
 }
 
 describe('ConversationViewComponent', () => {
+  it('renders Codex text-mode stderr as one compact system row and keeps the stdout reply visible', async () => {
+    const events = projectConversation({
+      source: 'fixture-job',
+      lines: codexTextModeStderrTranscriptFragment(),
+    });
+    const fixture = await render(events);
+    const el: HTMLElement = fixture.nativeElement;
+
+    const statusRows = el.querySelectorAll('[data-testid="conversation-system-status"]');
+    expect(statusRows).toHaveLength(1);
+    expect(statusRows[0].textContent).toContain('Codex transcript');
+    expect(statusRows[0].textContent).not.toContain('/**');
+    expect(statusRows[0].querySelector('[data-testid="conversation-status-open-trace"]')).toBeTruthy();
+
+    const agentRows = el.querySelectorAll('[data-actor="message.taskAgent"]');
+    expect(agentRows).toHaveLength(1);
+    expect(agentRows[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(agentRows[0].textContent).not.toContain('OpenAI Codex v0.144.1');
+    expect(agentRows[0].querySelectorAll('li')).toHaveLength(0);
+  });
+
   it('shows the empty state when there are no events', async () => {
     const fixture = await render([]);
     const el: HTMLElement = fixture.nativeElement;

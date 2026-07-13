@@ -26,6 +26,7 @@ import type {
   RunInfoLite,
   RunTimelineLite,
 } from 'coding-agent-chat/core';
+import { codexTextModeStderrTranscriptFragment } from 'coding-agent-chat/core';
 
 import { LAB_CONVERSATION_EVENTS, LAB_IMAGE_EVENTS } from './lab-fixtures';
 
@@ -177,6 +178,8 @@ const stderrCrashLines = script([
   ['Run failed: process exited with code 1', 'stderr'],
 ]);
 
+const codexTextModeStderrLines = codexTextModeStderrTranscriptFragment();
+
 /** ~120 Zeilen: 10 Arbeitsblöcke für Scroll-/Fold-/Performance-Checks. */
 function longRunLines(): CliOutputLine[] {
   const entries: ScriptEntry[] = [
@@ -309,6 +312,14 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
     description:
       'Prozess stirbt hart: Node-Stacktrace auf stderr plus "Run failed". Prüft Fehlerzeilen-Rendering ohne jeden Erfolgs-Kontext.',
     lines: stderrCrashLines,
+  },
+  {
+    id: 'codex-stderr-transcript',
+    kind: 'replay',
+    title: 'Codex stderr transcript',
+    description:
+      'AGT-2176-shape: [runner]-Preface + Codex text-mode stderr transcript collapse into one trace row while the final stdout reply stays visible.',
+    lines: codexTextModeStderrLines,
   },
   {
     id: 'long-run',

@@ -16,6 +16,7 @@ export * from './chat-types';
 export * from './composer-controls';
 export * from './projection-inputs';
 export * from './conversation-projection';
+export * from './conversation-projection.fixtures';
 
 // The activity-log grouper is the projection's canonical pre-parser. Re-export
 // the same headless surface the host blessed (parse + conversation turns +
