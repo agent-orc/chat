@@ -93,6 +93,24 @@ describe('App', () => {
     expect(compiled.querySelector('[data-testid="lab-trace-panel"]')).toBeNull();
   });
 
+  it('renders the Codex stderr transcript scenario as one compact status row plus one stdout reply', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    compiled.querySelector<HTMLButtonElement>('[data-testid="lab-scenario-codex-stderr-transcript"]')!.click();
+    await fixture.whenStable();
+
+    const conversation = compiled.querySelector('cac-conversation-view');
+    expect(conversation).toBeTruthy();
+    expect(conversation?.querySelectorAll('[data-testid="conversation-system-status"]')).toHaveLength(1);
+
+    const agentRows = conversation?.querySelectorAll('[data-actor="message.taskAgent"]');
+    expect(agentRows).toHaveLength(1);
+    expect(agentRows?.[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(agentRows?.[0].textContent).not.toContain('/**');
+  });
+
   it('explains the missing activity log when tracing a fixture scenario', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();

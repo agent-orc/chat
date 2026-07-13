@@ -19,6 +19,7 @@ import {
   envelopePrefixedReplyFragment,
   envelopeStreamingBoundaryFragment,
   codexTextModeStderrTranscriptFragment,
+  codexTextModeStderrFailureFragment,
 } from './conversation-projection.fixtures';
 
 describe('parseActivityLog', () => {
@@ -255,6 +256,21 @@ describe('parseActivityLog', () => {
     expect(messages[0].title).toBe('Codex transcript');
     expect(messages[0].collapsedByDefault).toBe(true);
     expect(messages[0].body.map((entry) => entry.text).join('\n')).toContain('Codex captured a text-mode stderr transcript');
+    expect(messages[0].body.map((entry) => entry.text).join('\n')).not.toContain('/**');
+  });
+
+  it('keeps a failing Codex text-mode stderr run as a single error-marked debug group', () => {
+    const groups = parseActivityLog(codexTextModeStderrFailureFragment());
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].kind).toBe('other');
+    expect(groups[0].status).toBe('error');
+    expect(groups[0].lines.map((line) => line.text)).toContain('Run failed: process exited with code 1');
+
+    const messages = buildChatMessages(groups);
+    expect(messages).toHaveLength(1);
+    expect(messages[0].role).toBe('system');
+    expect(messages[0].collapsedByDefault).toBe(true);
     expect(messages[0].body.map((entry) => entry.text).join('\n')).not.toContain('/**');
   });
 });

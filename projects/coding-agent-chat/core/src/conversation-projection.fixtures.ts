@@ -122,6 +122,22 @@ export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
   ];
 }
 
+/** Codex stderr run that ended in a real CLI failure instead of a reply. */
+export function codexTextModeStderrFailureFragment(): CliOutputLine[] {
+  resetFixtureClock();
+  return [
+    line('[runner] spawning codex exec system marker', 'system'),
+    line('OpenAI Codex v0.144.1', 'stderr'),
+    line('Prompt: collapse the stderr transcript into trace-only evidence.', 'stderr'),
+    line('Reasoning: keep technical execution out of task-agent Markdown.', 'stderr'),
+    line('Tool: read projects/coding-agent-chat/core/src/conversation-projection.ts', 'stderr'),
+    line('/**', 'stderr'),
+    line(' * Preserve the stdout reply while collapsing Codex stderr noise.', 'stderr'),
+    line(' */', 'stderr'),
+    line('Run failed: process exited with code 1', 'stderr')
+  ];
+}
+
 /** Orchestrator decides to reissue the task. */
 export function orchestratorReissueFragment(): CliOutputLine[] {
   resetFixtureClock();

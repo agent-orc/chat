@@ -4,6 +4,7 @@ import {
   captureFailFragment,
   compositeFragment,
   codexTextModeStderrTranscriptFragment,
+  codexTextModeStderrFailureFragment,
   heuristicWarningFragment,
   imageArtifactFragment,
   modelSwitchFragment,
@@ -213,6 +214,21 @@ describe('projectConversation', () => {
     expect(probe(agent).body).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
     expect(probe(agent).body).not.toContain('OpenAI Codex v0.144.1');
     expect(probe(agent).body).not.toContain('/**');
+  });
+
+  it('renders a failing Codex text-mode stderr transcript as a concise CLI failure status', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: codexTextModeStderrFailureFragment()
+    });
+
+    expect(events).toHaveLength(1);
+    expect(events[0].kind).toBe('system.status');
+    expect(probe(events[0]).severity).toBe('error');
+    expect(probe(events[0]).category).toBe('cli-failure');
+    expect(probe(events[0]).label).toBe('CLI failed');
+    expect(probe(events[0]).explanation).toContain('Run failed: process exited with code 1');
+    expect(events.some((event) => event.kind === 'message.taskAgent')).toBe(false);
   });
 
   it('retains stripped transport evidence as structured message diagnostics', () => {

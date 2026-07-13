@@ -48,6 +48,9 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
     if (codexTranscript) {
       if (line.stream === 'stderr' || isBlank(line.text)) {
         codexTranscript.lines.push(line);
+        if (line.stream === 'stderr' && isCodexTextModeTranscriptFailure(line.text)) {
+          codexTranscript.status = 'error';
+        }
         const banner = codexTranscriptBanner(line.text);
         if (banner && !codexTranscript.subtitle.includes(banner)) {
           codexTranscript.subtitle = codexTranscript.subtitle
@@ -382,6 +385,15 @@ function codexTranscriptBanner(text: string): string | null {
 function codexTranscriptTokenCount(text: string): string | null {
   const match = CODEX_TEXT_MODE_TOKEN_RE.exec(text);
   return match?.groups?.['count'] ?? null;
+}
+
+export function isCodexTextModeTranscriptFailure(text: string): boolean {
+  const trimmed = text.trim();
+  return /^Run failed\b/i.test(trimmed)
+    || /^Failed to start\b/i.test(trimmed)
+    || /^Exit code:\s*-?\d+\b/i.test(trimmed)
+    || /^Process exited with code\s*-?\d+\b/i.test(trimmed)
+    || /^Command failed\b/i.test(trimmed);
 }
 
 function commandDisplayLines(

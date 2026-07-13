@@ -24,6 +24,7 @@ import type {
 } from './projection-inputs';
 import {
   parseActivityLog,
+  isCodexTextModeTranscriptFailure,
   type ActivityLogGroup,
   type ActivityLogKind,
   normalizeVisibleChatBody,
@@ -500,6 +501,7 @@ function projectGroup(
 
   if (isCodexDebugGroup(group)) {
     const transcript = /exec transcript/i.test(group.title) || /text-mode stderr transcript/i.test(group.title);
+    const failed = isCodexTranscriptFailure(group);
     return [
       {
         id: `${baseId}:codex-status`,
@@ -507,11 +509,11 @@ function projectGroup(
         timestamp: ts,
         runId,
         rawRange: range,
-        severity: 'info',
-        category: transcript ? 'codex-transcript' : 'codex',
-        label: transcript ? 'Codex transcript' : group.title.replace(/^Codex\s+/i, 'Codex '),
-        explanation: codexLifecycleExplanation(group.title),
-        nextStep: transcript
+        severity: failed ? 'error' : 'info',
+        category: failed ? 'cli-failure' : transcript ? 'codex-transcript' : 'codex',
+        label: failed ? 'CLI failed' : transcript ? 'Codex transcript' : group.title.replace(/^Codex\s+/i, 'Codex '),
+        explanation: failed ? codexTranscriptFailureExplanation(group) : codexLifecycleExplanation(group.title),
+        nextStep: (transcript || failed)
           ? 'Open raw transcript in Trace.'
           : 'No action needed; raw frame is available in Trace.'
       }
@@ -777,6 +779,18 @@ function codexLifecycleExplanation(title: string): string {
   if (/turn\.completed/i.test(label)) return 'Codex completed the model turn.';
   if (/thread|session/i.test(label)) return 'Codex emitted session lifecycle metadata.';
   return 'Codex emitted a structured runtime frame.';
+}
+
+function isCodexTranscriptFailure(group: ActivityLogGroup): boolean {
+  return group.lines.some((line) => isCodexTextModeTranscriptFailure(line.text));
+}
+
+function codexTranscriptFailureExplanation(group: ActivityLogGroup): string {
+  for (const line of group.lines) {
+    const text = line.text.trim();
+    if (isCodexTextModeTranscriptFailure(text)) return text;
+  }
+  return 'Codex stderr transcript ended in a CLI failure.';
 }
 
 function parseToolRouterError(text: string): string | null {
