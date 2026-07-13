@@ -240,7 +240,8 @@ describe('parseActivityLog', () => {
     expect(groups[0].subtitle).toContain('OpenAI Codex v0.144.1');
     expect(groups[0].subtitle).toContain('12,345 tokens');
     expect(groups[0].collapsedByDefault).toBe(true);
-    expect(groups[0].lines).toHaveLength(11);
+    expect(groups[0].lines).toHaveLength(14);
+    expect(groups[0].lines.some((line) => line.text.startsWith('export function projectConversation'))).toBe(true);
     expect(groups[1].kind).toBe('message');
 
     const turns = buildConversationTurns(groups);
@@ -257,6 +258,7 @@ describe('parseActivityLog', () => {
     expect(messages[0].collapsedByDefault).toBe(true);
     expect(messages[0].body.map((entry) => entry.text).join('\n')).toContain('Codex captured a text-mode stderr transcript');
     expect(messages[0].body.map((entry) => entry.text).join('\n')).not.toContain('/**');
+    expect(messages[0].body.map((entry) => entry.text).join('\n')).not.toContain('* 10,975 contiguous stderr lines');
   });
 
   it('keeps a failing Codex text-mode stderr run as a single error-marked debug group', () => {

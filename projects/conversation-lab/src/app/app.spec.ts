@@ -104,11 +104,20 @@ describe('App', () => {
     const conversation = compiled.querySelector('cac-conversation-view');
     expect(conversation).toBeTruthy();
     expect(conversation?.querySelectorAll('[data-testid="conversation-system-status"]')).toHaveLength(1);
+    expect(conversation?.querySelector('[data-testid="conversation-system-status"]')?.textContent).not.toContain('/**');
 
     const agentRows = conversation?.querySelectorAll('[data-actor="message.taskAgent"]');
     expect(agentRows).toHaveLength(1);
     expect(agentRows?.[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
     expect(agentRows?.[0].textContent).not.toContain('/**');
+
+    compiled.querySelector<HTMLButtonElement>('[data-testid="conversation-open-trace"]')!.click();
+    await fixture.whenStable();
+
+    const traceLines = compiled.querySelectorAll('[data-testid="lab-trace-lines"] .lab-trace__line');
+    const traceText = Array.from(traceLines).map((line) => line.textContent ?? '').join('\n');
+    expect(traceText).toContain('export function projectConversation(): string {');
+    expect(traceText).toContain('* 10,975 contiguous stderr lines');
   });
 
   it('explains the missing activity log when tracing a fixture scenario', async () => {

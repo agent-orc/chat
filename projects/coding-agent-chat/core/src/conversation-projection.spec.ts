@@ -214,6 +214,8 @@ describe('projectConversation', () => {
     expect(probe(agent).body).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
     expect(probe(agent).body).not.toContain('OpenAI Codex v0.144.1');
     expect(probe(agent).body).not.toContain('/**');
+    expect(probe(agent).body).not.toContain('* 10,975 contiguous stderr lines');
+    expect(probe(agent).body).not.toContain('export function projectConversation');
   });
 
   it('renders a failing Codex text-mode stderr transcript as a concise CLI failure status', () => {

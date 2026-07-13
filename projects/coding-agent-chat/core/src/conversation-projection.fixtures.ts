@@ -101,8 +101,9 @@ export function envelopeStreamingBoundaryFragment(): CliOutputLine[] {
 
 /**
  * AGT-2176-shaped Codex text-mode run: a stderr transcript with a banner,
- * echoed prompt, reasoning / tool text, a source dump, a token count, and
- * the final stdout answer that must remain in the visible chat turn.
+ * echoed prompt, reasoning / tool text, a compact TypeScript + JSDoc source
+ * dump, a token count, and the final stdout answer that must remain in the
+ * visible chat turn.
  */
 export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
   resetFixtureClock();
@@ -112,6 +113,9 @@ export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
     line('Prompt: collapse the stderr transcript into trace-only evidence.', 'stderr'),
     line('Reasoning: keep technical execution out of task-agent Markdown.', 'stderr'),
     line('Tool: read projects/coding-agent-chat/core/src/conversation-projection.ts', 'stderr'),
+    line('export function projectConversation(): string {', 'stderr'),
+    line("  return 'Codex transcript stays out of Markdown.';", 'stderr'),
+    line('}', 'stderr'),
     line('/**', 'stderr'),
     line(' * Preserve the stdout reply while collapsing Codex stderr noise.', 'stderr'),
     line(' * JSDoc bullets must stay technical, not turn into chat prose.', 'stderr'),
