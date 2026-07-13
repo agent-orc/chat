@@ -1,12 +1,28 @@
 {
   "name": "coding-agent-chat",
   "version": "0.2.0",
-  "description": "Best-in-class Angular library for rendering coding-agent conversations — the frontend counterpart to coding-agent-runner.",
+  "description": "Angular chat UI components for coding agents: render messages, tool calls, waits, decisions, artifacts, context, and conversation history.",
   "license": "Apache-2.0",
+  "homepage": "https://agent-orchestrator.dev/chat/",
   "repository": {
     "type": "git",
     "url": "https://github.com/agent-orc/chat.git"
   },
+  "bugs": {
+    "url": "https://github.com/agent-orc/chat/issues"
+  },
+  "keywords": [
+    "angular",
+    "chat-ui",
+    "coding-agent",
+    "agent-chat",
+    "tool-calls",
+    "codex",
+    "claude-code",
+    "gemini-cli",
+    "typescript",
+    "llm"
+  ],
   "exports": {
     "./theme/cac-theme.css": {
       "style": "./theme/cac-theme.css",

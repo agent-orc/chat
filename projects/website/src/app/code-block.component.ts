@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 /**
@@ -72,12 +65,12 @@ function highlight(code: string, lang: string): string {
         <figcaption class="code-card__head">
           <span class="code-card__label">{{ label() }}</span>
           <button type="button" class="code-card__copy" (click)="copy()">
-            {{ copied() ? 'Copied ✓' : 'Copy' }}
+            {{ copied() ? copiedLabel : copyLabel }}
           </button>
         </figcaption>
       } @else {
         <button type="button" class="code-card__copy code-card__copy--floating" (click)="copy()">
-          {{ copied() ? 'Copied ✓' : 'Copy' }}
+          {{ copied() ? copiedLabel : copyLabel }}
         </button>
       }
       <pre class="code-card__pre"><code [innerHTML]="html()"></code></pre>
@@ -95,6 +88,8 @@ export class CodeBlockComponent {
   readonly label = input<string>('');
 
   protected readonly copied = signal(false);
+  protected readonly copyLabel = $localize`:@@copyButton:Copy`;
+  protected readonly copiedLabel = $localize`:@@copiedButton:Copied ✓`;
 
   protected readonly html = computed<SafeHtml>(() =>
     this.sanitizer.bypassSecurityTrustHtml(highlight(this.code(), this.lang())),

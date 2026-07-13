@@ -1,0 +1,729 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en" trgLang="de">
+  <file id="ngi18n" original="ng.template">
+    <unit id="skipLink">
+      <segment>
+        <source>Skip to content</source>
+        <target>Zum Inhalt springen</target>
+      </segment>
+    </unit>
+    <unit id="siteNavLabel">
+      <segment>
+        <source>Site</source>
+        <target>Website</target>
+      </segment>
+    </unit>
+    <unit id="navDemo">
+      <segment>
+        <source>Demo</source>
+        <target>Demo</target>
+      </segment>
+    </unit>
+    <unit id="navRendering">
+      <segment>
+        <source>Rendering</source>
+        <target>Darstellung</target>
+      </segment>
+    </unit>
+    <unit id="navOverview">
+      <segment>
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </segment>
+    </unit>
+    <unit id="navDocs">
+      <segment>
+        <source>Docs</source>
+        <target>Dokumentation</target>
+      </segment>
+    </unit>
+    <unit id="toggleThemeTitle">
+      <segment>
+        <source>Toggle light / dark theme</source>
+        <target>Helles / dunkles Theme umschalten</target>
+      </segment>
+    </unit>
+    <unit id="heroTitle">
+      <segment>
+        <source> Angular chat UI components for coding agents </source>
+        <target> Angular-Chat-UI-Komponenten für Coding Agents </target>
+      </segment>
+    </unit>
+    <unit id="heroTag">
+      <segment>
+        <source> Angular components that render event streams as messages, tool activity, waits, and decisions. Compatible with <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+        &gt;" dispEnd="&lt;/a
+      &gt;">coding-agent-runner</pc> and any backend that emits the same events. </source>
+        <target> Angular-Komponenten, die Ereignisströme als Nachrichten, Tool-Aktivitäten, Wartezeiten und Entscheidungen darstellen. Kompatibel mit <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+        &gt;" dispEnd="&lt;/a
+      &gt;">coding-agent-runner</pc> und jedem Backend, das dieselben Ereignisse ausgibt. </target>
+      </segment>
+    </unit>
+    <unit id="heroDemoLink">
+      <segment>
+        <source>Demo</source>
+        <target>Demo</target>
+      </segment>
+    </unit>
+    <unit id="heroDocsLink">
+      <segment>
+        <source>Docs</source>
+        <target>Dokumentation</target>
+      </segment>
+    </unit>
+    <unit id="demoKicker">
+      <segment>
+        <source>Demo</source>
+        <target>Demo</target>
+      </segment>
+    </unit>
+    <unit id="demoTitle">
+      <segment>
+        <source>Conversation replay</source>
+        <target>Gesprächswiedergabe</target>
+      </segment>
+    </unit>
+    <unit id="demoLead">
+      <segment>
+        <source> Two <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent[]</pc> transcripts rendered with <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-conversation-view&gt;</pc>. Each replay includes a composer and an independent theme control. </source>
+        <target> Zwei <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent[]</pc>-Transkripte, dargestellt mit <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-conversation-view&gt;</pc>. Jede Wiedergabe enthält einen Composer und eine eigene Theme-Steuerung. </target>
+      </segment>
+    </unit>
+    <unit id="happyPathTitle">
+      <segment>
+        <source>Happy path</source>
+        <target>Erfolgsfall</target>
+      </segment>
+    </unit>
+    <unit id="happyPathBody">
+      <segment>
+        <source> Planning, tool calls, a code response, and orchestrator approval. The composer includes model, reasoning, permission, attachment, and context controls. </source>
+        <target> Planung, Tool-Aufrufe, eine Code-Antwort und die Freigabe durch den Orchestrator. Der Composer enthält Steuerelemente für Modell, Reasoning, Berechtigungen, Anhänge und Kontext. </target>
+      </segment>
+    </unit>
+    <unit id="unhappyPathTitle">
+      <segment>
+        <source>Unhappy path</source>
+        <target>Fehlerfall</target>
+      </segment>
+    </unit>
+    <unit id="unhappyPathBody">
+      <segment>
+        <source> A failed command, a watchdog timeout, and an orchestrator retry. Failure and success use the same event model. </source>
+        <target> Ein fehlgeschlagener Befehl, ein Watchdog-Timeout und ein erneuter Versuch des Orchestrators. Fehler und Erfolg verwenden dasselbe Ereignismodell. </target>
+      </segment>
+    </unit>
+    <unit id="capGroupingTitle">
+      <segment>
+        <source>Grouping</source>
+        <target>Gruppierung</target>
+      </segment>
+    </unit>
+    <unit id="capGroupingBody">
+      <segment>
+        <source>Nine tool calls render as one burst with counts, families, failures, and tests.</source>
+        <target>Neun Tool-Aufrufe erscheinen als ein Block mit Anzahl, Kategorien, Fehlern und Tests.</target>
+      </segment>
+    </unit>
+    <unit id="capFoldingTitle">
+      <segment>
+        <source>Folding</source>
+        <target>Einklappen</target>
+      </segment>
+    </unit>
+    <unit id="capFoldingBody">
+      <segment>
+        <source>Long plans truncate behind <pc id="0" equivStart="START_ITALIC_TEXT" equivEnd="CLOSE_ITALIC_TEXT" type="fmt" dispStart="&lt;i&gt;" dispEnd="&lt;/i&gt;">expand</pc>, so transcripts stay skimmable.</source>
+        <target>Lange Pläne werden unter <pc id="0" equivStart="START_ITALIC_TEXT" equivEnd="CLOSE_ITALIC_TEXT" type="fmt" dispStart="&lt;i&gt;" dispEnd="&lt;/i&gt;">Mehr anzeigen</pc> gekürzt.</target>
+      </segment>
+    </unit>
+    <unit id="capDisclosureTitle">
+      <segment>
+        <source>Progressive disclosure</source>
+        <target>Aufklappbare Details</target>
+      </segment>
+    </unit>
+    <unit id="capDisclosureBody">
+      <segment>
+        <source>Output, traces and raw log ranges live one click behind each row.</source>
+        <target>Ausgaben, Traces und Rohprotokolle lassen sich pro Zeile öffnen.</target>
+      </segment>
+    </unit>
+    <unit id="capContinuationTitle">
+      <segment>
+        <source>Live continuation</source>
+        <target>Live-Fortsetzung</target>
+      </segment>
+    </unit>
+    <unit id="capContinuationBody">
+      <segment>
+        <source>Composer submissions append real turns. Connect them to your backend.</source>
+        <target>Eingaben im Composer fügen Gesprächsrunden hinzu. Verbinde den Composer mit deinem Backend.</target>
+      </segment>
+    </unit>
+    <unit id="renderingKicker">
+      <segment>
+        <source>Rendering</source>
+        <target>Darstellung</target>
+      </segment>
+    </unit>
+    <unit id="renderingTitle">
+      <segment>
+        <source>Code and images</source>
+        <target>Code und Bilder</target>
+      </segment>
+    </unit>
+    <unit id="renderingLead">
+      <segment>
+        <source> Syntax highlighting supports 23 grammars. Inline images and <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">artifact.image</pc> events open in a host-provided lightbox. Select an image to open the gallery. </source>
+        <target> Syntaxhervorhebung unterstützt 23 Grammatiken. Inline-Bilder und <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">artifact.image</pc>-Ereignisse öffnen sich in einer vom Host bereitgestellten Lightbox. Wähle ein Bild, um die Galerie zu öffnen. </target>
+      </segment>
+    </unit>
+    <unit id="renderingFoot">
+      <segment>
+        <source> Syntax highlighting uses lowlight with a size guard and per-block memoization. <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CHAT_MEDIA_LIGHTBOX</pc> handles image clicks; the host provides the overlay. </source>
+        <target> Die Syntaxhervorhebung nutzt lowlight mit Größenlimit und Memoisierung je Block. <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CHAT_MEDIA_LIGHTBOX</pc> verarbeitet Bildklicks; der Host stellt das Overlay bereit. </target>
+      </segment>
+    </unit>
+    <unit id="overviewKicker">
+      <segment>
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </segment>
+    </unit>
+    <unit id="overviewTitle">
+      <segment>
+        <source>What&apos;s in the library</source>
+        <target>Inhalt der Bibliothek</target>
+      </segment>
+    </unit>
+    <unit id="overviewStats">
+      <segment>
+        <source> 23+ event kinds · 7 entry points · 379 green specs · zero Angular imports in <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">core</pc> · Apache-2.0 </source>
+        <target> 23+ Ereignistypen · 7 Einstiegspunkte · 379 bestandene Specs · keine Angular-Imports in <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">core</pc> · Apache-2.0 </target>
+      </segment>
+    </unit>
+    <unit id="eventKindsTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--orange&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Event kinds </source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--orange&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Ereignistypen </target>
+      </segment>
+    </unit>
+    <unit id="eventKindsBody">
+      <segment>
+        <source> One append-only <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> union covers messages, tool bursts, waits, and orchestrator decisions. Unknown kinds render as fallback rows. </source>
+        <target> Ein append-only <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc>-Union-Typ deckt Nachrichten, Tool-Blöcke, Wartezeiten und Orchestrator-Entscheidungen ab. Unbekannte Typen erscheinen als Fallback-Zeilen. </target>
+      </segment>
+    </unit>
+    <unit id="coreTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--blue&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Framework-free core </source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--blue&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Framework-unabhängiger Kern </target>
+      </segment>
+    </unit>
+    <unit id="coreBody">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">coding-agent-chat/core</pc> is plain TypeScript: the <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> contract plus <pc id="2" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">projectConversation()</pc>. Backends, SSR code and tests can import it without Angular. </source>
+        <target><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">coding-agent-chat/core</pc> ist reines TypeScript: der <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc>-Vertrag plus <pc id="2" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">projectConversation()</pc>. Backends, SSR-Code und Tests können es ohne Angular importieren. </target>
+      </segment>
+    </unit>
+    <unit id="entryPointsTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--purple&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Entry points </source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--purple&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Einstiegspunkte </target>
+      </segment>
+    </unit>
+    <unit id="entryPointsBody">
+      <segment>
+        <source> Seven import paths keep optional features separate. <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">core</pc> is plain TypeScript with no Angular dependency. <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;#entry-points&quot;&gt;" dispEnd="&lt;/a&gt;">View samples</pc>. </source>
+        <target> Sieben Importpfade halten optionale Funktionen getrennt. <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">core</pc> ist reines TypeScript ohne Angular-Abhängigkeit. <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;#entry-points&quot;&gt;" dispEnd="&lt;/a&gt;">Beispiele ansehen</pc>. </target>
+      </segment>
+    </unit>
+    <unit id="integrationPointsTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--green&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Host integration points </source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--green&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Host-Integrationen </target>
+      </segment>
+    </unit>
+    <unit id="integrationPointsBody">
+      <segment>
+        <source> Four injection tokens have safe defaults. Provide <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CHAT_MEDIA_LIGHTBOX</pc> to enable image enlargement. <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;#rendering&quot;&gt;" dispEnd="&lt;/a&gt;">See the rendering demo</pc>. </source>
+        <target> Vier Injection Tokens haben Standardwerte. Stelle <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CHAT_MEDIA_LIGHTBOX</pc> bereit, um Bilder vergrößerbar zu machen. <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;#rendering&quot;&gt;" dispEnd="&lt;/a&gt;">Darstellungsdemo ansehen</pc>. </target>
+      </segment>
+    </unit>
+    <unit id="themeCardTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--orange&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Theme</source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--orange&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Theme</target>
+      </segment>
+    </unit>
+    <unit id="themeCardBody">
+      <segment>
+        <source> Import the optional stylesheet for the default theme. Set <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme=&quot;light&quot;</pc> on any parent for the light palette. </source>
+        <target> Importiere das optionale Stylesheet für das Standard-Theme. Setze <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme=&quot;light&quot;</pc> auf einem beliebigen Elternelement für die helle Palette. </target>
+      </segment>
+    </unit>
+    <unit id="zonelessTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--blue&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Zoneless &amp; OnPush </source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--blue&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Zoneless &amp; OnPush </target>
+      </segment>
+    </unit>
+    <unit id="zonelessBody">
+      <segment>
+        <source> Signal-based components with strict templates, shipped as a partial-Ivy package. This page runs without Zone.js. </source>
+        <target> Signalbasierte Komponenten mit strikten Templates, ausgeliefert als Partial-Ivy-Paket. Diese Seite läuft ohne Zone.js. </target>
+      </segment>
+    </unit>
+    <unit id="testsTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--green&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Tests</source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--green&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Tests</target>
+      </segment>
+    </unit>
+    <unit id="testsBody">
+      <segment>
+        <source> 246 component specs run against the built package. Projection and markdown utilities have 133 additional specs. </source>
+        <target> 246 Komponenten-Specs laufen gegen das gebaute Paket. Projektions- und Markdown-Hilfsfunktionen haben 133 weitere Specs. </target>
+      </segment>
+    </unit>
+    <unit id="licenseTitle">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--purple&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>License</source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--purple&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Lizenz</target>
+      </segment>
+    </unit>
+    <unit id="licenseBody">
+      <segment>
+        <source> Apache-2.0, the same license as the backend counterpart <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+              &gt;" dispEnd="&lt;/a
+            &gt;">coding-agent-runner</pc>. </source>
+        <target> Apache-2.0, dieselbe Lizenz wie das Backend-Gegenstück <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+              &gt;" dispEnd="&lt;/a
+            &gt;">coding-agent-runner</pc>. </target>
+      </segment>
+    </unit>
+    <unit id="docsKicker">
+      <segment>
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </segment>
+    </unit>
+    <unit id="docsTitle">
+      <segment>
+        <source>Getting started</source>
+        <target>Erste Schritte</target>
+      </segment>
+    </unit>
+    <unit id="installHeading">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">1</pc>Install</source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">1</pc>Installieren</target>
+      </segment>
+    </unit>
+    <unit id="provideHeading">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">2</pc>Provide</source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">2</pc>Bereitstellen</target>
+      </segment>
+    </unit>
+    <unit id="renderHeading">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">3</pc>Render</source>
+        <target><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">3</pc>Darstellen</target>
+      </segment>
+    </unit>
+    <unit id="entrySamplesTitle">
+      <segment>
+        <source> Entry point samples </source>
+        <target> Beispiele für Einstiegspunkte </target>
+      </segment>
+    </unit>
+    <unit id="entrySamplesBody">
+      <segment>
+        <source> Seven import paths keep the wire contract, renderer, and optional features separate. Each tab shows a component sample and its code. The root import <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">coding-agent-chat</pc> re-exports all entry points and <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">provideCodingAgentChat()</pc>. </source>
+        <target> Sieben Importpfade halten Wire-Vertrag, Renderer und optionale Funktionen getrennt. Jeder Tab zeigt ein Komponentenbeispiel und den zugehörigen Code. Der Root-Import <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">coding-agent-chat</pc> exportiert alle Einstiegspunkte und <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">provideCodingAgentChat()</pc> erneut. </target>
+      </segment>
+    </unit>
+    <unit id="entryPointsTablistLabel">
+      <segment>
+        <source>Entry points</source>
+        <target>Einstiegspunkte</target>
+      </segment>
+    </unit>
+    <unit id="explorerModeLabel">
+      <segment>
+        <source>Show the result or the code</source>
+        <target>Ergebnis oder Code anzeigen</target>
+      </segment>
+    </unit>
+    <unit id="resultButton">
+      <segment>
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </segment>
+    </unit>
+    <unit id="codeButton">
+      <segment>
+        <source>The Code</source>
+        <target>Code</target>
+      </segment>
+    </unit>
+    <unit id="coreExplorerDesc">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> and <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">projectConversation()</pc> are plain TypeScript with no Angular dependency. </source>
+        <target><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> und <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">projectConversation()</pc> sind reines TypeScript ohne Angular-Abhängigkeit. </target>
+      </segment>
+    </unit>
+    <unit id="toolBurstSummary">
+      <segment>
+        <source>Tool burst JSON</source>
+        <target>JSON des Tool-Blocks</target>
+      </segment>
+    </unit>
+    <unit id="wireFormatLabel">
+      <segment>
+        <source>toolBurst: wire format</source>
+        <target>toolBurst: Wire-Format</target>
+      </segment>
+    </unit>
+    <unit id="markdownExplorerDesc">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-markdown&gt;</pc> renders agent text: GFM, syntax-highlighted fences, sanitized HTML, image lightbox hooks, task-reference auto-linking. </source>
+        <target><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-markdown&gt;</pc> rendert Agententext: GFM, syntaxhervorgehobene Codeblöcke, bereinigtes HTML, Hooks für Bild-Lightboxen und automatische Verlinkung von Task-Referenzen. </target>
+      </segment>
+    </unit>
+    <unit id="conversationExplorerDesc">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-conversation-view&gt;</pc> renders events with grouping, folding, working states, and stick-to-bottom scrolling. </source>
+        <target><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-conversation-view&gt;</pc> rendert Ereignisse mit Gruppierung, Einklappen, Arbeitszuständen und automatischem Scrollen nach unten. </target>
+      </segment>
+    </unit>
+    <unit id="composerExplorerDesc">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-chat&gt;</pc> provides multiline input, attachments, and submit events. This sample returns a scripted reply. </source>
+        <target><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-chat&gt;</pc> bietet mehrzeilige Eingabe, Anhänge und Submit-Ereignisse. Dieses Beispiel gibt eine geskriptete Antwort zurück. </target>
+      </segment>
+    </unit>
+    <unit id="interactiveLabel">
+      <segment>
+        <source>Interactive</source>
+        <target>Interaktiv</target>
+      </segment>
+    </unit>
+    <unit id="demoAgentPlaceholder">
+      <segment>
+        <source>Ask the demo agent…</source>
+        <target>Frag den Demo-Agenten…</target>
+      </segment>
+    </unit>
+    <unit id="demoAgentEmptyState">
+      <segment>
+        <source>Submits return a scripted reply.</source>
+        <target>Nach dem Senden folgt eine geskriptete Antwort.</target>
+      </segment>
+    </unit>
+    <unit id="sendLabel">
+      <segment>
+        <source>Send</source>
+        <target>Senden</target>
+      </segment>
+    </unit>
+    <unit id="historyExplorerDesc">
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-project-chat-list&gt;</pc> renders virtualised, searchable project runs. <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">PROJECT_CHAT_DATA_SOURCE</pc> provides scroll, search, statistics, and turn data from HTTP, SQLite, files, or another source. </source>
+        <target><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-project-chat-list&gt;</pc> rendert virtualisierte, durchsuchbare Projektläufe. <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">PROJECT_CHAT_DATA_SOURCE</pc> liefert Scroll-, Such-, Statistik- und Turn-Daten aus HTTP, SQLite, Dateien oder einer anderen Quelle. </target>
+      </segment>
+    </unit>
+    <unit id="previewLabel">
+      <segment>
+        <source>Preview</source>
+        <target>Vorschau</target>
+      </segment>
+    </unit>
+    <unit id="sharedExplorerDesc">
+      <segment>
+        <source> Provides <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">cacTooltip</pc>, <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">cacStickToBottom</pc>, and image-lightbox interfaces. Hover the sample buttons to view the tooltips. </source>
+        <target> Stellt <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">cacTooltip</pc>, <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">cacStickToBottom</pc> und Schnittstellen für Bild-Lightboxen bereit. Fahre mit der Maus über die Beispielbuttons, um die Tooltips anzuzeigen. </target>
+      </segment>
+    </unit>
+    <unit id="hoverSampleLabel">
+      <segment>
+        <source>Hover sample</source>
+        <target>Hover-Beispiel</target>
+      </segment>
+    </unit>
+    <unit id="themeExplorerDesc">
+      <segment>
+        <source> The optional stylesheet provides dark and light palettes through <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme</pc>. The setting can be scoped to any parent element. </source>
+        <target> Das optionale Stylesheet stellt über <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme</pc> dunkle und helle Paletten bereit. Die Einstellung kann auf ein beliebiges Elternelement begrenzt werden. </target>
+      </segment>
+    </unit>
+    <unit id="hostIntegrationTitle">
+      <segment>
+        <source> Host integration points </source>
+        <target> Host-Integrationen </target>
+      </segment>
+    </unit>
+    <unit id="hostIntegrationBody">
+      <segment>
+        <source> All four integration points have defaults. Configure task links, image enlargement, history data, or history confirmation as needed. </source>
+        <target> Alle vier Integrationen haben Standardwerte. Konfiguriere bei Bedarf Task-Links, Bildvergrößerung, Verlaufsdaten oder die Bestätigung für Verläufe. </target>
+      </segment>
+    </unit>
+    <unit id="taskReferenceBody">
+      <segment>
+        <source> Supplies task references for markdown auto-linking and handles navigation when one is clicked. Default: task keys render as plain text. </source>
+        <target> Liefert Task-Referenzen für die automatische Markdown-Verlinkung und übernimmt die Navigation beim Anklicken. Standard: Task-Schlüssel erscheinen als Klartext. </target>
+      </segment>
+    </unit>
+    <unit id="lightboxBody">
+      <segment>
+        <source> Owns the click-to-enlarge image overlay (modal stack, focus trap). Default: images do not zoom. </source>
+        <target> Steuert das Bild-Overlay zum Vergrößern per Klick (Modal-Stack, Fokusfalle). Standard: Bilder werden nicht vergrößert. </target>
+      </segment>
+    </unit>
+    <unit id="historySourceBody">
+      <segment>
+        <source> The scroll/search/stats/turn transport behind <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-project-chat-list&gt;</pc>. Default: an empty history. </source>
+        <target> Der Transport für Scroll-, Such-, Statistik- und Turn-Daten hinter <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-project-chat-list&gt;</pc>. Standard: ein leerer Verlauf. </target>
+      </segment>
+    </unit>
+    <unit id="historyConfirmBody">
+      <segment>
+        <source> Confirmation prompt before loading an entire deep history. Default: auto-confirm. </source>
+        <target> Bestätigungsabfrage vor dem Laden eines vollständigen, langen Verlaufs. Standard: automatische Bestätigung. </target>
+      </segment>
+    </unit>
+    <unit id="rootTokensLabel">
+      <segment>
+        <source>app.config.ts: root tokens</source>
+        <target>app.config.ts: Root-Tokens</target>
+      </segment>
+    </unit>
+    <unit id="historyTokensLabel">
+      <segment>
+        <source>app.config.ts: history tokens</source>
+        <target>app.config.ts: Verlaufs-Tokens</target>
+      </segment>
+    </unit>
+    <unit id="dataSourceContractLabel">
+      <segment>
+        <source>the data-source contract</source>
+        <target>Datenquellenvertrag</target>
+      </segment>
+    </unit>
+    <unit id="coreOnlyLabel">
+      <segment>
+        <source>core only: no renderer</source>
+        <target>nur core: kein Renderer</target>
+      </segment>
+    </unit>
+    <unit id="themingTitle">
+      <segment>
+        <source>Theming</source>
+        <target>Theme-Anpassung</target>
+      </segment>
+    </unit>
+    <unit id="themingBody">
+      <segment>
+        <source> Import the optional stylesheet. Set <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme</pc> on <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;html&gt;</pc>. Override CSS variables after the import to change colors. </source>
+        <target> Importiere das optionale Stylesheet. Setze <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme</pc> auf <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;html&gt;</pc>. Überschreibe nach dem Import CSS-Variablen, um Farben anzupassen. </target>
+      </segment>
+    </unit>
+    <unit id="themeScopeLabel">
+      <segment>
+        <source>template.html: theme scope</source>
+        <target>template.html: Theme-Bereich</target>
+      </segment>
+    </unit>
+    <unit id="tokenOverridesLabel">
+      <segment>
+        <source>styles.scss: token overrides</source>
+        <target>styles.scss: Token-Überschreibungen</target>
+      </segment>
+    </unit>
+    <unit id="footerNote">
+      <segment>
+        <source> Apache-2.0 · Companion to <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+          &gt;" dispEnd="&lt;/a
+        &gt;">CodingAgentRunner</pc>. Used in Agent Studio. <pc id="1" equivStart="START_LINK_1" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+          &gt;" dispEnd="&lt;/a
+        &gt;">Find other Agent Orchestrator projects</pc>. </source>
+        <target> Apache-2.0 · Ergänzung zu <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+          &gt;" dispEnd="&lt;/a
+        &gt;">CodingAgentRunner</pc>. In Agent Studio eingesetzt. <pc id="1" equivStart="START_LINK_1" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+          &gt;" dispEnd="&lt;/a
+        &gt;">Weitere Agent-Orchestrator-Projekte</pc>. </target>
+      </segment>
+    </unit>
+    <unit id="footerLicense">
+      <segment>
+        <source>License</source>
+        <target>Lizenz</target>
+      </segment>
+    </unit>
+    <unit id="previousImageLabel">
+      <segment>
+        <source>Previous image</source>
+        <target>Vorheriges Bild</target>
+      </segment>
+    </unit>
+    <unit id="nextImageLabel">
+      <segment>
+        <source>Next image</source>
+        <target>Nächstes Bild</target>
+      </segment>
+    </unit>
+    <unit id="closeLabel">
+      <segment>
+        <source>Close</source>
+        <target>Schließen</target>
+      </segment>
+    </unit>
+    <unit id="switchToLightTheme">
+      <segment>
+        <source>Switch to light theme</source>
+        <target>Zum hellen Theme wechseln</target>
+      </segment>
+    </unit>
+    <unit id="switchToDarkTheme">
+      <segment>
+        <source>Switch to dark theme</source>
+        <target>Zum dunklen Theme wechseln</target>
+      </segment>
+    </unit>
+    <unit id="previewLightTheme">
+      <segment>
+        <source>Preview this panel in the light theme</source>
+        <target>Dieses Panel im hellen Theme anzeigen</target>
+      </segment>
+    </unit>
+    <unit id="previewDarkTheme">
+      <segment>
+        <source>Preview this panel in the dark theme</source>
+        <target>Dieses Panel im dunklen Theme anzeigen</target>
+      </segment>
+    </unit>
+    <unit id="enlargedImageLabel">
+      <segment>
+        <source>Enlarged image</source>
+        <target>Vergrößertes Bild</target>
+      </segment>
+    </unit>
+    <unit id="copyButton">
+      <segment>
+        <source>Copy</source>
+        <target>Kopieren</target>
+      </segment>
+    </unit>
+    <unit id="copiedButton">
+      <segment>
+        <source>Copied ✓</source>
+        <target>Kopiert ✓</target>
+      </segment>
+    </unit>
+    <unit id="entryHintCore">
+      <segment>
+        <source>the wire contract</source>
+        <target>das Ereignisformat</target>
+      </segment>
+    </unit>
+    <unit id="entryHintMarkdown">
+      <segment>
+        <source>agent text, rendered</source>
+        <target>gerenderter Agententext</target>
+      </segment>
+    </unit>
+    <unit id="entryHintConversation">
+      <segment>
+        <source>the event stream view</source>
+        <target>Ansicht des Ereignisstroms</target>
+      </segment>
+    </unit>
+    <unit id="entryHintComposer">
+      <segment>
+        <source>the input surface</source>
+        <target>die Eingabeoberfläche</target>
+      </segment>
+    </unit>
+    <unit id="entryHintHistory">
+      <segment>
+        <source>searchable past runs</source>
+        <target>durchsuchbare frühere Läufe</target>
+      </segment>
+    </unit>
+    <unit id="entryHintShared">
+      <segment>
+        <source>tooltips &amp; lightbox</source>
+        <target>Tooltips &amp; Lightbox</target>
+      </segment>
+    </unit>
+    <unit id="entryHintTheme">
+      <segment>
+        <source>one CSS file</source>
+        <target>eine CSS-Datei</target>
+      </segment>
+    </unit>
+    <unit id="coreSnippetLabel">
+      <segment>
+        <source>Angular-free. Runs in Node, tests, and backends.</source>
+        <target>Ohne Angular. Läuft in Node, Tests und Backends.</target>
+      </segment>
+    </unit>
+    <unit id="componentTemplateLabel">
+      <segment>
+        <source>component template</source>
+        <target>Komponenten-Template</target>
+      </segment>
+    </unit>
+    <unit id="historySnippetLabel">
+      <segment>
+        <source>component template + data seam</source>
+        <target>Komponenten-Template + Datenanbindung</target>
+      </segment>
+    </unit>
+    <unit id="directivesLabel">
+      <segment>
+        <source>directives</source>
+        <target>Direktiven</target>
+      </segment>
+    </unit>
+    <unit id="themeSnippetLabel">
+      <segment>
+        <source>styles.scss + any parent element</source>
+        <target>styles.scss + beliebiges Elternelement</target>
+      </segment>
+    </unit>
+    <unit id="seoTitle">
+      <segment>
+        <source>coding-agent-chat | Angular chat UI for coding agents</source>
+        <target>coding-agent-chat | Angular-Chat-UI für Coding Agents</target>
+      </segment>
+    </unit>
+    <unit id="seoDescription">
+      <segment>
+        <source>Angular chat UI for coding agents. Render messages, tool calls, waits, decisions, code, images, and reusable conversation history components.</source>
+        <target>Angular-Chat-UI für Coding Agents. Rendert Nachrichten, Tool-Aufrufe, Wartezeiten, Entscheidungen, Code, Bilder und wiederverwendbare Gesprächsverläufe.</target>
+      </segment>
+    </unit>
+    <unit id="seoSocialTitle">
+      <segment>
+        <source>coding-agent-chat | Angular components for coding agents</source>
+        <target>coding-agent-chat | Angular-Komponenten für Coding Agents</target>
+      </segment>
+    </unit>
+    <unit id="seoSocialDescription">
+      <segment>
+        <source>Render coding-agent event streams as conversations with tool activity, decisions, code, images, history, and a composable input surface.</source>
+        <target>Stellt Ereignisströme von Coding Agents als Gespräche mit Tool-Aktivitäten, Entscheidungen, Code, Bildern, Verlauf und konfigurierbarer Eingabe dar.</target>
+      </segment>
+    </unit>
+    <unit id="seoImageAlt">
+      <segment>
+        <source>coding-agent-chat conversation UI with tool activity, code, and run status</source>
+        <target>coding-agent-chat Chat-Oberfläche mit Tool-Aktivität, Code und Laufstatus</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

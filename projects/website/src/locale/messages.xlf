@@ -1,0 +1,959 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en">
+  <file id="ngi18n" original="ng.template">
+    <unit id="skipLink">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:1,3</note>
+      </notes>
+      <segment>
+        <source>Skip to content</source>
+      </segment>
+    </unit>
+    <unit id="siteNavLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:4</note>
+      </notes>
+      <segment>
+        <source>Site</source>
+      </segment>
+    </unit>
+    <unit id="navDemo">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:17,19</note>
+      </notes>
+      <segment>
+        <source>Demo</source>
+      </segment>
+    </unit>
+    <unit id="navRendering">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:23,26</note>
+      </notes>
+      <segment>
+        <source>Rendering</source>
+      </segment>
+    </unit>
+    <unit id="navOverview">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:30,33</note>
+      </notes>
+      <segment>
+        <source>Overview</source>
+      </segment>
+    </unit>
+    <unit id="navDocs">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Docs</source>
+      </segment>
+    </unit>
+    <unit id="toggleThemeTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:49,50</note>
+      </notes>
+      <segment>
+        <source>Toggle light / dark theme</source>
+      </segment>
+    </unit>
+    <unit id="heroTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:88,90</note>
+      </notes>
+      <segment>
+        <source> Angular chat UI components for coding agents </source>
+      </segment>
+    </unit>
+    <unit id="heroTag">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:91,97</note>
+      </notes>
+      <segment>
+        <source> Angular components that render event streams as messages, tool activity, waits, and decisions. Compatible with <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+        &gt;" dispEnd="&lt;/a
+      &gt;">coding-agent-runner</pc> and any backend that emits the same events. </source>
+      </segment>
+    </unit>
+    <unit id="heroDemoLink">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:103</note>
+      </notes>
+      <segment>
+        <source>Demo</source>
+      </segment>
+    </unit>
+    <unit id="heroDocsLink">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:104</note>
+      </notes>
+      <segment>
+        <source>Docs</source>
+      </segment>
+    </unit>
+    <unit id="demoKicker">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:117</note>
+      </notes>
+      <segment>
+        <source>Demo</source>
+      </segment>
+    </unit>
+    <unit id="demoTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:117,118</note>
+      </notes>
+      <segment>
+        <source>Conversation replay</source>
+      </segment>
+    </unit>
+    <unit id="demoLead">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:119,122</note>
+      </notes>
+      <segment>
+        <source> Two <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent[]</pc> transcripts rendered with <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-conversation-view&gt;</pc>. Each replay includes a composer and an independent theme control. </source>
+      </segment>
+    </unit>
+    <unit id="happyPathTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:128,129</note>
+      </notes>
+      <segment>
+        <source>Happy path</source>
+      </segment>
+    </unit>
+    <unit id="happyPathBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:130,132</note>
+      </notes>
+      <segment>
+        <source> Planning, tool calls, a code response, and orchestrator approval. The composer includes model, reasoning, permission, attachment, and context controls. </source>
+      </segment>
+    </unit>
+    <unit id="unhappyPathTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:253,254</note>
+      </notes>
+      <segment>
+        <source>Unhappy path</source>
+      </segment>
+    </unit>
+    <unit id="unhappyPathBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:255,257</note>
+      </notes>
+      <segment>
+        <source> A failed command, a watchdog timeout, and an orchestrator retry. Failure and success use the same event model. </source>
+      </segment>
+    </unit>
+    <unit id="capGroupingTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:362,363</note>
+      </notes>
+      <segment>
+        <source>Grouping</source>
+      </segment>
+    </unit>
+    <unit id="capGroupingBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:364,366</note>
+      </notes>
+      <segment>
+        <source>Nine tool calls render as one burst with counts, families, failures, and tests.</source>
+      </segment>
+    </unit>
+    <unit id="capFoldingTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:368,369</note>
+      </notes>
+      <segment>
+        <source>Folding</source>
+      </segment>
+    </unit>
+    <unit id="capFoldingBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:370,372</note>
+      </notes>
+      <segment>
+        <source>Long plans truncate behind <pc id="0" equivStart="START_ITALIC_TEXT" equivEnd="CLOSE_ITALIC_TEXT" type="fmt" dispStart="&lt;i&gt;" dispEnd="&lt;/i&gt;">expand</pc>, so transcripts stay skimmable.</source>
+      </segment>
+    </unit>
+    <unit id="capDisclosureTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:374,375</note>
+      </notes>
+      <segment>
+        <source>Progressive disclosure</source>
+      </segment>
+    </unit>
+    <unit id="capDisclosureBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:376,378</note>
+      </notes>
+      <segment>
+        <source>Output, traces and raw log ranges live one click behind each row.</source>
+      </segment>
+    </unit>
+    <unit id="capContinuationTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:380,381</note>
+      </notes>
+      <segment>
+        <source>Live continuation</source>
+      </segment>
+    </unit>
+    <unit id="capContinuationBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:382,385</note>
+      </notes>
+      <segment>
+        <source>Composer submissions append real turns. Connect them to your backend.</source>
+      </segment>
+    </unit>
+    <unit id="renderingKicker">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:393,394</note>
+      </notes>
+      <segment>
+        <source>Rendering</source>
+      </segment>
+    </unit>
+    <unit id="renderingTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:394,395</note>
+      </notes>
+      <segment>
+        <source>Code and images</source>
+      </segment>
+    </unit>
+    <unit id="renderingLead">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:396,399</note>
+      </notes>
+      <segment>
+        <source> Syntax highlighting supports 23 grammars. Inline images and <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">artifact.image</pc> events open in a host-provided lightbox. Select an image to open the gallery. </source>
+      </segment>
+    </unit>
+    <unit id="renderingFoot">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:446,449</note>
+      </notes>
+      <segment>
+        <source> Syntax highlighting uses lowlight with a size guard and per-block memoization. <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CHAT_MEDIA_LIGHTBOX</pc> handles image clicks; the host provides the overlay. </source>
+      </segment>
+    </unit>
+    <unit id="overviewKicker">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:455,456</note>
+      </notes>
+      <segment>
+        <source>Overview</source>
+      </segment>
+    </unit>
+    <unit id="overviewTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:456,457</note>
+      </notes>
+      <segment>
+        <source>What&apos;s in the library</source>
+      </segment>
+    </unit>
+    <unit id="overviewStats">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:458,461</note>
+      </notes>
+      <segment>
+        <source> 23+ event kinds · 7 entry points · 379 green specs · zero Angular imports in <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">core</pc> · Apache-2.0 </source>
+      </segment>
+    </unit>
+    <unit id="eventKindsTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:464,466</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--orange&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Event kinds </source>
+      </segment>
+    </unit>
+    <unit id="eventKindsBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:467,469</note>
+      </notes>
+      <segment>
+        <source> One append-only <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> union covers messages, tool bursts, waits, and orchestrator decisions. Unknown kinds render as fallback rows. </source>
+      </segment>
+    </unit>
+    <unit id="coreTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:473,475</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--blue&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Framework-free core </source>
+      </segment>
+    </unit>
+    <unit id="coreBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:476,479</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">coding-agent-chat/core</pc> is plain TypeScript: the <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> contract plus <pc id="2" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">projectConversation()</pc>. Backends, SSR code and tests can import it without Angular. </source>
+      </segment>
+    </unit>
+    <unit id="entryPointsTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:483,485</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--purple&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Entry points </source>
+      </segment>
+    </unit>
+    <unit id="entryPointsBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:486,488</note>
+      </notes>
+      <segment>
+        <source> Seven import paths keep optional features separate. <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">core</pc> is plain TypeScript with no Angular dependency. <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;#entry-points&quot;&gt;" dispEnd="&lt;/a&gt;">View samples</pc>. </source>
+      </segment>
+    </unit>
+    <unit id="integrationPointsTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:492,494</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--green&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Host integration points </source>
+      </segment>
+    </unit>
+    <unit id="integrationPointsBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:495,498</note>
+      </notes>
+      <segment>
+        <source> Four injection tokens have safe defaults. Provide <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CHAT_MEDIA_LIGHTBOX</pc> to enable image enlargement. <pc id="1" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;#rendering&quot;&gt;" dispEnd="&lt;/a&gt;">See the rendering demo</pc>. </source>
+      </segment>
+    </unit>
+    <unit id="themeCardTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:501,502</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--orange&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Theme</source>
+      </segment>
+    </unit>
+    <unit id="themeCardBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:503,506</note>
+      </notes>
+      <segment>
+        <source> Import the optional stylesheet for the default theme. Set <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme=&quot;light&quot;</pc> on any parent for the light palette. </source>
+      </segment>
+    </unit>
+    <unit id="zonelessTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:509,510</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--blue&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Zoneless &amp; OnPush </source>
+      </segment>
+    </unit>
+    <unit id="zonelessBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:512,514</note>
+      </notes>
+      <segment>
+        <source> Signal-based components with strict templates, shipped as a partial-Ivy package. This page runs without Zone.js. </source>
+      </segment>
+    </unit>
+    <unit id="testsTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:517,518</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--green&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>Tests</source>
+      </segment>
+    </unit>
+    <unit id="testsBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:519,521</note>
+      </notes>
+      <segment>
+        <source> 246 component specs run against the built package. Projection and markdown utilities have 133 additional specs. </source>
+      </segment>
+    </unit>
+    <unit id="licenseTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:524,525</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;card__dot card__dot--purple&quot;&gt;" dispEnd="&lt;/span&gt;"></pc>License</source>
+      </segment>
+    </unit>
+    <unit id="licenseBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:526,530</note>
+      </notes>
+      <segment>
+        <source> Apache-2.0, the same license as the backend counterpart <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+              &gt;" dispEnd="&lt;/a
+            &gt;">coding-agent-runner</pc>. </source>
+      </segment>
+    </unit>
+    <unit id="docsKicker">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:539,540</note>
+      </notes>
+      <segment>
+        <source>Documentation</source>
+      </segment>
+    </unit>
+    <unit id="docsTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:540,542</note>
+      </notes>
+      <segment>
+        <source>Getting started</source>
+      </segment>
+    </unit>
+    <unit id="installHeading">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:544,545</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">1</pc>Install</source>
+      </segment>
+    </unit>
+    <unit id="provideHeading">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:548,549</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">2</pc>Provide</source>
+      </segment>
+    </unit>
+    <unit id="renderHeading">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:552,553</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_SPAN" equivEnd="CLOSE_TAG_SPAN" type="other" dispStart="&lt;span class=&quot;docs-step__num&quot;&gt;" dispEnd="&lt;/span&gt;">3</pc>Render</source>
+      </segment>
+    </unit>
+    <unit id="entrySamplesTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:558,560</note>
+      </notes>
+      <segment>
+        <source> Entry point samples </source>
+      </segment>
+    </unit>
+    <unit id="entrySamplesBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:561,566</note>
+      </notes>
+      <segment>
+        <source> Seven import paths keep the wire contract, renderer, and optional features separate. Each tab shows a component sample and its code. The root import <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">coding-agent-chat</pc> re-exports all entry points and <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">provideCodingAgentChat()</pc>. </source>
+      </segment>
+    </unit>
+    <unit id="entryPointsTablistLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:570,571</note>
+      </notes>
+      <segment>
+        <source>Entry points</source>
+      </segment>
+    </unit>
+    <unit id="explorerModeLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:594,595</note>
+      </notes>
+      <segment>
+        <source>Show the result or the code</source>
+      </segment>
+    </unit>
+    <unit id="resultButton">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:603,604</note>
+      </notes>
+      <segment>
+        <source>Result</source>
+      </segment>
+    </unit>
+    <unit id="codeButton">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:611,612</note>
+      </notes>
+      <segment>
+        <source>The Code</source>
+      </segment>
+    </unit>
+    <unit id="coreExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:617,619</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">ConversationEvent</pc> and <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">projectConversation()</pc> are plain TypeScript with no Angular dependency. </source>
+      </segment>
+    </unit>
+    <unit id="toolBurstSummary">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:626,627</note>
+      </notes>
+      <segment>
+        <source>Tool burst JSON</source>
+      </segment>
+    </unit>
+    <unit id="wireFormatLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:629,630</note>
+      </notes>
+      <segment>
+        <source>toolBurst: wire format</source>
+      </segment>
+    </unit>
+    <unit id="markdownExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:642,644</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-markdown&gt;</pc> renders agent text: GFM, syntax-highlighted fences, sanitized HTML, image lightbox hooks, task-reference auto-linking. </source>
+      </segment>
+    </unit>
+    <unit id="conversationExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:659,661</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-conversation-view&gt;</pc> renders events with grouping, folding, working states, and stick-to-bottom scrolling. </source>
+      </segment>
+    </unit>
+    <unit id="composerExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:676,678</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-chat&gt;</pc> provides multiline input, attachments, and submit events. This sample returns a scripted reply. </source>
+      </segment>
+    </unit>
+    <unit id="interactiveLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:686,687</note>
+      </notes>
+      <segment>
+        <source>Interactive</source>
+      </segment>
+    </unit>
+    <unit id="demoAgentPlaceholder">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:697,698</note>
+      </notes>
+      <segment>
+        <source>Ask the demo agent…</source>
+      </segment>
+    </unit>
+    <unit id="demoAgentEmptyState">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:699,700</note>
+      </notes>
+      <segment>
+        <source>Submits return a scripted reply.</source>
+      </segment>
+    </unit>
+    <unit id="sendLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:702</note>
+      </notes>
+      <segment>
+        <source>Send</source>
+      </segment>
+    </unit>
+    <unit id="historyExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:712,715</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-project-chat-list&gt;</pc> renders virtualised, searchable project runs. <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">PROJECT_CHAT_DATA_SOURCE</pc> provides scroll, search, statistics, and turn data from HTTP, SQLite, files, or another source. </source>
+      </segment>
+    </unit>
+    <unit id="previewLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:723,724</note>
+      </notes>
+      <segment>
+        <source>Preview</source>
+      </segment>
+    </unit>
+    <unit id="sharedExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:737,739</note>
+      </notes>
+      <segment>
+        <source> Provides <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">cacTooltip</pc>, <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">cacStickToBottom</pc>, and image-lightbox interfaces. Hover the sample buttons to view the tooltips. </source>
+      </segment>
+    </unit>
+    <unit id="hoverSampleLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:747,748</note>
+      </notes>
+      <segment>
+        <source>Hover sample</source>
+      </segment>
+    </unit>
+    <unit id="themeExplorerDesc">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:763,765</note>
+      </notes>
+      <segment>
+        <source> The optional stylesheet provides dark and light palettes through <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme</pc>. The setting can be scoped to any parent element. </source>
+      </segment>
+    </unit>
+    <unit id="hostIntegrationTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:792,794</note>
+      </notes>
+      <segment>
+        <source> Host integration points </source>
+      </segment>
+    </unit>
+    <unit id="hostIntegrationBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:795,798</note>
+      </notes>
+      <segment>
+        <source> All four integration points have defaults. Configure task links, image enlargement, history data, or history confirmation as needed. </source>
+      </segment>
+    </unit>
+    <unit id="taskReferenceBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:805,807</note>
+      </notes>
+      <segment>
+        <source> Supplies task references for markdown auto-linking and handles navigation when one is clicked. Default: task keys render as plain text. </source>
+      </segment>
+    </unit>
+    <unit id="lightboxBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:815,817</note>
+      </notes>
+      <segment>
+        <source> Owns the click-to-enlarge image overlay (modal stack, focus trap). Default: images do not zoom. </source>
+      </segment>
+    </unit>
+    <unit id="historySourceBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:825,828</note>
+      </notes>
+      <segment>
+        <source> The scroll/search/stats/turn transport behind <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;cac-project-chat-list&gt;</pc>. Default: an empty history. </source>
+      </segment>
+    </unit>
+    <unit id="historyConfirmBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:835,837</note>
+      </notes>
+      <segment>
+        <source> Confirmation prompt before loading an entire deep history. Default: auto-confirm. </source>
+      </segment>
+    </unit>
+    <unit id="rootTokensLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:843,844</note>
+      </notes>
+      <segment>
+        <source>app.config.ts: root tokens</source>
+      </segment>
+    </unit>
+    <unit id="historyTokensLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:850,851</note>
+      </notes>
+      <segment>
+        <source>app.config.ts: history tokens</source>
+      </segment>
+    </unit>
+    <unit id="dataSourceContractLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:859,860</note>
+      </notes>
+      <segment>
+        <source>the data-source contract</source>
+      </segment>
+    </unit>
+    <unit id="coreOnlyLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:866,867</note>
+      </notes>
+      <segment>
+        <source>core only: no renderer</source>
+      </segment>
+    </unit>
+    <unit id="themingTitle">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:872,873</note>
+      </notes>
+      <segment>
+        <source>Theming</source>
+      </segment>
+    </unit>
+    <unit id="themingBody">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:874,877</note>
+      </notes>
+      <segment>
+        <source> Import the optional stylesheet. Set <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">data-studio-theme</pc> on <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">&lt;html&gt;</pc>. Override CSS variables after the import to change colors. </source>
+      </segment>
+    </unit>
+    <unit id="themeScopeLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:881,882</note>
+      </notes>
+      <segment>
+        <source>template.html: theme scope</source>
+      </segment>
+    </unit>
+    <unit id="tokenOverridesLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:886,887</note>
+      </notes>
+      <segment>
+        <source>styles.scss: token overrides</source>
+      </segment>
+    </unit>
+    <unit id="footerNote">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:900,908</note>
+      </notes>
+      <segment>
+        <source> Apache-2.0 · Companion to <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev/runner/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+          &gt;" dispEnd="&lt;/a
+        &gt;">CodingAgentRunner</pc>. Used in Agent Studio. <pc id="1" equivStart="START_LINK_1" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a href=&quot;https://agent-orchestrator.dev&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;
+          &gt;" dispEnd="&lt;/a
+        &gt;">Find other Agent Orchestrator projects</pc>. </source>
+      </segment>
+    </unit>
+    <unit id="footerLicense">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:921,923</note>
+      </notes>
+      <segment>
+        <source>License</source>
+      </segment>
+    </unit>
+    <unit id="previousImageLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:962,963</note>
+      </notes>
+      <segment>
+        <source>Previous image</source>
+      </segment>
+    </unit>
+    <unit id="nextImageLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:971,972</note>
+      </notes>
+      <segment>
+        <source>Next image</source>
+      </segment>
+    </unit>
+    <unit id="closeLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.html:983</note>
+      </notes>
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
+    <unit id="switchToLightTheme">
+      <notes>
+        <note category="location">projects/website/src/app/app.ts:409</note>
+      </notes>
+      <segment>
+        <source>Switch to light theme</source>
+      </segment>
+    </unit>
+    <unit id="switchToDarkTheme">
+      <notes>
+        <note category="location">projects/website/src/app/app.ts:410</note>
+      </notes>
+      <segment>
+        <source>Switch to dark theme</source>
+      </segment>
+    </unit>
+    <unit id="previewLightTheme">
+      <notes>
+        <note category="location">projects/website/src/app/app.ts:414</note>
+      </notes>
+      <segment>
+        <source>Preview this panel in the light theme</source>
+      </segment>
+    </unit>
+    <unit id="previewDarkTheme">
+      <notes>
+        <note category="location">projects/website/src/app/app.ts:415</note>
+      </notes>
+      <segment>
+        <source>Preview this panel in the dark theme</source>
+      </segment>
+    </unit>
+    <unit id="enlargedImageLabel">
+      <notes>
+        <note category="location">projects/website/src/app/app.ts:417</note>
+      </notes>
+      <segment>
+        <source>Enlarged image</source>
+      </segment>
+    </unit>
+    <unit id="copyButton">
+      <notes>
+        <note category="location">projects/website/src/app/code-block.component.ts:98</note>
+      </notes>
+      <segment>
+        <source>Copy</source>
+      </segment>
+    </unit>
+    <unit id="copiedButton">
+      <notes>
+        <note category="location">projects/website/src/app/code-block.component.ts:99</note>
+      </notes>
+      <segment>
+        <source>Copied ✓</source>
+      </segment>
+    </unit>
+    <unit id="entryHintCore">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:28</note>
+      </notes>
+      <segment>
+        <source>the wire contract</source>
+      </segment>
+    </unit>
+    <unit id="entryHintMarkdown">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:32</note>
+      </notes>
+      <segment>
+        <source>agent text, rendered</source>
+      </segment>
+    </unit>
+    <unit id="entryHintConversation">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:37</note>
+      </notes>
+      <segment>
+        <source>the event stream view</source>
+      </segment>
+    </unit>
+    <unit id="entryHintComposer">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:39</note>
+      </notes>
+      <segment>
+        <source>the input surface</source>
+      </segment>
+    </unit>
+    <unit id="entryHintHistory">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:43</note>
+      </notes>
+      <segment>
+        <source>searchable past runs</source>
+      </segment>
+    </unit>
+    <unit id="entryHintShared">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:45</note>
+      </notes>
+      <segment>
+        <source>tooltips &amp; lightbox</source>
+      </segment>
+    </unit>
+    <unit id="entryHintTheme">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:46</note>
+      </notes>
+      <segment>
+        <source>one CSS file</source>
+      </segment>
+    </unit>
+    <unit id="coreSnippetLabel">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:124</note>
+      </notes>
+      <segment>
+        <source>Angular-free. Runs in Node, tests, and backends.</source>
+      </segment>
+    </unit>
+    <unit id="componentTemplateLabel">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:134</note>
+        <note category="location">projects/website/src/app/explorer-data.ts:138</note>
+        <note category="location">projects/website/src/app/explorer-data.ts:142</note>
+      </notes>
+      <segment>
+        <source>component template</source>
+      </segment>
+    </unit>
+    <unit id="historySnippetLabel">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:149</note>
+      </notes>
+      <segment>
+        <source>component template + data seam</source>
+      </segment>
+    </unit>
+    <unit id="directivesLabel">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:158</note>
+      </notes>
+      <segment>
+        <source>directives</source>
+      </segment>
+    </unit>
+    <unit id="themeSnippetLabel">
+      <notes>
+        <note category="location">projects/website/src/app/explorer-data.ts:167</note>
+      </notes>
+      <segment>
+        <source>styles.scss + any parent element</source>
+      </segment>
+    </unit>
+    <unit id="seoTitle">
+      <notes>
+        <note category="location">projects/website/src/app/website-seo.service.ts:31</note>
+      </notes>
+      <segment>
+        <source>coding-agent-chat | Angular chat UI for coding agents</source>
+      </segment>
+    </unit>
+    <unit id="seoDescription">
+      <notes>
+        <note category="location">projects/website/src/app/website-seo.service.ts:32</note>
+      </notes>
+      <segment>
+        <source>Angular chat UI for coding agents. Render messages, tool calls, waits, decisions, code, images, and reusable conversation history components.</source>
+      </segment>
+    </unit>
+    <unit id="seoSocialTitle">
+      <notes>
+        <note category="location">projects/website/src/app/website-seo.service.ts:33</note>
+      </notes>
+      <segment>
+        <source>coding-agent-chat | Angular components for coding agents</source>
+      </segment>
+    </unit>
+    <unit id="seoSocialDescription">
+      <notes>
+        <note category="location">projects/website/src/app/website-seo.service.ts:34</note>
+      </notes>
+      <segment>
+        <source>Render coding-agent event streams as conversations with tool activity, decisions, code, images, history, and a composable input surface.</source>
+      </segment>
+    </unit>
+    <unit id="seoImageAlt">
+      <notes>
+        <note category="location">projects/website/src/app/website-seo.service.ts:35</note>
+      </notes>
+      <segment>
+        <source>coding-agent-chat conversation UI with tool activity, code, and run status</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

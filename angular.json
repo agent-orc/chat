@@ -137,6 +137,18 @@
       "root": "projects/website",
       "sourceRoot": "projects/website/src",
       "prefix": "app",
+      "i18n": {
+        "sourceLocale": {
+          "code": "en",
+          "subPath": ""
+        },
+        "locales": {
+          "de": {
+            "translation": "projects/website/src/locale/messages.de.xlf",
+            "subPath": "de"
+          }
+        }
+      },
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -145,6 +157,7 @@
             "server": "projects/website/src/main.server.ts",
             "outputMode": "static",
             "tsConfig": "projects/website/tsconfig.app.json",
+            "polyfills": ["@angular/localize/init"],
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -158,6 +171,8 @@
           },
           "configurations": {
             "production": {
+              "localize": true,
+              "i18nMissingTranslation": "error",
               "budgets": [
                 {
                   "type": "initial",
@@ -185,6 +200,9 @@
               "styles": [
                 "projects/website/src/styles-live.scss"
               ]
+            },
+            "de": {
+              "localize": ["de"]
             }
           },
           "defaultConfiguration": "production"
@@ -214,6 +232,9 @@
             },
             "live": {
               "buildTarget": "website:build:live"
+            },
+            "de": {
+              "buildTarget": "website:build:development,de"
             }
           },
           "defaultConfiguration": "development"

@@ -45,6 +45,25 @@ describe('App (website)', () => {
     expect(compiled.querySelectorAll('.explorer__tab').length).toBe(7);
   });
 
+  it('publishes the canonical URL, language alternates and footer language link', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(document.title).toBe('coding-agent-chat | Angular chat UI for coding agents');
+    expect(document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href).toBe(
+      'https://agent-orchestrator.dev/chat/',
+    );
+    expect(document.querySelector<HTMLLinkElement>('link[hreflang="de"]')?.href).toBe(
+      'https://agent-orchestrator.dev/chat/de/',
+    );
+    expect(document.querySelector<HTMLLinkElement>('link[hreflang="x-default"]')?.href).toBe(
+      'https://agent-orchestrator.dev/chat/',
+    );
+    const languageLink = compiled.querySelector<HTMLAnchorElement>('footer a[hreflang="de"]');
+    expect(languageLink?.textContent?.trim()).toBe('Deutsch');
+    expect(languageLink?.getAttribute('href')).toBe('de/');
+  });
+
   it('renders both library demos once the defer blocks complete', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
@@ -79,8 +98,8 @@ describe('App (website)', () => {
       };
       app.onFrameSubmit('a', { text: 'Rename the export button' });
       // The user turn lands immediately; the reply streams behind timers.
-      const userTurns = app
-        .replayA.events()
+      const userTurns = app.replayA
+        .events()
         .filter((e) => e.kind === 'message.user' && e.body === 'Rename the export button');
       expect(userTurns.length).toBe(1);
       expect(app.threadA.busy()).toBe(true);
@@ -110,14 +129,14 @@ describe('App (website)', () => {
       };
       app.onFrameSubmit('a', { text: 'first ask' });
       app.onFrameSubmit('a', { text: 'second ask' });
-      const userTurns = app
-        .replayA.events()
+      const userTurns = app.replayA
+        .events()
         .filter((e) => e.kind === 'message.user' && /first ask|second ask/.test(e.body ?? ''));
       expect(userTurns.length).toBe(2);
       // Two queued replies at ~6.2s each stream strictly back to back.
       vi.advanceTimersByTime(15000);
-      const answers = app
-        .replayA.events()
+      const answers = app.replayA
+        .events()
         .filter((e) => e.actor === 'Demo Agent' && e.kind === 'message.taskAgent');
       // Two replies, two messages each (plan + answer), in submit order.
       expect(answers.length).toBe(4);

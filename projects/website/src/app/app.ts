@@ -44,6 +44,7 @@ import {
 } from './demo-fixtures';
 import { SHOWCASE_EVENTS } from './showcase-fixtures';
 import { WebsiteLightboxService } from './website-lightbox.service';
+import { WebsiteSeoService } from './website-seo.service';
 import {
   SNIPPET_CORE_ONLY,
   SNIPPET_DATA_SOURCE,
@@ -219,6 +220,10 @@ class ScriptedThread {
 })
 export class App {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly websiteSeo = inject(WebsiteSeoService);
+
+  protected readonly alternateLanguage = this.websiteSeo.alternateLanguage;
+  protected readonly legalPrefix = this.websiteSeo.legalPrefix;
 
   // --- Docs snippets --------------------------------------------------------
   protected readonly snippetInstall = SNIPPET_INSTALL;
@@ -399,9 +404,21 @@ export class App {
    * value on <html> (stored pref, else OS preference); this mirrors it and owns
    * the in-page toggle. Distinct from the demo frames' own `demoTheme`. */
   protected readonly siteTheme = signal<'dark' | 'light'>('dark');
+  protected readonly siteThemeAriaLabel = computed(() =>
+    this.siteTheme() === 'dark'
+      ? $localize`:@@switchToLightTheme:Switch to light theme`
+      : $localize`:@@switchToDarkTheme:Switch to dark theme`,
+  );
+  protected readonly explorerThemeAriaLabel = computed(() =>
+    this.explorerTheme() === 'dark'
+      ? $localize`:@@previewLightTheme:Preview this panel in the light theme`
+      : $localize`:@@previewDarkTheme:Preview this panel in the dark theme`,
+  );
+  protected readonly enlargedImageLabel = $localize`:@@enlargedImageLabel:Enlarged image`;
   private static readonly THEME_STORAGE_KEY = 'cac-site-theme';
 
   constructor() {
+    this.websiteSeo.apply();
     // Modal chrome for the lightbox (focus move/restore + scroll lock): the
     // dialog markup itself lives in the template; this effect owns the parts
     // aria-modal implies but HTML doesn't do by itself.
@@ -412,7 +429,6 @@ export class App {
     afterNextRender(() => {
       this.syncSiteThemeFromDom();
       this.observeSections();
-      this.observeReveals();
       this.autoplayWhenVisible();
       this.startContactTicker();
     });
@@ -441,7 +457,11 @@ export class App {
     setTimeout(() => {
       const conv = document.querySelector(`#demo-frame-${key} .conv`);
       if (conv instanceof HTMLElement) {
-        conv.scrollTo({ top: conv.scrollHeight, behavior: 'smooth' });
+        if (typeof conv.scrollTo === 'function') {
+          conv.scrollTo({ top: conv.scrollHeight, behavior: 'smooth' });
+        } else {
+          conv.scrollTop = conv.scrollHeight;
+        }
       }
     }, 60);
   }
@@ -558,27 +578,6 @@ export class App {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     }
-    this.destroyRef.onDestroy(() => observer.disconnect());
-  }
-
-  private observeReveals(): void {
-    const targets = Array.from(document.querySelectorAll('.reveal'));
-    if (typeof IntersectionObserver === 'undefined') {
-      for (const el of targets) el.classList.add('is-visible');
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
-          }
-        }
-      },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.05 },
-    );
-    for (const el of targets) observer.observe(el);
     this.destroyRef.onDestroy(() => observer.disconnect());
   }
 

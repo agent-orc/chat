@@ -25,13 +25,25 @@ export interface EntryPointTab {
 }
 
 export const ENTRY_POINT_TABS: readonly EntryPointTab[] = [
-  { key: 'core', label: 'core', hint: 'the wire contract' },
-  { key: 'markdown', label: 'markdown', hint: 'agent text, rendered' },
-  { key: 'conversation', label: 'conversation', hint: 'the event stream view' },
-  { key: 'composer', label: 'composer', hint: 'the input surface' },
-  { key: 'history', label: 'history', hint: 'searchable past runs' },
-  { key: 'shared', label: 'shared', hint: 'tooltips & lightbox' },
-  { key: 'theme', label: 'theme', hint: 'one CSS file' },
+  { key: 'core', label: 'core', hint: $localize`:@@entryHintCore:the wire contract` },
+  {
+    key: 'markdown',
+    label: 'markdown',
+    hint: $localize`:@@entryHintMarkdown:agent text, rendered`,
+  },
+  {
+    key: 'conversation',
+    label: 'conversation',
+    hint: $localize`:@@entryHintConversation:the event stream view`,
+  },
+  { key: 'composer', label: 'composer', hint: $localize`:@@entryHintComposer:the input surface` },
+  {
+    key: 'history',
+    label: 'history',
+    hint: $localize`:@@entryHintHistory:searchable past runs`,
+  },
+  { key: 'shared', label: 'shared', hint: $localize`:@@entryHintShared:tooltips & lightbox` },
+  { key: 'theme', label: 'theme', hint: $localize`:@@entryHintTheme:one CSS file` },
 ];
 
 const SOURCE = 'explorer.log';
@@ -109,7 +121,7 @@ export const EXPLORER_MARKDOWN: string = [
 /** Copy-paste snippet per tab. */
 export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: string }> = {
   core: {
-    label: 'Angular-free. Runs in Node, tests, and backends.',
+    label: $localize`:@@coreSnippetLabel:Angular-free. Runs in Node, tests, and backends.`,
     code: [
       "import { projectConversation } from 'coding-agent-chat/core';",
       "import type { ConversationEvent } from 'coding-agent-chat/core';",
@@ -119,22 +131,22 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
     ].join('\n'),
   },
   markdown: {
-    label: 'component template',
+    label: $localize`:@@componentTemplateLabel:component template`,
     code: '<cac-markdown [source]="agentAnswer" />',
   },
   conversation: {
-    label: 'component template',
+    label: $localize`:@@componentTemplateLabel:component template`,
     code: '<cac-conversation-view [events]="events" [isRunning]="running" />',
   },
   composer: {
-    label: 'component template',
+    label: $localize`:@@componentTemplateLabel:component template`,
     code: [
       '<cac-chat placeholder="Ask the agent…"',
       '          (submitMessage)="backend.send($event.text)" />',
     ].join('\n'),
   },
   history: {
-    label: 'component template + data seam',
+    label: $localize`:@@historySnippetLabel:component template + data seam`,
     code: [
       '<cac-project-chat-list project="my-app" />',
       '',
@@ -143,7 +155,7 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
     ].join('\n'),
   },
   shared: {
-    label: 'directives',
+    label: $localize`:@@directivesLabel:directives`,
     code: [
       '<button cacTooltip="Re-runs the failing spec">Re-run</button>',
       '',
@@ -152,7 +164,7 @@ export const EXPLORER_SNIPPETS: Record<EntryPointKey, { code: string; label: str
     ].join('\n'),
   },
   theme: {
-    label: 'styles.scss + any parent element',
+    label: $localize`:@@themeSnippetLabel:styles.scss + any parent element`,
     code: [
       "@use 'coding-agent-chat/theme/cac-theme.css';",
       '',

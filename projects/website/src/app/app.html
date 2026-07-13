@@ -1,7 +1,7 @@
-<a class="skip-link" href="#main-content">Skip to content</a>
+<a class="skip-link" href="#main-content" i18n="@@skipLink">Skip to content</a>
 
 <!-- ======================================================= Sticky nav -->
-<nav class="site-nav" aria-label="Site">
+<nav class="site-nav" aria-label="Site" i18n-aria-label="@@siteNavLabel">
   <div class="wrap site-nav__row">
     <a class="site-nav__brand" href="#top">
       <span class="site-nav__logo" aria-hidden="true"></span>
@@ -12,24 +12,28 @@
         href="#demo"
         [class.is-active]="activeSection() === 'demo'"
         [attr.aria-current]="activeSection() === 'demo' ? 'true' : null"
+        i18n="@@navDemo"
         >Demo</a
       >
       <a
         href="#rendering"
         [class.is-active]="activeSection() === 'rendering'"
         [attr.aria-current]="activeSection() === 'rendering' ? 'true' : null"
+        i18n="@@navRendering"
         >Rendering</a
       >
       <a
         href="#features"
         [class.is-active]="activeSection() === 'features'"
         [attr.aria-current]="activeSection() === 'features' ? 'true' : null"
+        i18n="@@navOverview"
         >Overview</a
       >
       <a
         href="#docs"
         [class.is-active]="activeSection() === 'docs'"
         [attr.aria-current]="activeSection() === 'docs' ? 'true' : null"
+        i18n="@@navDocs"
         >Docs</a
       >
       <span class="site-nav__sep" aria-hidden="true"></span>
@@ -41,10 +45,9 @@
         type="button"
         class="site-nav__theme"
         (click)="toggleSiteTheme()"
-        [attr.aria-label]="
-          siteTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
-        "
+        [attr.aria-label]="siteThemeAriaLabel()"
         title="Toggle light / dark theme"
+        i18n-title="@@toggleThemeTitle"
       >
         <site-theme-icon [night]="siteTheme() === 'light'" />
       </button>
@@ -81,8 +84,10 @@
 <header class="hero" id="top">
   <div class="hero__glow" aria-hidden="true"></div>
   <div class="wrap hero__inner">
-    <h1 class="hero__title reveal">Chat UI components for coding agents</h1>
-    <p class="hero__tag reveal">
+    <h1 class="hero__title reveal" i18n="@@heroTitle">
+      Angular chat UI components for coding agents
+    </h1>
+    <p class="hero__tag reveal" i18n="@@heroTag">
       Angular components that render event streams as messages, tool activity, waits, and decisions.
       Compatible with
       <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
@@ -94,8 +99,8 @@
       <site-code [code]="heroInstall" lang="sh" />
     </div>
     <p class="hero__links reveal">
-      <a href="#demo">Demo</a>
-      <a href="#docs">Docs</a>
+      <a href="#demo" i18n="@@heroDemoLink">Demo</a>
+      <a href="#docs" i18n="@@heroDocsLink">Docs</a>
       <a href="https://github.com/agent-orc/chat" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.npmjs.com/package/coding-agent-chat" target="_blank" rel="noopener"
         >npm</a
@@ -108,9 +113,9 @@
   <!-- ======================================================= Live demo -->
   <section id="demo" class="section">
     <div class="wrap">
-      <p class="section__kicker reveal">Demo</p>
-      <h2 class="section__title reveal">Conversation replay</h2>
-      <p class="section__lead reveal">
+      <p class="section__kicker reveal" i18n="@@demoKicker">Demo</p>
+      <h2 class="section__title reveal" i18n="@@demoTitle">Conversation replay</h2>
+      <p class="section__lead reveal" i18n="@@demoLead">
         Two <code>ConversationEvent[]</code> transcripts rendered with
         <code>&lt;cac-conversation-view&gt;</code>. Each replay includes a composer and an
         independent theme control.
@@ -120,14 +125,19 @@
         <div class="demo-intro reveal">
           <span class="demo-intro__num">1</span>
           <div>
-            <h3 class="demo-intro__title">Happy path</h3>
-            <p class="demo-intro__text">
+            <h3 class="demo-intro__title" i18n="@@happyPathTitle">Happy path</h3>
+            <p class="demo-intro__text" i18n="@@happyPathBody">
               Planning, tool calls, a code response, and orchestrator approval. The composer
               includes model, reasoning, permission, attachment, and context controls.
             </p>
           </div>
         </div>
-        <div class="demo-frame reveal" id="demo-frame-a" [attr.data-studio-theme]="frameThemes.a()">
+        <div
+          class="demo-frame reveal"
+          id="demo-frame-a"
+          lang="en"
+          [attr.data-studio-theme]="frameThemes.a()"
+        >
           <div class="demo-frame__bar">
             <span class="demo-chip">Feature run · replay</span>
             <button type="button" class="demo-btn demo-btn--accent" (click)="replayA.play()">
@@ -240,14 +250,19 @@
         <div class="demo-intro reveal">
           <span class="demo-intro__num">2</span>
           <div>
-            <h3 class="demo-intro__title">Unhappy path</h3>
-            <p class="demo-intro__text">
+            <h3 class="demo-intro__title" i18n="@@unhappyPathTitle">Unhappy path</h3>
+            <p class="demo-intro__text" i18n="@@unhappyPathBody">
               A failed command, a watchdog timeout, and an orchestrator retry. Failure and success
               use the same event model.
             </p>
           </div>
         </div>
-        <div class="demo-frame reveal" id="demo-frame-b" [attr.data-studio-theme]="frameThemes.b()">
+        <div
+          class="demo-frame reveal"
+          id="demo-frame-b"
+          lang="en"
+          [attr.data-studio-theme]="frameThemes.b()"
+        >
           <div class="demo-frame__bar">
             <span class="demo-chip">Bugfix session · replay</span>
             <button type="button" class="demo-btn demo-btn--accent" (click)="replayB.play()">
@@ -344,22 +359,28 @@
       <!-- What the view is doing for you — anchored to what is visible above. -->
       <div class="demo-caps reveal">
         <div class="demo-cap">
-          <strong>Grouping</strong>
-          <span
+          <strong i18n="@@capGroupingTitle">Grouping</strong>
+          <span i18n="@@capGroupingBody"
             >Nine tool calls render as one burst with counts, families, failures, and tests.</span
           >
         </div>
         <div class="demo-cap">
-          <strong>Folding</strong>
-          <span>Long plans truncate behind <i>expand</i>, so transcripts stay skimmable.</span>
+          <strong i18n="@@capFoldingTitle">Folding</strong>
+          <span i18n="@@capFoldingBody"
+            >Long plans truncate behind <i>expand</i>, so transcripts stay skimmable.</span
+          >
         </div>
         <div class="demo-cap">
-          <strong>Progressive disclosure</strong>
-          <span>Output, traces and raw log ranges live one click behind each row.</span>
+          <strong i18n="@@capDisclosureTitle">Progressive disclosure</strong>
+          <span i18n="@@capDisclosureBody"
+            >Output, traces and raw log ranges live one click behind each row.</span
+          >
         </div>
         <div class="demo-cap">
-          <strong>Live continuation</strong>
-          <span>Composer submissions append real turns. Connect them to your backend.</span>
+          <strong i18n="@@capContinuationTitle">Live continuation</strong>
+          <span i18n="@@capContinuationBody"
+            >Composer submissions append real turns. Connect them to your backend.</span
+          >
         </div>
       </div>
     </div>
@@ -369,9 +390,9 @@
   <section id="rendering" class="section section--alt">
     <div class="wrap">
       <div class="section-intro section-intro--center">
-        <p class="section__kicker reveal">Rendering</p>
-        <h2 class="section__title reveal">Code and images</h2>
-        <p class="section__lead reveal">
+        <p class="section__kicker reveal" i18n="@@renderingKicker">Rendering</p>
+        <h2 class="section__title reveal" i18n="@@renderingTitle">Code and images</h2>
+        <p class="section__lead reveal" i18n="@@renderingLead">
           Syntax highlighting supports 23 grammars. Inline images and
           <code>artifact.image</code> events open in a host-provided lightbox. Select an image to
           open the gallery.
@@ -379,6 +400,7 @@
       </div>
       <div
         class="demo-frame demo-frame--render reveal"
+        lang="en"
         [attr.data-studio-theme]="frameThemes.render()"
       >
         <div class="demo-frame__bar">
@@ -420,7 +442,7 @@
           }
         </div>
       </div>
-      <p class="section__foot reveal">
+      <p class="section__foot reveal" i18n="@@renderingFoot">
         Syntax highlighting uses lowlight with a size guard and per-block memoization.
         <code>CHAT_MEDIA_LIGHTBOX</code> handles image clicks; the host provides the overlay.
       </p>
@@ -430,67 +452,77 @@
   <!-- ======================================================= Features -->
   <section id="features" class="section">
     <div class="wrap">
-      <p class="section__kicker reveal">Overview</p>
-      <h2 class="section__title reveal">What's in the library</h2>
-      <p class="stats-line reveal">
+      <p class="section__kicker reveal" i18n="@@overviewKicker">Overview</p>
+      <h2 class="section__title reveal" i18n="@@overviewTitle">What's in the library</h2>
+      <p class="stats-line reveal" i18n="@@overviewStats">
         23+ event kinds · 7 entry points · 379 green specs · zero Angular imports in
         <code>core</code> · Apache-2.0
       </p>
       <div class="cards">
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--orange"></span>Event kinds</h3>
-          <p>
+          <h3 i18n="@@eventKindsTitle">
+            <span class="card__dot card__dot--orange"></span>Event kinds
+          </h3>
+          <p i18n="@@eventKindsBody">
             One append-only <code>ConversationEvent</code> union covers messages, tool bursts,
             waits, and orchestrator decisions. Unknown kinds render as fallback rows.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--blue"></span>Framework-free core</h3>
-          <p>
+          <h3 i18n="@@coreTitle">
+            <span class="card__dot card__dot--blue"></span>Framework-free core
+          </h3>
+          <p i18n="@@coreBody">
             <code>coding-agent-chat/core</code> is plain TypeScript: the
             <code>ConversationEvent</code> contract plus <code>projectConversation()</code>.
             Backends, SSR code and tests can import it without Angular.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--purple"></span>Entry points</h3>
-          <p>
+          <h3 i18n="@@entryPointsTitle">
+            <span class="card__dot card__dot--purple"></span>Entry points
+          </h3>
+          <p i18n="@@entryPointsBody">
             Seven import paths keep optional features separate. <code>core</code> is plain
             TypeScript with no Angular dependency. <a href="#entry-points">View samples</a>.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--green"></span>Host integration points</h3>
-          <p>
+          <h3 i18n="@@integrationPointsTitle">
+            <span class="card__dot card__dot--green"></span>Host integration points
+          </h3>
+          <p i18n="@@integrationPointsBody">
             Four injection tokens have safe defaults. Provide
             <code>CHAT_MEDIA_LIGHTBOX</code> to enable image enlargement.
             <a href="#rendering">See the rendering demo</a>.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--orange"></span>Theme</h3>
-          <p>
+          <h3 i18n="@@themeCardTitle"><span class="card__dot card__dot--orange"></span>Theme</h3>
+          <p i18n="@@themeCardBody">
             Import the optional stylesheet for the default theme. Set
             <code>data-studio-theme="light"</code> on any parent for the light palette.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--blue"></span>Zoneless &amp; OnPush</h3>
-          <p>
+          <h3 i18n="@@zonelessTitle">
+            <span class="card__dot card__dot--blue"></span>Zoneless &amp; OnPush
+          </h3>
+          <p i18n="@@zonelessBody">
             Signal-based components with strict templates, shipped as a partial-Ivy package. This
             page runs without Zone.js.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--green"></span>Tests</h3>
-          <p>
+          <h3 i18n="@@testsTitle"><span class="card__dot card__dot--green"></span>Tests</h3>
+          <p i18n="@@testsBody">
             246 component specs run against the built package. Projection and markdown utilities
             have 133 additional specs.
           </p>
         </article>
         <article class="card reveal">
-          <h3><span class="card__dot card__dot--purple"></span>License</h3>
-          <p>
+          <h3 i18n="@@licenseTitle"><span class="card__dot card__dot--purple"></span>License</h3>
+          <p i18n="@@licenseBody">
             Apache-2.0, the same license as the backend counterpart
             <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
               >coding-agent-runner</a
@@ -504,33 +536,40 @@
   <!-- ======================================================= Docs -->
   <section id="docs" class="section section--alt">
     <div class="wrap">
-      <p class="section__kicker reveal">Documentation</p>
-      <h2 class="section__title reveal">Getting started</h2>
+      <p class="section__kicker reveal" i18n="@@docsKicker">Documentation</p>
+      <h2 class="section__title reveal" i18n="@@docsTitle">Getting started</h2>
 
       <div class="docs-grid">
         <div class="docs-step reveal">
-          <h3><span class="docs-step__num">1</span>Install</h3>
+          <h3 i18n="@@installHeading"><span class="docs-step__num">1</span>Install</h3>
           <site-code [code]="snippetInstall" lang="sh" label="terminal" />
         </div>
         <div class="docs-step reveal">
-          <h3><span class="docs-step__num">2</span>Provide</h3>
+          <h3 i18n="@@provideHeading"><span class="docs-step__num">2</span>Provide</h3>
           <site-code [code]="snippetProvide" label="app.config.ts" />
         </div>
         <div class="docs-step reveal">
-          <h3><span class="docs-step__num">3</span>Render</h3>
+          <h3 i18n="@@renderHeading"><span class="docs-step__num">3</span>Render</h3>
           <site-code [code]="snippetRender" label="run-view.ts" />
         </div>
       </div>
 
-      <h3 class="docs-sub reveal" id="entry-points">Entry point samples</h3>
-      <p class="section__lead reveal">
+      <h3 class="docs-sub reveal" id="entry-points" i18n="@@entrySamplesTitle">
+        Entry point samples
+      </h3>
+      <p class="section__lead reveal" i18n="@@entrySamplesBody">
         Seven import paths keep the wire contract, renderer, and optional features separate. Each
         tab shows a component sample and its code. The root import
         <code>coding-agent-chat</code> re-exports all entry points and
         <code>provideCodingAgentChat()</code>.
       </p>
       <div class="explorer reveal">
-        <div class="explorer__tabs" role="tablist" aria-label="Entry points">
+        <div
+          class="explorer__tabs"
+          role="tablist"
+          aria-label="Entry points"
+          i18n-aria-label="@@entryPointsTablistLabel"
+        >
           @for (tab of explorerTabs; track tab.key) {
             <button
               type="button"
@@ -549,14 +588,19 @@
           <!-- One stage at a time: the RESULT or the CODE behind it. The old
                side-by-side read ambiguously — a code card and a rendered
                conversation look too similar at a glance. -->
-          <div class="explorer__mode" role="group" aria-label="Show the result or the code">
+          <div
+            class="explorer__mode"
+            role="group"
+            aria-label="Show the result or the code"
+            i18n-aria-label="@@explorerModeLabel"
+          >
             <button
               type="button"
               class="explorer__mode-btn"
               [class.is-active]="explorerView() === 'result'"
               (click)="explorerView.set('result')"
             >
-              Result
+              <ng-container i18n="@@resultButton">Result</ng-container>
             </button>
             <button
               type="button"
@@ -564,12 +608,12 @@
               [class.is-active]="explorerView() === 'code'"
               (click)="explorerView.set('code')"
             >
-              &lt;/&gt; The Code
+              <ng-container i18n="@@codeButton">The Code</ng-container>
             </button>
           </div>
           @switch (explorerTab()) {
             @case ('core') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@coreExplorerDesc">
                 <code>ConversationEvent</code> and <code>projectConversation()</code> are plain
                 TypeScript with no Angular dependency.
               </p>
@@ -579,8 +623,12 @@
                   [label]="explorerSnippets.core.label"
                 />
                 <details class="explorer__details">
-                  <summary>Tool burst JSON</summary>
-                  <site-code [code]="explorerEventJson" label="toolBurst: wire format" />
+                  <summary i18n="@@toolBurstSummary">Tool burst JSON</summary>
+                  <site-code
+                    [code]="explorerEventJson"
+                    label="toolBurst: wire format"
+                    i18n-label="@@wireFormatLabel"
+                  />
                 </details>
               } @else {
                 <div class="explorer__live" data-studio-theme="dark">
@@ -590,7 +638,7 @@
               }
             }
             @case ('markdown') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@markdownExplorerDesc">
                 <code>&lt;cac-markdown&gt;</code> renders agent text: GFM, syntax-highlighted
                 fences, sanitized HTML, image lightbox hooks, task-reference auto-linking.
               </p>
@@ -607,7 +655,7 @@
               }
             }
             @case ('conversation') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@conversationExplorerDesc">
                 <code>&lt;cac-conversation-view&gt;</code> renders events with grouping, folding,
                 working states, and stick-to-bottom scrolling.
               </p>
@@ -624,7 +672,7 @@
               }
             }
             @case ('composer') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@composerExplorerDesc">
                 <code>&lt;cac-chat&gt;</code> provides multiline input, attachments, and submit
                 events. This sample returns a scripted reply.
               </p>
@@ -635,7 +683,7 @@
                 />
               } @else {
                 <div class="explorer__live" data-studio-theme="dark">
-                  <span class="explorer__live-tag">Interactive</span>
+                  <span class="explorer__live-tag" i18n="@@interactiveLabel">Interactive</span>
                   @if (explorerChat().length > 0) {
                     <cac-conversation-view
                       [events]="explorerChat()"
@@ -647,8 +695,11 @@
                   <cac-chat
                     [messages]="[]"
                     placeholder="Ask the demo agent…"
+                    i18n-placeholder="@@demoAgentPlaceholder"
                     emptyState="Submits return a scripted reply."
+                    i18n-emptyState="@@demoAgentEmptyState"
                     submitLabel="Send"
+                    i18n-submitLabel="@@sendLabel"
                     bodyMaxHeight="5rem"
                     [allowAttachments]="false"
                     (submitMessage)="explorerThread.submit($event.text)"
@@ -657,7 +708,7 @@
               }
             }
             @case ('history') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@historyExplorerDesc">
                 <code>&lt;cac-project-chat-list&gt;</code> renders virtualised, searchable project
                 runs. <code>PROJECT_CHAT_DATA_SOURCE</code> provides scroll, search, statistics, and
                 turn data from HTTP, SQLite, files, or another source.
@@ -669,7 +720,7 @@
                 />
               } @else {
                 <div class="explorer__live explorer__live--mock" data-studio-theme="dark">
-                  <span class="explorer__live-tag">Preview</span>
+                  <span class="explorer__live-tag" i18n="@@previewLabel">Preview</span>
                   <div class="skeleton" aria-hidden="true">
                     @for (width of [58, 44, 66, 38, 72]; track $index) {
                       <div class="skeleton__row skeleton__row--inline">
@@ -682,7 +733,7 @@
               }
             }
             @case ('shared') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@sharedExplorerDesc">
                 Provides <code>cacTooltip</code>, <code>cacStickToBottom</code>, and image-lightbox
                 interfaces. Hover the sample buttons to view the tooltips.
               </p>
@@ -693,7 +744,7 @@
                 />
               } @else {
                 <div class="explorer__live explorer__live--row" data-studio-theme="dark">
-                  <span class="explorer__live-tag">Hover sample</span>
+                  <span class="explorer__live-tag" i18n="@@hoverSampleLabel">Hover sample</span>
                   <button type="button" class="demo-btn" cacTooltip="Re-runs the failing spec">
                     Re-run
                   </button>
@@ -708,7 +759,7 @@
               }
             }
             @case ('theme') {
-              <p class="explorer__desc">
+              <p class="explorer__desc" i18n="@@themeExplorerDesc">
                 The optional stylesheet provides dark and light palettes through
                 <code>data-studio-theme</code>. The setting can be scoped to any parent element.
               </p>
@@ -723,11 +774,7 @@
                     type="button"
                     class="demo-frame__theme explorer__flip"
                     (click)="explorerTheme.set(explorerTheme() === 'dark' ? 'light' : 'dark')"
-                    [attr.aria-label]="
-                      explorerTheme() === 'dark'
-                        ? 'Preview this panel in the light theme'
-                        : 'Preview this panel in the dark theme'
-                    "
+                    [attr.aria-label]="explorerThemeAriaLabel()"
                   >
                     <site-theme-icon [night]="explorerTheme() === 'light'" />
                   </button>
@@ -741,8 +788,10 @@
         </div>
       </div>
 
-      <h3 class="docs-sub reveal" id="seams">Host integration points</h3>
-      <p class="section__lead reveal">
+      <h3 class="docs-sub reveal" id="seams" i18n="@@hostIntegrationTitle">
+        Host integration points
+      </h3>
+      <p class="section__lead reveal" i18n="@@hostIntegrationBody">
         All four integration points have defaults. Configure task links, image enlargement, history
         data, or history confirmation as needed.
       </p>
@@ -752,7 +801,7 @@
             <code>CHAT_TASK_REFERENCE_PROVIDER</code>
             <span class="seam__entry">markdown</span>
           </h4>
-          <p>
+          <p i18n="@@taskReferenceBody">
             Supplies task references for markdown auto-linking and handles navigation when one is
             clicked. Default: task keys render as plain text.
           </p>
@@ -762,7 +811,7 @@
             <code>CHAT_MEDIA_LIGHTBOX</code>
             <span class="seam__entry">shared</span>
           </h4>
-          <p>
+          <p i18n="@@lightboxBody">
             Owns the click-to-enlarge image overlay (modal stack, focus trap). Default: images do
             not zoom.
           </p>
@@ -772,7 +821,7 @@
             <code>PROJECT_CHAT_DATA_SOURCE</code>
             <span class="seam__entry">history</span>
           </h4>
-          <p>
+          <p i18n="@@historySourceBody">
             The scroll/search/stats/turn transport behind
             <code>&lt;cac-project-chat-list&gt;</code>. Default: an empty history.
           </p>
@@ -782,35 +831,61 @@
             <code>CHAT_HISTORY_CONFIRM</code>
             <span class="seam__entry">history</span>
           </h4>
-          <p>Confirmation prompt before loading an entire deep history. Default: auto-confirm.</p>
+          <p i18n="@@historyConfirmBody">
+            Confirmation prompt before loading an entire deep history. Default: auto-confirm.
+          </p>
         </div>
       </div>
       <div class="docs-two">
         <div class="reveal">
-          <site-code [code]="snippetSeamProvide" label="app.config.ts: root tokens" />
+          <site-code
+            [code]="snippetSeamProvide"
+            label="app.config.ts: root tokens"
+            i18n-label="@@rootTokensLabel"
+          />
         </div>
         <div class="reveal">
-          <site-code [code]="snippetSeamHistory" label="app.config.ts: history tokens" />
+          <site-code
+            [code]="snippetSeamHistory"
+            label="app.config.ts: history tokens"
+            i18n-label="@@historyTokensLabel"
+          />
         </div>
       </div>
       <div class="docs-two">
         <div class="reveal">
-          <site-code [code]="snippetDataSource" label="the data-source contract" />
+          <site-code
+            [code]="snippetDataSource"
+            label="the data-source contract"
+            i18n-label="@@dataSourceContractLabel"
+          />
         </div>
         <div class="reveal">
-          <site-code [code]="snippetCoreOnly" label="core only: no renderer" />
+          <site-code
+            [code]="snippetCoreOnly"
+            label="core only: no renderer"
+            i18n-label="@@coreOnlyLabel"
+          />
         </div>
       </div>
 
-      <h3 class="docs-sub reveal" id="theming">Theming</h3>
-      <p class="section__lead reveal">
+      <h3 class="docs-sub reveal" id="theming" i18n="@@themingTitle">Theming</h3>
+      <p class="section__lead reveal" i18n="@@themingBody">
         Import the optional stylesheet. Set <code>data-studio-theme</code> on
         <code>&lt;html&gt;</code>. Override CSS variables after the import to change colors.
       </p>
       <div class="docs-theme reveal">
         <site-code [code]="snippetTheme" label="styles.scss: import" />
-        <site-code [code]="snippetThemeScope" label="template.html: theme scope" />
-        <site-code [code]="snippetThemeOverride" label="styles.scss: token overrides" />
+        <site-code
+          [code]="snippetThemeScope"
+          label="template.html: theme scope"
+          i18n-label="@@themeScopeLabel"
+        />
+        <site-code
+          [code]="snippetThemeOverride"
+          label="styles.scss: token overrides"
+          i18n-label="@@tokenOverridesLabel"
+        />
       </div>
     </div>
   </section>
@@ -821,28 +896,38 @@
   <div class="wrap site-footer__row">
     <div>
       <p class="site-footer__brand">coding-agent-<b>chat</b></p>
-      <p class="site-footer__note">
+      <p class="site-footer__note" i18n="@@footerNote">
         Apache-2.0 · Companion to
         <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
           >CodingAgentRunner</a
         >. Used in Agent Studio.
         <a href="https://agent-orchestrator.dev" target="_blank" rel="noopener"
-          >See other Agent Orchestrator projects</a
+          >Find other Agent Orchestrator projects</a
         >.
       </p>
     </div>
     <div class="site-footer__links">
-      <a href="impressum.html">Impressum</a>
-      <a href="datenschutz.html">Datenschutz</a>
+      <a [attr.href]="legalPrefix + 'impressum.html'">Impressum</a>
+      <a [attr.href]="legalPrefix + 'datenschutz.html'">Datenschutz</a>
       <a href="https://github.com/agent-orc/chat" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.npmjs.com/package/coding-agent-chat" target="_blank" rel="noopener"
         >npm</a
       >
-      <a href="https://github.com/agent-orc/chat/blob/main/LICENSE" target="_blank" rel="noopener"
+      <a
+        href="https://github.com/agent-orc/chat/blob/main/LICENSE"
+        target="_blank"
+        rel="noopener"
+        i18n="@@footerLicense"
         >License</a
       >
       <a href="https://agent-orchestrator.dev/runner/" target="_blank" rel="noopener"
         >coding-agent-runner ↗</a
+      >
+      <a
+        [attr.href]="alternateLanguage.href"
+        [attr.lang]="alternateLanguage.lang"
+        [attr.hreflang]="alternateLanguage.hreflang"
+        >{{ alternateLanguage.label }}</a
       >
     </div>
   </div>
@@ -856,7 +941,7 @@
     class="lightbox"
     role="dialog"
     aria-modal="true"
-    [attr.aria-label]="image.alt || 'Enlarged image'"
+    [attr.aria-label]="image.alt || enlargedImageLabel"
     (click)="lightbox.close()"
   >
     <figure class="lightbox__figure" (click)="$event.stopPropagation()">
@@ -875,6 +960,7 @@
         type="button"
         class="lightbox__nav lightbox__nav--prev"
         aria-label="Previous image"
+        i18n-aria-label="@@previousImageLabel"
         (click)="lightbox.prev(); $event.stopPropagation()"
       >
         ‹
@@ -883,6 +969,7 @@
         type="button"
         class="lightbox__nav lightbox__nav--next"
         aria-label="Next image"
+        i18n-aria-label="@@nextImageLabel"
         (click)="lightbox.next(); $event.stopPropagation()"
       >
         ›
@@ -893,6 +980,7 @@
       type="button"
       class="lightbox__close"
       aria-label="Close"
+      i18n-aria-label="@@closeLabel"
       (click)="lightbox.close()"
     >
       ✕
