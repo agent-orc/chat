@@ -290,7 +290,11 @@ function projectGroup(
   }
 
   if (firstLine.stream === 'orchestrator') {
-    const orchestratorText = visibleBody || firstLine.text;
+    // Do not resurrect an envelope-only frame through the raw-text fallback.
+    // Recognized protocol markers such as [watchdog] remain in visibleBody and
+    // continue through the structured classification below.
+    if (!visibleBody) return null;
+    const orchestratorText = visibleBody;
     // [watchdog] orchestrator messages get classified as supervisor.wait so
     // the chat row uses the correct family. The parser already filters them
     // out of conversation mode but the projection is the single source of

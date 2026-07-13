@@ -511,6 +511,16 @@ function stripTransportEnvelope(text: string): string | null {
     }
   }
 
+  // A leading known role plus an explicit transport separator is also a
+  // speaker frame when no timestamp was emitted. Requiring the separator
+  // keeps ordinary prose such as "The Supervisor reviews this" untouched.
+  const plainSpeaker = /^(?<speaker>orchestrator|supervisor|agent|assistant|system|user)\s*(?<sep>[:|>—–-]\s+)(?<rest>[\s\S]*)$/i.exec(trimmed);
+  if (plainSpeaker?.groups) {
+    const rest = plainSpeaker.groups['rest'] ?? '';
+    if (!rest.trim()) return null;
+    return rest.trimStart();
+  }
+
   const timestamped = /^(?:[●•◦◆]\s*)?(?<timestamp>\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:?\d{2})?)?|\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)\s+(?<rest>[\s\S]*)$/i.exec(trimmed);
   if (timestamped?.groups) {
     const rest = timestamped.groups['rest'] ?? '';

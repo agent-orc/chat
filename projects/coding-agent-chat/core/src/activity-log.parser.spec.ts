@@ -392,6 +392,23 @@ describe('buildConversationTurns', () => {
         ]
       },
       {
+        name: 'plain speaker headers are removed only at the line boundary',
+        lines: [
+          line('Supervisor: Keep this answer visible.'),
+          line('[assistant] > And keep this continuation.'),
+          line('The Supervisor: label in the middle of prose remains intact.')
+        ],
+        includes: [
+          'Keep this answer visible.',
+          'And keep this continuation.',
+          'The Supervisor: label in the middle of prose remains intact.'
+        ],
+        excludes: [
+          'Supervisor: Keep this answer visible.',
+          '[assistant] >'
+        ]
+      },
+      {
         name: 'plain prose keeps real times and words intact',
         lines: [
           line('The meeting starts at 09:00 and the Supervisor role stays in the prose.'),

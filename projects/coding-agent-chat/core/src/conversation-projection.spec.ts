@@ -233,6 +233,19 @@ describe('projectConversation', () => {
     expect(events.some((event) => event.kind === 'message.taskAgent')).toBe(false);
   });
 
+  it('does not resurrect an envelope-only orchestrator frame through its raw fallback', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [{
+        timestamp: '2026-07-01T09:00:00.000Z',
+        stream: 'orchestrator',
+        text: '[orchestrator]'
+      }]
+    });
+
+    expect(events).toEqual([]);
+  });
+
   it('retains stripped transport evidence as structured message diagnostics', () => {
     const events = projectConversation({ source: SOURCE, lines: envelopePrefixedReplyFragment() });
     const messages = events.filter(isTaskAgentEvent);
