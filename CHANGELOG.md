@@ -8,6 +8,12 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 
 ## [0.2.1] - 2026-07-17
 
+### Added
+
+- `<cac-chat>` now keeps normal conversation turns fully visible while exposing
+  compact immutable turn provenance and a separate details popover for
+  technical metadata when the host supplies it.
+
 ### Fixed
 
 - Remove recognized timestamp, speaker, supervisor, routing, status, and
@@ -16,6 +22,8 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 - Apply the same normalization to projected live output and replayed turns,
   retain stripped source frames as structured diagnostics, and avoid
   resurrecting envelope-only streaming frames through fallback text.
+- Chat component tests now compile under the Angular unit-test builder by
+  avoiding an untyped `querySelectorAll<T>()` call in the spec.
 
 ## [0.2.0] - 2026-07-10
 
@@ -51,4 +59,5 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 
 [0.2.1]: https://github.com/agent-orc/chat/releases/tag/v0.2.1
 [0.2.0]: https://github.com/agent-orc/chat/releases/tag/v0.2.0
+[0.2.1]: https://github.com/agent-orc/chat/releases/tag/v0.2.1
 [0.1.0]: https://github.com/agent-orc/chat/releases/tag/v0.1.0

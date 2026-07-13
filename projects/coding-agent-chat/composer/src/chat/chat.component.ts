@@ -329,7 +329,9 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
         formattedTime: this.formatTime(message.timestamp),
         message,
         provenanceChips,
-        hasDetails: provenanceChips.length > 0 || detailRows.length > 0,
+        // Timestamp is always present, but it is not enough on its own to
+        // justify a disclosure control. Legacy turns stay clean.
+        hasDetails: provenanceChips.length > 0 || detailRows.length > 1,
         detailRows,
         staleError: isStaleError(message.timestamp, !!message.error),
       };

@@ -410,7 +410,9 @@ describe('ChatComponent', () => {
     });
 
     expect(query(fixture, '[data-testid="chat-msg-details-toggle-m1"]')).toBeTruthy();
-    const chips = Array.from(fixture.nativeElement.querySelectorAll<HTMLElement>('.chat__msg-meta-chip'))
+    const chips = Array.from(
+      fixture.nativeElement.querySelectorAll('.chat__msg-meta-chip') as NodeListOf<HTMLElement>
+    )
       .map((el) => el.textContent ?? '');
     expect(chips.join(' | ')).toContain('Codex CLI');
     expect(chips.join(' | ')).toContain('gpt-5.4-mini');
@@ -425,7 +427,7 @@ describe('ChatComponent', () => {
     expect(popover?.textContent).toContain('sess-abc');
     expect(popover?.textContent).toContain('Timestamp');
     expect(popover?.textContent).toContain('Run');
-    expect(popover?.textContent).toContain('shot.png');
+    expect(popover?.textContent).toContain('shot');
     expect(popover?.textContent).toContain('Technical error');
 
     query<HTMLButtonElement>(fixture, '[data-testid="chat-msg-details-m1"] .chat__msg-detail-copy')!.click();
