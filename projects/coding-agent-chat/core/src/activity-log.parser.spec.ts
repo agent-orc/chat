@@ -243,9 +243,19 @@ describe('parseActivityLog', () => {
     expect(groups[1].kind).toBe('message');
 
     const turns = buildConversationTurns(groups);
-    expect(turns.map((turn) => turn.kind)).toEqual(['agent']);
-    expect(turns[0].text).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
-    expect(turns[0].text).not.toContain('OpenAI Codex v0.144.1');
+    expect(turns.map((turn) => turn.kind)).toEqual(['system', 'agent']);
+    expect(turns[0].text).toContain('Codex captured a text-mode stderr transcript');
+    expect(turns[0].text).toContain('Open Trace for the raw technical log.');
+    expect(turns[0].text).toContain('OpenAI Codex v0.144.1');
+    expect(turns[1].text).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(turns[1].text).not.toContain('OpenAI Codex v0.144.1');
+
+    const messages = buildChatMessages(groups);
+    expect(messages.map((message) => message.role)).toEqual(['system', 'agent']);
+    expect(messages[0].title).toBe('Codex transcript');
+    expect(messages[0].collapsedByDefault).toBe(true);
+    expect(messages[0].body.map((entry) => entry.text).join('\n')).toContain('Codex captured a text-mode stderr transcript');
+    expect(messages[0].body.map((entry) => entry.text).join('\n')).not.toContain('/**');
   });
 });
 
@@ -339,13 +349,14 @@ describe('buildConversationTurns', () => {
     const turns = buildConversationTurns(groups);
     const conversationText = turns.map((turn) => turn.text).join('\n');
 
-    expect(turns.map((turn) => turn.kind)).toEqual(['agent', 'tools']);
-    expect(turns[0].text).toBe('I will make the frontend change.');
+    expect(turns.map((turn) => turn.kind)).toEqual(['system', 'agent', 'tools']);
+    expect(turns[0].text).toContain('Codex emitted a structured runtime frame');
+    expect(turns[1].text).toBe('I will make the frontend change.');
     expect(conversationText).not.toContain('{"type"');
-    expect(turns[1].toolSummary?.counts.command).toBe(1);
+    expect(turns[2].toolSummary?.counts.command).toBe(1);
 
     const defaultVisibleTurns = turns.filter((turn) => turn.kind !== 'tools');
-    expect(defaultVisibleTurns.map((turn) => turn.kind)).toEqual(['agent']);
+    expect(defaultVisibleTurns.map((turn) => turn.kind)).toEqual(['system', 'agent']);
   });
 
   it('normalizes transport envelopes without stripping prose timestamps or code fences', () => {

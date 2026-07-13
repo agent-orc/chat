@@ -574,6 +574,7 @@ export function buildChatMessages(groups: ActivityLogGroup[]): ChatMessage[] {
 function groupToChatMessage(group: ActivityLogGroup, index: number): ChatMessage {
   const isTool = TOOL_KINDS.includes(group.kind);
   const isError = group.kind === 'error' || group.status === 'error';
+  const isCodexTranscript = isCodexDebugFrame(group);
   const isUser = group.lines.length > 0 && group.lines[0].stream === 'user';
   const isOrchestrator = group.kind === 'orchestrator'
     || (group.lines.length > 0 && group.lines[0].stream === 'orchestrator');
@@ -582,6 +583,7 @@ function groupToChatMessage(group: ActivityLogGroup, index: number): ChatMessage
   const role: ChatRole = isSupervisor ? 'supervisor'
     : isOrchestrator ? 'orchestrator'
     : isUser ? 'user'
+    : isCodexTranscript ? 'system'
     : isError && !isTool ? 'system'
     : isTool ? 'tool'
     : 'agent';
@@ -595,6 +597,8 @@ function groupToChatMessage(group: ActivityLogGroup, index: number): ChatMessage
     ? 'Orchestrator'
     : isUser
       ? 'You'
+      : isCodexTranscript
+        ? 'System'
       : isError && !isTool
         ? 'System'
         : isTool
@@ -605,13 +609,19 @@ function groupToChatMessage(group: ActivityLogGroup, index: number): ChatMessage
     ? '⚙'
     : isUser
       ? '🧑'
+      : isCodexTranscript
+        ? '!'
       : isError && !isTool
         ? '!'
         : isTool
           ? toolAvatarFor(group.kind)
           : '🤖';
 
-  const kindLabel = isTool ? activityKindLabel(group.kind) : (isError ? 'Error' : '');
+  const kindLabel = isCodexTranscript
+    ? 'Codex transcript'
+    : isTool
+      ? activityKindLabel(group.kind)
+      : (isError ? 'Error' : '');
 
   return {
     id: `chat-${index}-${group.id}`,
@@ -619,12 +629,16 @@ function groupToChatMessage(group: ActivityLogGroup, index: number): ChatMessage
     author,
     avatar,
     kindLabel,
-    title: group.title,
+    title: isCodexTranscript ? 'Codex transcript' : group.title,
     subtitle: group.subtitle,
     status: group.status,
     timestamp,
-    body: normalizeVisibleChatBody(group.lines).lines,
-    collapsedByDefault: isTool || group.collapsedByDefault
+    body: isCodexTranscript
+      ? (firstLine
+        ? [{ ...firstLine, text: codexTranscriptSummary(group) }]
+        : [{ timestamp, stream: 'stdout', text: codexTranscriptSummary(group) }])
+      : normalizeVisibleChatBody(group.lines).lines,
+    collapsedByDefault: isCodexTranscript || isTool || group.collapsedByDefault
   };
 }
 
@@ -758,7 +772,7 @@ export function buildConversationTurns(groups: ActivityLogGroup[]): Conversation
     // rendered as a system turn; every other [taskboard] runtime marker is
     // dropped (it lives in Trace only).
     isModelChangeMarker(g) ||
-    (!isTaskboardRuntimeMarker(g) && !isWatchdogMetaLine(g) && !isCodexDebugFrame(g))
+    (!isTaskboardRuntimeMarker(g) && !isWatchdogMetaLine(g))
   );
   let i = 0;
   while (i < filtered.length) {
@@ -782,6 +796,7 @@ function roleFor(group: ActivityLogGroup): ConversationTurnKind {
   const isUser = group.lines.length > 0 && group.lines[0].stream === 'user';
   if (isUser) return 'user';
   if (isModelChangeMarker(group)) return 'system';
+  if (isCodexDebugFrame(group)) return 'system';
   if (group.kind === 'supervisor'
     || (group.lines.length > 0 && group.lines[0].stream === 'supervisor')) return 'supervisor';
   if (group.kind === 'orchestrator'
@@ -842,12 +857,24 @@ function turnTextFromGroups(run: ActivityLogGroup[], kind: ConversationTurnKind)
       segments.push(formatModelChangeMarker(group));
       continue;
     }
+    if (isCodexDebugFrame(group)) {
+      segments.push(codexTranscriptSummary(group));
+      continue;
+    }
     // For agent / system turns, the model's text was emitted as a sequence of
     // lines that the backend split per newline. Re-join them with single
     // newlines so paragraph structure (blank line = new <p>) survives.
     segments.push(normalizeVisibleChatBody(group.lines).text);
   }
   return segments.join('\n\n').trim();
+}
+
+function codexTranscriptSummary(group: ActivityLogGroup): string {
+  const detail = group.subtitle ? ` (${group.subtitle})` : '';
+  if (/exec transcript/i.test(group.title) || /text-mode stderr transcript/i.test(group.title)) {
+    return `Codex captured a text-mode stderr transcript${detail}. Open Trace for the raw technical log.`;
+  }
+  return `Codex emitted a structured runtime frame${detail}. Open Trace for the raw technical log.`;
 }
 
 export function summarizeToolBurst(groups: ActivityLogGroup[]): ToolBurstSummary {
