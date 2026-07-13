@@ -142,6 +142,20 @@ describe('ModelSelectorComponent', () => {
     expect(fixture.componentInstance.pickerOpen()).toBe(false);
   });
 
+  it('closes without committing when it becomes disabled while open', async () => {
+    const fixture = await createSelector();
+    const committed = vi.fn();
+    fixture.componentInstance.commit.subscribe(committed);
+    open(fixture);
+
+    fixture.componentRef.setInput('disabled', true);
+    fixture.componentInstance.onModelPillClick('claude-sonnet-5');
+    await fixture.whenStable();
+
+    expect(committed).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.pickerOpen()).toBe(false);
+  });
+
   it('preserves an explicit "CLI default" (empty) selection when the catalog arrives late', async () => {
     // Committed model is CLI default (empty) — opening must not flip the draft
     // to the concrete catalog default when the host answers catalogRequested.

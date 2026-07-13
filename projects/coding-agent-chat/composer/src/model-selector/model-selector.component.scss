@@ -1,7 +1,7 @@
-/* Chip + upward popover for the composer footer. The host places this
-   control near the bottom of the viewport, so the popover always opens
-   above the trigger. All colours resolve through the --studio-* tokens
-   with the same fallbacks the composer uses. */
+/* Chip + viewport-aware popover for the composer footer. It prefers opening
+   above the trigger, flips below when needed, and is height-constrained by
+   cacAnchoredPopover when neither side can fit it. All colours resolve
+   through the --studio-* tokens with the same fallbacks the composer uses. */
 
 :host {
   position: relative;

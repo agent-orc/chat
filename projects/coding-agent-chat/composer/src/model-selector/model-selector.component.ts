@@ -156,6 +156,13 @@ export class ModelSelectorComponent {
   );
 
   constructor() {
+    // A host can become read-only while this popover is already open (for
+    // example when a task is delivered in another tab). Close immediately so
+    // stale draft controls cannot remain interactive.
+    effect(() => {
+      if (!this.disabled() || !this.pickerOpen()) return;
+      untracked(() => this.closePicker());
+    });
     // Keep the draft catalog in sync with the host-provided `models` input
     // while the picker is open — the host answers `catalogRequested`
     // asynchronously, so fresh entries land after the popover is visible.
@@ -250,6 +257,10 @@ export class ModelSelectorComponent {
 
   onDoneClick(): void {
     if (!this.pickerOpen()) return;
+    if (this.disabled()) {
+      this.closePicker();
+      return;
+    }
     const cli = this.draftCliType();
     if (!cli) {
       this.closePicker();
