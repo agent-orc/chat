@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/). Releases are cut by
 pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 `release` workflow builds and publishes to npm.
 
+## [0.2.1] - 2026-07-17
+
+### Fixed
+
+- Remove recognized timestamp, speaker, supervisor, routing, status, and
+  protocol envelopes from assistant text before it reaches the conversation
+  renderer, while preserving legitimate prose and fenced code.
+- Apply the same normalization to projected live output and replayed turns,
+  retain stripped source frames as structured diagnostics, and avoid
+  resurrecting envelope-only streaming frames through fallback text.
+
 ## [0.2.0] - 2026-07-10
 
 ### Added
@@ -38,5 +49,6 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
   `<cac-markdown>`, `<cac-project-chat-list>`, the `core` wire contract, the
   studio theme, and the `provideCodingAgentChat()` host-wiring helper.
 
+[0.2.1]: https://github.com/agent-orc/chat/releases/tag/v0.2.1
 [0.2.0]: https://github.com/agent-orc/chat/releases/tag/v0.2.0
 [0.1.0]: https://github.com/agent-orc/chat/releases/tag/v0.1.0

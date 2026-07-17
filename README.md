@@ -96,11 +96,11 @@ payload file. npm adds the final tarball integrity at publication. The Conversat
 header.
 
 Upgrade a registry consumer with `npm install --save-exact
-coding-agent-chat@0.2.0` and commit `package-lock.json`. Agent Studio may instead
-consume a reviewed, pinned artifact: download `coding-agent-chat-0.2.0.tgz`,
+coding-agent-chat@0.2.1` and commit `package-lock.json`. Agent Studio may instead
+consume a reviewed, pinned artifact: download `coding-agent-chat-0.2.1.tgz`,
 verify it against the release manifest/provenance, store it in the Studio
 artifact location, then use `npm install --save-exact
-./artifacts/coding-agent-chat-0.2.0.tgz`. Do not point Studio at a mutable local
+./artifacts/coding-agent-chat-0.2.1.tgz`. Do not point Studio at a mutable local
 `dist/` directory or an unversioned tarball.
 
 After unpacking a downloaded artifact, its payload can be checked with
