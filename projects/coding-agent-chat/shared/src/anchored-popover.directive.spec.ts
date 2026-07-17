@@ -4,6 +4,7 @@
 
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 
 import { AnchoredPopoverDirective } from './anchored-popover.directive';
 
@@ -51,5 +52,55 @@ describe('AnchoredPopoverDirective', () => {
     expect(pop.style.position).toBe('fixed');
     expect(pop.style.right).toBe(`${window.innerWidth - 980}px`);
     expect(pop.style.left).toBe('auto');
+  });
+
+  it('opens below when the popover does not fit above the trigger', async () => {
+    const height = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(240);
+    const viewport = vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(600);
+    try {
+      const fixture = TestBed.createComponent(HostComponent);
+      const root = fixture.nativeElement as HTMLElement;
+      stubRect(root.querySelector<HTMLElement>('.trigger')!, {
+        left: 100,
+        top: 40,
+        right: 150,
+        bottom: 60,
+      });
+
+      await fixture.whenStable();
+
+      const pop = root.querySelector<HTMLElement>('.pop')!;
+      expect(pop.style.top).toBe('66px');
+      expect(pop.style.bottom).toBe('auto');
+    } finally {
+      height.mockRestore();
+      viewport.mockRestore();
+    }
+  });
+
+  it('limits an oversized popover to the larger available side', async () => {
+    const height = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    const viewport = vi.spyOn(window, 'innerHeight', 'get').mockReturnValue(300);
+    try {
+      const fixture = TestBed.createComponent(HostComponent);
+      const root = fixture.nativeElement as HTMLElement;
+      stubRect(root.querySelector<HTMLElement>('.trigger')!, {
+        left: 100,
+        top: 170,
+        right: 150,
+        bottom: 190,
+      });
+
+      await fixture.whenStable();
+
+      const pop = root.querySelector<HTMLElement>('.pop')!;
+      expect(pop.style.top).toBe('auto');
+      expect(pop.style.bottom).toBe('136px');
+      expect(pop.style.maxHeight).toBe('156px');
+      expect(pop.style.overflowY).toBe('auto');
+    } finally {
+      height.mockRestore();
+      viewport.mockRestore();
+    }
   });
 });
