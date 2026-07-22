@@ -5,10 +5,9 @@ plus a demo/playground ("Conversation Lab"). The frontend counterpart to
 [`coding-agent-runner`](https://github.com/agent-orc/runner): the runner
 produces the server-side event stream, this library renders it.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/media/conversation-view-dark.png">
-  <img src="docs/media/conversation-view-light.png" alt="Conversation view rendered by coding-agent-chat: an orchestrator exchange with timestamps and a composer" width="640">
-</picture>
+<img alt="Conversation view: streaming reply with code block, working indicator and composer" src="docs/media/conversation-view-dark.png" width="460">
+
+**Live demo:** [agent-orchestrator.dev/chat](https://agent-orchestrator.dev/chat/)
 
 This is an Angular CLI workspace (Angular 21.2, `ng-packagr`):
 
