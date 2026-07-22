@@ -77,12 +77,22 @@
                     <ul class="chat__msg-attachments"
                         cacMarkdownLightbox
                         data-testid="chat-msg-attachments">
-                      @for (att of item.message.attachments; track att.url) {
-                        <li class="chat__msg-attachment" [class.chat__msg-attachment--pending]="att.pending">
-                          <img [src]="att.url"
-                               [alt]="att.alt"
-                               data-testid="chat-msg-attachment-image" />
+                      @for (att of item.message.attachments; track attachmentKey(att)) {
+                        <li class="chat__msg-attachment"
+                            [class.chat__msg-attachment--pending]="att.pending"
+                            [class.chat__msg-attachment--unavailable]="!!attachmentStatus(att)">
+                          @if (attachmentUrl(att); as url) {
+                            <img [src]="url"
+                                 [alt]="att.alt"
+                                 data-testid="chat-msg-attachment-image" />
+                          } @else {
+                            <span class="chat__msg-attachment-placeholder" aria-hidden="true">&#128206;</span>
+                          }
                           <span class="chat__msg-attachment-name">{{ att.alt }}</span>
+                          @if (attachmentStatus(att); as status) {
+                            <span class="chat__msg-attachment-status"
+                                  data-testid="chat-msg-attachment-status">{{ status }}</span>
+                          }
                         </li>
                       }
                     </ul>

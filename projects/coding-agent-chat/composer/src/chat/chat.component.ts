@@ -21,6 +21,7 @@ import {
 import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
 import {
   mergeByTimestamp,
+  ChatAttachmentRef,
   ChatContextUsage,
   ChatDraftAttachment,
   ChatEvent,
@@ -104,8 +105,9 @@ const COLLAPSE_LINE_THRESHOLD = 24;
  *
  * Inputs cover the parts that vary per surface (placeholder, empty state,
  * disabled while sending). Outputs are minimal: `submit` carries text and
- * the staged attachments. The host is responsible for uploading those
- * attachments and rewriting the text into the final message it persists.
+ * the staged attachments. Before archiving a message, the host persists each
+ * draft with `ChatAttachmentContract.persistDraft` and stores the returned
+ * `ChatStoredAttachmentRef` in the message's attachments list.
  *
  * Why a separate component instead of folding into activity-log-view: the
  * activity log is a rendering of past run output and has no input field;
@@ -419,6 +421,22 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
 
   canSend(): boolean {
     return this.draftText.trim().length > 0 || this.drafts().length > 0;
+  }
+
+  attachmentUrl(ref: ChatAttachmentRef): string | null {
+    return ref.kind === 'unavailable' ? null : ref.url || null;
+  }
+
+  attachmentStatus(ref: ChatAttachmentRef): string | null {
+    if (ref.kind === 'unavailable') return `Unavailable: ${ref.reason}`;
+    if (ref.kind === 'stored' && !ref.url) return 'Stored attachment; preview URL not loaded';
+    return null;
+  }
+
+  attachmentKey(ref: ChatAttachmentRef): string {
+    if (ref.kind === 'stored') return ref.relativePath;
+    if (ref.kind === 'unavailable') return ref.legacyUrl ?? `unavailable:${ref.alt}`;
+    return ref.url;
   }
 
   roleLabel(role: ChatRole): string {

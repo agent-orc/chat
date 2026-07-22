@@ -34,6 +34,85 @@ The `core` entry point keeps the `ConversationEvent` wire contract importable wi
 zero Angular weight, so backends, SSR and tests can consume the types without the
 renderer.
 
+## Durable attachment contract
+
+Pasted/dropped images leave the composer as `ChatDraftAttachment` objects. Before
+archiving the message, persist each draft with `ChatAttachmentContract.persistDraft`
+and store the returned `ChatStoredAttachmentRef` in `ChatMessage.attachments`.
+The durable identity is the reference's project-relative path, SHA-256 content
+hash, MIME type and byte length; `url` is optional display state and is never the
+only archived locator.
+
+The well-known layout is:
+
+```text
+<project>/.coding-agent-chat/conversations/<encoded-conversation-id>/attachments/<sha256>.<mime-extension>
+```
+
+Names are content-addressed, so retries are idempotent and the same conversation
+and bytes always produce the same path. Conversation ids are percent-encoded as
+one portable path segment. A host supplies the three-operation filesystem seam;
+the core package stays usable by browser, SSR and runner code without depending
+on Node:
+
+```ts
+import {
+  ChatAttachmentContract,
+  type ChatAttachmentStorage,
+  type ChatDraftAttachment,
+  type ChatMessage,
+} from 'coding-agent-chat/core';
+
+// Implement this with the Studio/backend's project-rooted filesystem service.
+// write() must create parents and complete atomically before it resolves.
+declare const projectStorage: ChatAttachmentStorage;
+declare const conversationId: string;
+declare const draft: ChatDraftAttachment;
+declare const structuredLogger: { info(event: unknown): void };
+declare function archive(message: ChatMessage): Promise<void>;
+
+const attachments = new ChatAttachmentContract(projectStorage, {
+  log: event => structuredLogger.info(event),
+});
+const ref = await attachments.persistDraft(conversationId, draft);
+
+const message: ChatMessage = {
+  id: crypto.randomUUID(),
+  role: 'user',
+  text: 'See the pasted image.',
+  timestamp: new Date().toISOString(),
+  attachments: [ref],
+};
+await archive(message); // persist only after persistDraft has completed
+```
+
+After a restart, construct the contract with storage rooted at the same project.
+`resolve(ref)` returns a discriminated result containing both canonical absolute
+path and bytes. `absolutePath(ref)` and `bytes(ref)` are null-safe convenience
+APIs for runner arguments and HTTP/media responses. Resolution validates the
+reference, confines paths to the contract root, and verifies SHA-256 by default.
+
+Rendering URLs are host-specific. The backend can resolve the ref, serve the
+bytes through its authenticated media endpoint, and add that transient URL to
+the in-memory ref passed to `<cac-chat>`; do not write the route URL in place of
+`relativePath`.
+
+### Existing archives
+
+The public `ChatAttachmentRef` union still accepts the old `{ alt, url }` shape.
+Call `migrate(conversationId, ref)` (or `migrateAll` for old string lists) while
+loading/writing an archive:
+
+- project-relative legacy paths such as `attachments/old.png` are read from the
+  project root and copied to the contract path;
+- legacy image data URLs are decoded and copied;
+- missing files, traversal/absolute paths, remote URLs and expired `blob:` URLs
+  become `ChatUnavailableAttachmentRef` tombstones with a reason and the old
+  locator retained in `legacyUrl`.
+
+This makes migration loss explicit while keeping every still-readable archived
+attachment available.
+
 ## Host wiring
 
 Optional seams (task-reference auto-linking, image lightbox) default to safe

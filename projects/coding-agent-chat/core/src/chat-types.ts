@@ -10,18 +10,63 @@
 
 export type ChatRole = 'user' | 'agent' | 'orchestrator' | 'system';
 
-export interface ChatAttachmentRef {
+interface ChatAttachmentBase {
   /** Display label (alt text). */
   alt: string;
   /**
-   * Resolvable URL for rendering. Can be an absolute URL, a project-relative
-   * path the host page resolves via an <img> route, or a `blob:` URL for
-   * staged-but-not-yet-uploaded files.
+   * Optional transient rendering URL. This is deliberately not the durable
+   * identity of an attachment: hosts may recreate it after every restart
+   * from `relativePath` with their normal authenticated media route.
    */
-  url: string;
+  url?: string;
   /** True while the file is staged client-side. */
   pending?: boolean;
 }
+
+/**
+ * Versioned, durable attachment identity stored in a ChatMessage.
+ *
+ * `relativePath` is relative to the project root and always uses `/`
+ * separators. `contentHash` is both an integrity check and the stable file
+ * name. The optional `url` is presentation-only and must not be archived as
+ * the sole way to find the content.
+ */
+export interface ChatStoredAttachmentRef extends ChatAttachmentBase {
+  kind: 'stored';
+  schemaVersion: 1;
+  relativePath: string;
+  contentHash: `sha256:${string}`;
+  mime: string;
+  sizeBytes: number;
+}
+
+/**
+ * Pre-contract attachment shape. It remains part of the public union so old
+ * archives deserialize without a flag day. Use ChatAttachmentContract.migrate
+ * to copy a readable project-relative legacy file into durable storage.
+ */
+export interface ChatLegacyAttachmentRef extends ChatAttachmentBase {
+  kind?: 'legacy';
+  /**
+   * Historical display URL/path. Project-relative values and data URLs can be
+   * migrated; `blob:` and remote URLs cannot be recovered after a restart.
+   */
+  url: string;
+  mime?: string;
+}
+
+/** Explicit tombstone used when an archived attachment cannot be recovered. */
+export interface ChatUnavailableAttachmentRef extends ChatAttachmentBase {
+  kind: 'unavailable';
+  reason: string;
+  /** Original archived path/URL, retained for diagnostics and manual repair. */
+  legacyUrl?: string;
+}
+
+export type ChatAttachmentRef =
+  | ChatStoredAttachmentRef
+  | ChatLegacyAttachmentRef
+  | ChatUnavailableAttachmentRef;
 
 export interface ChatMessage {
   id: string;

@@ -101,6 +101,23 @@ describe('ChatComponent', () => {
     expect(agentRow.textContent).toContain('On it.');
   });
 
+  it('renders migrated attachment tombstones as explicitly unavailable', async () => {
+    const archived = message('m1', 'user', 'Old screenshot');
+    archived.attachments = [{
+      kind: 'unavailable',
+      alt: 'deleted screenshot',
+      reason: 'legacy-not-found',
+      legacyUrl: 'attachments/deleted.png',
+    }];
+    const fixture = await createChat({ messages: [archived] });
+
+    expect(query(fixture, '[data-testid="chat-msg-attachment-image"]')).toBeNull();
+    expect(query(fixture, '[data-testid="chat-msg-attachment-status"]')?.textContent).toContain(
+      'Unavailable: legacy-not-found',
+    );
+    expect(query(fixture, '.chat__msg-attachment-name')?.textContent).toContain('deleted screenshot');
+  });
+
   it('emits submitMessage with the trimmed draft and resets the composer', async () => {
     const fixture = await createChat();
     const emissions: ChatSubmitEvent[] = [];

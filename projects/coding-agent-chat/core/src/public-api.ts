@@ -13,6 +13,7 @@ export * from './conversation-event';
 export * from './conversation-session-meta';
 export * from './merge-by-timestamp';
 export * from './chat-types';
+export * from './attachment-contract';
 export * from './composer-controls';
 export * from './projection-inputs';
 export * from './conversation-projection';
