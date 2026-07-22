@@ -90,6 +90,18 @@
   }
   &:hover::-webkit-scrollbar-thumb { background: var(--studio-border-strong); }
 }
+
+// A one-pixel end target for IntersectionObserver. It deliberately remains in
+// normal flow: its position follows every async height change above it, while
+// the negative margin cancels the body's normal 10px flex gap so it adds no
+// visible whitespace to the transcript.
+.chat__latest-anchor {
+  display: block;
+  flex: 0 0 1px;
+  block-size: 1px;
+  margin-block-start: -10px;
+  pointer-events: none;
+}
 // F15: inline phase / super-phase dividers were removed. In the
 // orchestrator chat every "phase" is one Q-A pair, so the bracket was
 // visual noise. The grouping data still lives on the chat component's

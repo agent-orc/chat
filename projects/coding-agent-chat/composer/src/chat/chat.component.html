@@ -217,6 +217,13 @@
               <span></span><span></span><span></span>
             </div>
           }
+          <!-- A real end-of-feed target lets the scroll logic verify that
+               delayed layout (notably lazy images) has not pushed the latest
+               content back below the viewport after a jump. -->
+          <span #latestAnchor
+                class="chat__latest-anchor"
+                data-testid="chat-latest-anchor"
+                aria-hidden="true"></span>
         }
       </div>
       }

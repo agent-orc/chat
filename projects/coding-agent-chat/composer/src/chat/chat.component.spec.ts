@@ -3,7 +3,7 @@
  * submitMessage emission, draft-attachment staging, and toolbar behaviour.
  */
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type {
   ChatContextUsage,
@@ -98,6 +98,10 @@ describe('ChatComponent', () => {
     });
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('renders the configured empty state when there are no messages or events', async () => {
     const fixture = await createChat({ emptyState: 'Nothing here yet.' });
 
@@ -160,6 +164,109 @@ describe('ChatComponent', () => {
       'Unavailable: legacy-not-found',
     );
     expect(query(fixture, '.chat__msg-attachment-name')?.textContent).toContain('deleted screenshot');
+  });
+
+  it('keeps a single jump-to-latest click pinned through tall lazy layout growth', async () => {
+    let intersectionCallback: IntersectionObserverCallback | undefined;
+    const observe = vi.fn();
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          intersectionCallback = callback;
+        }
+        observe = observe;
+        unobserve(): void {}
+        disconnect(): void {}
+        takeRecords(): IntersectionObserverEntry[] { return []; }
+      }
+    );
+
+    const frames = new Map<number, FrameRequestCallback>();
+    let nextFrame = 1;
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback): number => {
+      const id = nextFrame++;
+      frames.set(id, callback);
+      return id;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number): void => {
+      frames.delete(id);
+    });
+    const flushFrames = (): void => {
+      while (frames.size > 0) {
+        const pending = [...frames.values()];
+        frames.clear();
+        pending.forEach((callback) => callback(0));
+      }
+    };
+
+    const fixture = await createChat({
+      messages: [message('m1', 'agent', 'A tall response with a lazy image')],
+    });
+    const body = query<HTMLElement>(fixture, '[data-testid="chat-body"]')!;
+    const anchor = query<HTMLElement>(fixture, '[data-testid="chat-latest-anchor"]')!;
+    expect(observe).toHaveBeenCalledWith(anchor);
+
+    // jsdom has no layout. Model a large scroll container and browser-style
+    // scrollTop clamping so a write of scrollHeight lands at its real maximum.
+    const state = { scrollHeight: 4_000, clientHeight: 400, scrollTop: 3_600 };
+    Object.defineProperties(body, {
+      scrollHeight: { configurable: true, get: () => state.scrollHeight },
+      clientHeight: { configurable: true, get: () => state.clientHeight },
+      scrollTop: {
+        configurable: true,
+        get: () => state.scrollTop,
+        set: (value: number) => {
+          state.scrollTop = Math.max(0, Math.min(value, state.scrollHeight - state.clientHeight));
+        },
+      },
+    });
+    const reportAnchorOutsideViewport = (): void => {
+      intersectionCallback!(
+        [
+          {
+            target: anchor,
+            isIntersecting: false,
+            intersectionRatio: 0,
+          } as unknown as IntersectionObserverEntry,
+        ],
+        undefined as unknown as IntersectionObserver
+      );
+    };
+
+    // Establish the current bottom, then deliberately scroll far enough up to
+    // reveal and click the jump control.
+    flushFrames();
+    fixture.componentInstance.onBodyScroll();
+    body.scrollTop = 800;
+    fixture.componentInstance.onBodyScroll();
+    fixture.detectChanges();
+    query<HTMLButtonElement>(fixture, '[data-testid="chat-jump-bottom"]')!.click();
+    fixture.detectChanges();
+    flushFrames();
+    expect(state.scrollTop).toBe(3_600);
+
+    // The image resolves later and adds 3,000px without a message mutation.
+    // Moving the end sentinel out of view must continue the SAME jump rather
+    // than requiring a second click.
+    state.scrollHeight = 7_000;
+    reportAnchorOutsideViewport();
+    flushFrames();
+    expect(state.scrollTop).toBe(6_600);
+
+    // The same anchoring session remains reliable while more content streams.
+    state.scrollHeight = 7_800;
+    reportAnchorOutsideViewport();
+    flushFrames();
+    expect(state.scrollTop).toBe(7_400);
+
+    // A real upward user move still releases following immediately.
+    body.scrollTop = 1_200;
+    fixture.componentInstance.onBodyScroll();
+    state.scrollHeight = 9_000;
+    reportAnchorOutsideViewport();
+    flushFrames();
+    expect(state.scrollTop).toBe(1_200);
   });
 
   it('emits submitMessage with the trimmed draft and resets the composer', async () => {

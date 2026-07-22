@@ -264,11 +264,16 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   draftText = '';
 
   private readonly bodyRef = viewChild<ElementRef<HTMLDivElement>>('body');
+  private readonly latestAnchorRef = viewChild<ElementRef<HTMLElement>>('latestAnchor');
   private readonly inputRef = viewChild<ElementRef<HTMLTextAreaElement>>('input');
   private readonly fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   private scrollFrame: number | null = null;
   private suppressScrollEvent = false;
+  private latestIntersectionObserver: IntersectionObserver | null = null;
+  private observedBody: HTMLElement | null = null;
+  private observedLatestAnchor: HTMLElement | null = null;
+  private lastScrollTop = 0;
 
   /**
    * Chat phases derived from the merged message stream. The chat
@@ -418,6 +423,7 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   });
 
   ngAfterViewInit(): void {
+    this.observeLatestAnchor();
     this.scheduleScrollToBottom();
   }
 
@@ -425,6 +431,10 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     if (this.scrollFrame !== null && typeof cancelAnimationFrame !== 'undefined') {
       cancelAnimationFrame(this.scrollFrame);
     }
+    this.latestIntersectionObserver?.disconnect();
+    this.latestIntersectionObserver = null;
+    this.observedBody = null;
+    this.observedLatestAnchor = null;
     for (const draft of this.drafts()) URL.revokeObjectURL(draft.previewUrl);
     this.autoScrollEffect.destroy();
     this.virtualBoundsEffect.destroy();
@@ -576,8 +586,18 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     const el = this.bodyRef()?.nativeElement;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    const sticky = distanceFromBottom <= 24;
-    this.stickToBottom.set(sticky);
+    const nearBottom = distanceFromBottom <= 24;
+    const movedUp = el.scrollTop < this.lastScrollTop - 1;
+    this.lastScrollTop = el.scrollTop;
+    if (nearBottom) {
+      this.stickToBottom.set(true);
+    } else if (movedUp) {
+      // Only an actual upward move releases following. Async content growth
+      // can widen distanceFromBottom without user intent; the latest-anchor
+      // observer will correct that layout shift while sticky remains true.
+      this.stickToBottom.set(false);
+    }
+    const sticky = this.stickToBottom();
 
     if (!this.virtualised()) return;
     const total = this.rendered().length;
@@ -956,6 +976,9 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     if (this.scrollFrame !== null) cancelAnimationFrame(this.scrollFrame);
     this.scrollFrame = requestAnimationFrame(() => {
       this.scrollFrame = null;
+      // The body is conditional and may have been created since init. Keep
+      // the observer attached to the current body/anchor pair.
+      this.observeLatestAnchor();
       const el = this.bodyRef()?.nativeElement;
       if (!el) return;
       // The user may have scrolled up between scheduling and this frame;
@@ -968,8 +991,37 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       // so it fires exactly one scroll event — cleared on the next frame.
       this.suppressScrollEvent = true;
       el.scrollTop = el.scrollHeight;
+      this.lastScrollTop = el.scrollTop;
       requestAnimationFrame(() => { this.suppressScrollEvent = false; });
     });
+  }
+
+  /**
+   * While auto-follow is active, verify the actual end of the rendered feed
+   * remains visible. Unlike scrollHeight snapshots, IntersectionObserver is
+   * notified when a lazy image or another async layout change moves the end
+   * target, so one jump keeps correcting until the viewport truly reaches the
+   * latest content. A user up-scroll flips stickToBottom off before the
+   * observer callback and is therefore never yanked back.
+   */
+  private observeLatestAnchor(): void {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const body = this.bodyRef()?.nativeElement ?? null;
+    const anchor = this.latestAnchorRef()?.nativeElement ?? null;
+    if (body === this.observedBody && anchor === this.observedLatestAnchor) return;
+
+    this.latestIntersectionObserver?.disconnect();
+    this.latestIntersectionObserver = null;
+    this.observedBody = body;
+    this.observedLatestAnchor = anchor;
+    if (!body || !anchor) return;
+
+    this.latestIntersectionObserver = new IntersectionObserver((entries) => {
+      const latest = entries.find((entry) => entry.target === anchor);
+      if (!latest || latest.intersectionRatio >= 1 || !this.stickToBottom()) return;
+      this.scheduleScrollToBottom();
+    }, { root: body, threshold: 1 });
+    this.latestIntersectionObserver.observe(anchor);
   }
 }
 
