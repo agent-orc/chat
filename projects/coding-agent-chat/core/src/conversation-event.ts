@@ -504,6 +504,8 @@ export interface RunMarkerEvent extends ConversationEventBase {
   marker: string;
   cli?: string | null;
   model?: string | null;
+  /** Thinking level selected for this run, when the start marker names one. */
+  thinkingLevel?: string | null;
   sessionId?: string | null;
   durationSeconds?: number | null;
   exitCode?: number | null;

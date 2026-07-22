@@ -625,6 +625,7 @@ describe('projectConversation', () => {
     const runs = events.filter((e) => e.kind === 'runMarker');
     expect(runs).toHaveLength(1);
     expect(runs[0].model).toBe('claude-opus-4-7');
+    expect(runs[0].thinkingLevel).toBe('high');
   });
 
   it('does not fabricate a model for orchestrator or user rows the log never names', () => {

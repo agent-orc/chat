@@ -18,6 +18,9 @@
     @if (r.kind) {
       <span class="chat-row__kind">{{ r.kind }}</span>
     }
+    @if (r.model) {
+      <cac-model-level-indicator [model]="r.model" [thinking]="r.thinkingLevel ?? null" data-testid="chat-row-model" />
+    }
     <time class="chat-row__ts" [attr.datetime]="r.ts">{{ formattedTs() }}</time>
   </header>
   @if (preRenderedHtml(); as pre) {

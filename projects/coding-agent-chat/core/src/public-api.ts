@@ -15,6 +15,7 @@ export * from './merge-by-timestamp';
 export * from './chat-types';
 export * from './attachment-contract';
 export * from './composer-controls';
+export * from './model-level-indicator';
 export * from './projection-inputs';
 export * from './conversation-projection';
 export * from './conversation-projection.fixtures';

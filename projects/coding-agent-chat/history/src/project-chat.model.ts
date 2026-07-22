@@ -29,6 +29,10 @@ export interface ProjectChatTurn {
     | 'event-decision';
   ts: string;
   refs?: string[] | null;
+  /** Generating model for this historical run, if attributable by the backend. */
+  model?: string | null;
+  /** Thinking level paired with the generating model. */
+  thinkingLevel?: string | null;
   body: string;
 }
 

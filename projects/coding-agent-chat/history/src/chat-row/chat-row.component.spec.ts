@@ -109,4 +109,10 @@ describe('ChatRowComponent (header + variants)', () => {
     expect(time?.getAttribute('datetime')).toBe('2026-02-03T04:05:06.000Z');
     expect(time?.textContent?.trim().length).toBeGreaterThan(0);
   });
+
+  it('renders the shared compact model and thinking indicator when attributed', async () => {
+    const fixture = await render(baseRow({ model: 'gpt-5-codex', thinkingLevel: 'high' }));
+    const indicator = (fixture.nativeElement as HTMLElement).querySelector('[data-testid="chat-row-model"]');
+    expect(indicator?.textContent?.replace(/\s/g, '')).toBe('CDXH');
+  });
 });

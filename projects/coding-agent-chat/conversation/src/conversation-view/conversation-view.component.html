@@ -84,14 +84,7 @@
                   }
                   <span class="msg__head-meta">
                     @if (row.model) {
-                      <span class="msg__model"
-                            data-testid="conversation-message-model"
-                            [cacTooltip]="'Generating model: ' + row.model">{{ modelLabel(row.model) }}</span>
-                    }
-                    @if (row.thinking) {
-                      <span class="msg__thinking"
-                            data-testid="conversation-message-thinking"
-                            [cacTooltip]="'Thinking level this run was started with'">think {{ row.thinking }}</span>
+                      <cac-model-level-indicator [model]="row.model" [thinking]="row.thinking" data-testid="conversation-message-model" />
                     }
                     @if (row.meta.sessionIdFull) {
                       <span class="msg__session"
@@ -186,9 +179,8 @@
               [attr.data-marker]="row.event.marker">
             <span class="marker__dot" aria-hidden="true">●</span>
             <span class="marker__label">Run {{ row.event.runId ?? '?' }} · {{ row.event.marker }}</span>
-            @if (row.event.cli || row.event.model) {
-              <span class="marker__meta">{{ row.event.cli }}{{ row.event.cli && row.event.model ? ' · ' : '' }}{{ row.event.model }}</span>
-            }
+            @if (row.event.cli) { <span class="marker__meta">{{ row.event.cli }}</span> }
+            @if (row.event.model) { <cac-model-level-indicator [model]="row.event.model" [thinking]="row.event.thinkingLevel ?? null" data-testid="conversation-run-model" /> }
             <time class="marker__time"
                   [cacTooltip]="formatDateTime(row.event.timestamp)">{{ formatTime(row.event.timestamp) }}</time>
           </li>

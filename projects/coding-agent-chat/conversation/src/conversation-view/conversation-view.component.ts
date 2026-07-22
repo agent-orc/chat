@@ -8,11 +8,12 @@ import { PlanChecklistComponent } from '../plan-checklist/plan-checklist.compone
 import {
   ArrowKeyScrollDirective,
   MarkdownImageLightboxDirective,
+  ModelLevelIndicatorComponent,
   StickToBottomDirective,
   TooltipDirective,
   type StructuredTooltip,
 } from 'coding-agent-chat/shared';
-import { parseRateLimit, shortModelLabel, type SessionCardData } from 'coding-agent-chat/core';
+import { parseRateLimit, type SessionCardData } from 'coding-agent-chat/core';
 import type {
   AgentNeedsInputEvent,
   ArtifactImageEvent,
@@ -219,6 +220,7 @@ function classifyMessageBody(body: string): ClassifiedBody {
     ConversationSessionCardComponent,
     PixelProgressComponent,
     PlanChecklistComponent,
+    ModelLevelIndicatorComponent,
     TooltipDirective,
     StickToBottomDirective,
     ArrowKeyScrollDirective,
@@ -698,10 +700,6 @@ export class ConversationViewComponent {
 
   /** Short, human model label (e.g. "sonnet 5") — matches the composer chip;
    *  the full id sits on the badge's tooltip. */
-  modelLabel(model: string | null): string {
-    return model ? shortModelLabel(model) : '';
-  }
-
   trackByEvent = (_: number, row: RenderRow): string => row.id;
 
   actorLabel(kind: MessageEvent['kind']): string {

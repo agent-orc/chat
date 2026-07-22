@@ -3,6 +3,7 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import { RoleBadgeComponent } from 'coding-agent-chat/composer';
 import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
+import { ModelLevelIndicatorComponent } from 'coding-agent-chat/shared';
 
 /**
  * Shared chat-row presentation. Renders one message-or-event row inside
@@ -36,6 +37,10 @@ export interface ChatRowInput {
   kind?: string | null;
   /** Optional file refs rendered alongside the role badge. */
   refs?: readonly string[] | null;
+  /** Attributed model for this row's run. */
+  model?: string | null;
+  /** Attributed thinking level for this row's run. */
+  thinkingLevel?: string | null;
   /** ISO 8601. */
   ts: string;
   /** Markdown source (rendered to HTML). For pre-escaped/plain text, pass
@@ -56,7 +61,7 @@ export interface ChatRowInput {
 @Component({
   selector: 'cac-chat-row',
   standalone: true,
-  imports: [RoleBadgeComponent, MarkdownViewComponent],
+  imports: [RoleBadgeComponent, MarkdownViewComponent, ModelLevelIndicatorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat-row.component.html',
   styleUrl: './chat-row.component.scss',

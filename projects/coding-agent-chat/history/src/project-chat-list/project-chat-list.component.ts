@@ -526,6 +526,8 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
       author: turn.author,
       kind: turn.kind,
       refs: turn.refs ?? null,
+      model: turn.model ?? null,
+      thinkingLevel: turn.thinkingLevel ?? null,
       ts: turn.ts,
       body: turn.body,
       userVariant: turn.author === 'user',
