@@ -45,3 +45,10 @@ Thumbs.db
 
 # Agent-orchestrator runtime state (job/session state must not land in the repo).
 .orchestrator/
+
+# stale local task-snapshot worktrees (never commit)
+/agt-2149-replay-structur-78f3dd03/
+/chat-nachrichten-vollsta-4f3d0715/
+/codex-text-mode-stderr-t-b57fedaa/
+/library-website-center-demo-layout/
+/versioned-package-releas-4cfe8624/
