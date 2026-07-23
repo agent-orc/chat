@@ -132,6 +132,20 @@ export interface ChatSubmitEvent {
 }
 
 /**
+ * Stable location context for a chat composer.
+ *
+ * Hosts supply this when the next message is scoped to a particular project
+ * surface and a more precise detail such as a task or view.
+ * The chat renders it in its standard composer footer, avoiding a
+ * host-specific projected footer workaround.
+ */
+export interface ChatComposerContext {
+  project: string;
+  surface: string;
+  detail: string;
+}
+
+/**
  * One button rendered in the chat composer's toolbar row above the
  * textarea. Lets a host plug in chat-surface-specific affordances
  * (`#` reference, `@` mention, fork-thread, search) without baking

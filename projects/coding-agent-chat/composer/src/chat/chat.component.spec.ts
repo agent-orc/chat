@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type {
   ChatContextUsage,
+  ChatComposerContext,
   ChatMessage,
   ChatModelControl,
   ChatModelSelection,
@@ -426,6 +427,23 @@ describe('ChatComponent', () => {
     value: 'yolo',
   };
   const CONTEXT_USAGE: ChatContextUsage = { usedTokens: 76_400, maxTokens: 200_000 };
+  const COMPOSER_CONTEXT: ChatComposerContext = {
+    project: 'coding-agent-chat',
+    surface: 'orchestrator',
+    detail: 'CAC-11',
+  };
+
+  it('renders a typed composer context in the standard footer', async () => {
+    const fixture = await createChat({ composerContext: COMPOSER_CONTEXT });
+
+    expect(query(fixture, '[data-testid="chat-composer-context"]')).toBeTruthy();
+    expect(query(fixture, '[data-testid="chat-composer-context-project"]')?.textContent?.trim())
+      .toBe('coding-agent-chat');
+    expect(query(fixture, '[data-testid="chat-composer-context-surface"]')?.textContent?.trim())
+      .toBe('orchestrator');
+    expect(query(fixture, '[data-testid="chat-composer-context-detail"]')?.textContent?.trim())
+      .toBe('CAC-11');
+  });
 
   it('shows the model selector by default once the host supplies its config', async () => {
     const fixture = await createChat({ modelControl: MODEL_CONTROL });

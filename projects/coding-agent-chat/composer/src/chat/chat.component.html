@@ -340,6 +340,15 @@
              row collapses entirely when nothing is present. -->
         <div class="chat__composer-foot" data-testid="chat-composer-foot">
           <div class="chat__composer-foot-start">
+            @if (composerContext(); as context) {
+              <div class="chat__composer-context" data-testid="chat-composer-context">
+                <span data-testid="chat-composer-context-project">{{ context.project }}</span>
+                <span class="chat__composer-context-separator" aria-hidden="true">/</span>
+                <span data-testid="chat-composer-context-surface">{{ context.surface }}</span>
+                <span class="chat__composer-context-separator" aria-hidden="true">/</span>
+                <span data-testid="chat-composer-context-detail">{{ context.detail }}</span>
+              </div>
+            }
             @if (showPermissionSelect()) {
               <cac-permission-select
                 [options]="permissionControl()!.options"

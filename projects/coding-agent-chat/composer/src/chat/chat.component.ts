@@ -24,6 +24,7 @@ import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
 import {
   mergeByTimestamp,
   ChatAttachmentRef,
+  ChatComposerContext,
   ChatContextUsage,
   ChatDraftAttachment,
   ChatEvent,
@@ -176,6 +177,11 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
    * bind a chat to.
    */
   readonly contextLabel = input<string | null>(null);
+  /**
+   * Optional project/location context rendered by the standard composer
+   * footer. Prefer this typed API over projecting a custom footer fragment.
+   */
+  readonly composerContext = input<ChatComposerContext | null>(null);
   /**
    * Routing/status chip rendered right-aligned in the toolbar row,
    * e.g. "routing: Codex (Claude paused)". The chat does not interpret
