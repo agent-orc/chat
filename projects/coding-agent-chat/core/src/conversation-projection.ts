@@ -505,7 +505,7 @@ function projectGroup(
 
   if (isCodexDebugGroup(group)) {
     const transcript = /exec transcript/i.test(group.title) || /text-mode stderr transcript/i.test(group.title);
-    const failed = isCodexTranscriptFailure(group);
+    const failed = transcript && isCodexTranscriptFailure(group, currentRun);
     return [
       {
         id: `${baseId}:codex-status`,
@@ -516,7 +516,7 @@ function projectGroup(
         severity: failed ? 'error' : 'info',
         category: failed ? 'cli-failure' : transcript ? 'codex-transcript' : 'codex',
         label: failed ? 'CLI failed' : transcript ? 'Codex transcript' : group.title.replace(/^Codex\s+/i, 'Codex '),
-        explanation: failed ? codexTranscriptFailureExplanation(group) : codexLifecycleExplanation(group.title),
+        explanation: failed ? codexTranscriptFailureExplanation(group, currentRun) : codexLifecycleExplanation(group.title),
         nextStep: (transcript || failed)
           ? 'Open raw transcript in Trace.'
           : 'No action needed; raw frame is available in Trace.'
@@ -785,14 +785,21 @@ function codexLifecycleExplanation(title: string): string {
   return 'Codex emitted a structured runtime frame.';
 }
 
-function isCodexTranscriptFailure(group: ActivityLogGroup): boolean {
-  return group.lines.some((line) => isCodexTextModeTranscriptFailure(line.text));
+function isCodexTranscriptFailure(group: ActivityLogGroup, currentRun: RunContext): boolean {
+  return group.lines.some((line) => isCodexTextModeTranscriptFailure(line.text))
+    || currentRun.run?.status === 'failed'
+    || (currentRun.run?.exitCode !== null
+      && currentRun.run?.exitCode !== undefined
+      && currentRun.run.exitCode !== 0);
 }
 
-function codexTranscriptFailureExplanation(group: ActivityLogGroup): string {
+function codexTranscriptFailureExplanation(group: ActivityLogGroup, currentRun: RunContext): string {
   for (const line of group.lines) {
     const text = line.text.trim();
     if (isCodexTextModeTranscriptFailure(text)) return text;
+  }
+  if (currentRun.run?.exitCode !== null && currentRun.run?.exitCode !== undefined) {
+    return `Codex exited with code ${currentRun.run.exitCode}.`;
   }
   return 'Codex stderr transcript ended in a CLI failure.';
 }

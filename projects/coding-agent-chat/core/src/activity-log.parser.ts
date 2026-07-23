@@ -57,7 +57,7 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
             ? `${codexTranscript.subtitle} - ${banner}`
             : banner;
         }
-        const tokenCount = codexTranscriptTokenCount(line.text);
+        const tokenCount = codexTranscriptTokenCount(codexTranscript.lines);
         if (tokenCount) {
           codexTranscript.subtitle = codexTranscript.subtitle
             ? `${codexTranscript.subtitle} - ${tokenCount} tokens`
@@ -367,7 +367,9 @@ function codexDebugGroup(
 
 const CODEX_TEXT_MODE_BANNER_RE = /^OpenAI Codex\b/i;
 const CODEX_EXEC_RUNNER_RE = /^\[runner\]\s+spawning\s+codex\s+exec\b/i;
-const CODEX_TEXT_MODE_TOKEN_RE = /\b(?:final\s+)?token\s+count\s*[:=]\s*(?<count>[\d,]+)/i;
+const CODEX_TEXT_MODE_TOKEN_RE = /\b(?:(?:final\s+)?token\s+count|tokens?\s+used)\s*[:=]?\s*(?<count>[\d,]+)/i;
+const CODEX_TEXT_MODE_TOKEN_LABEL_RE = /^tokens?\s+used\s*:?\s*$/i;
+const CODEX_TEXT_MODE_BARE_TOKEN_COUNT_RE = /^(?<count>[\d,]+)\s*$/;
 
 function isCodexExecRunnerMarker(text: string): boolean {
   return CODEX_EXEC_RUNNER_RE.test(text.trim());
@@ -382,18 +384,26 @@ function codexTranscriptBanner(text: string): string | null {
   return CODEX_TEXT_MODE_BANNER_RE.test(trimmed) ? trimmed : null;
 }
 
-function codexTranscriptTokenCount(text: string): string | null {
-  const match = CODEX_TEXT_MODE_TOKEN_RE.exec(text);
-  return match?.groups?.['count'] ?? null;
+function codexTranscriptTokenCount(lines: readonly CliOutputLine[]): string | null {
+  const current = lines.at(-1)?.text.trim() ?? '';
+  const inlineMatch = CODEX_TEXT_MODE_TOKEN_RE.exec(current);
+  if (inlineMatch?.groups?.['count']) {
+    return inlineMatch.groups['count'];
+  }
+
+  const previous = lines.at(-2)?.text.trim() ?? '';
+  if (!CODEX_TEXT_MODE_TOKEN_LABEL_RE.test(previous)) {
+    return null;
+  }
+  return CODEX_TEXT_MODE_BARE_TOKEN_COUNT_RE.exec(current)?.groups?.['count'] ?? null;
 }
 
 export function isCodexTextModeTranscriptFailure(text: string): boolean {
   const trimmed = text.trim();
   return /^Run failed\b/i.test(trimmed)
     || /^Failed to start\b/i.test(trimmed)
-    || /^Exit code:\s*-?\d+\b/i.test(trimmed)
-    || /^Process exited with code\s*-?\d+\b/i.test(trimmed)
-    || /^Command failed\b/i.test(trimmed);
+    || /^(?:Error:\s*)?codex(?:\s+exec)?\s+failed\b/i.test(trimmed)
+    || /^\[runner\].*\b(?:failed|exited with (?:code )?[1-9]\d*)\b/i.test(trimmed);
 }
 
 function commandDisplayLines(

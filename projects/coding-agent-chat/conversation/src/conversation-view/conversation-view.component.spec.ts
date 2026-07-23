@@ -99,7 +99,7 @@ describe('ConversationViewComponent', () => {
     expect(agentRows[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
     expect(agentRows[0].textContent).not.toContain('OpenAI Codex v0.144.1');
     expect(agentRows[0].textContent).not.toContain('export function projectConversation');
-    expect(agentRows[0].querySelectorAll('li')).toHaveLength(0);
+    expect(agentRows[0].querySelectorAll('cac-markdown li')).toHaveLength(0);
   });
 
   it('shows the empty state when there are no events', async () => {

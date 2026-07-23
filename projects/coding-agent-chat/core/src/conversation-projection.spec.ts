@@ -205,6 +205,7 @@ describe('projectConversation', () => {
     expect(events[0].kind).toBe('system.status');
     expect(probe(events[0]).category).toBe('codex-transcript');
     expect(probe(events[0]).label).toBe('Codex transcript');
+    expect(probe(events[0]).severity).toBe('info');
     expect(probe(events[0]).explanation).toBe('Codex captured a text-mode stderr transcript.');
     expect(probe(events[0]).nextStep).toBe('Open raw transcript in Trace.');
     expect(events.some((event) => event.kind === 'message.taskAgent' && probe(event).body?.includes('/**'))).toBe(false);
@@ -216,6 +217,26 @@ describe('projectConversation', () => {
     expect(probe(agent).body).not.toContain('/**');
     expect(probe(agent).body).not.toContain('* 10,975 contiguous stderr lines');
     expect(probe(agent).body).not.toContain('export function projectConversation');
+  });
+
+  it('keeps every streaming prefix bounded until the final stdout reply arrives', () => {
+    const lines = codexTextModeStderrTranscriptFragment();
+
+    for (let length = 1; length <= lines.length; length += 1) {
+      const events = projectConversation({
+        source: SOURCE,
+        lines: lines.slice(0, length)
+      });
+      const agentBodies = events
+        .filter((event) => event.kind === 'message.taskAgent')
+        .map((event) => probe(event).body ?? '');
+
+      expect(agentBodies.join('\n')).not.toContain('OpenAI Codex');
+      expect(agentBodies.join('\n')).not.toContain('/**');
+      expect(agentBodies.join('\n')).not.toContain('Process exited with code 1');
+      expect(events.filter((event) => probe(event).category === 'codex-transcript')).toHaveLength(1);
+      expect(agentBodies).toHaveLength(length === lines.length ? 1 : 0);
+    }
   });
 
   it('renders a failing Codex text-mode stderr transcript as a concise CLI failure status', () => {
@@ -244,6 +265,35 @@ describe('projectConversation', () => {
     });
 
     expect(events).toEqual([]);
+  });
+
+  it('uses persisted run failure metadata without mistaking an inner tool exit for the run outcome', () => {
+    const lines = codexTextModeStderrTranscriptFragment().slice(0, -1);
+    const events = projectConversation({
+      source: SOURCE,
+      lines,
+      runTimeline: {
+        runCount: 1,
+        runs: [{
+          index: 1,
+          intent: 'start',
+          startedAt: lines[0].timestamp,
+          status: 'failed',
+          cli: 'codex',
+          exitCode: 7,
+          durationSeconds: 30,
+          capturedSessionId: null,
+          lineStart: 1,
+          lineEnd: lines.length
+        }]
+      }
+    });
+
+    expect(events).toHaveLength(1);
+    expect(events[0].kind).toBe('system.status');
+    expect(probe(events[0]).severity).toBe('error');
+    expect(probe(events[0]).category).toBe('cli-failure');
+    expect(probe(events[0]).explanation).toBe('Codex exited with code 7.');
   });
 
   it('retains stripped transport evidence as structured message diagnostics', () => {

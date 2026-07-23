@@ -240,8 +240,10 @@ describe('parseActivityLog', () => {
     expect(groups[0].subtitle).toContain('OpenAI Codex v0.144.1');
     expect(groups[0].subtitle).toContain('12,345 tokens');
     expect(groups[0].collapsedByDefault).toBe(true);
-    expect(groups[0].lines).toHaveLength(14);
+    expect(groups[0].status).toBe('neutral');
+    expect(groups[0].lines).toHaveLength(19);
     expect(groups[0].lines.some((line) => line.text.startsWith('export function projectConversation'))).toBe(true);
+    expect(groups[0].lines.some((line) => line.text === 'Process exited with code 1')).toBe(true);
     expect(groups[1].kind).toBe('message');
 
     const turns = buildConversationTurns(groups);

@@ -109,7 +109,7 @@ export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
   resetFixtureClock();
   return [
     line('[runner] spawning codex exec system marker', 'system'),
-    line('OpenAI Codex v0.144.1', 'stderr'),
+    line('OpenAI Codex v0.144.1 (research preview)', 'stderr'),
     line('Prompt: collapse the stderr transcript into trace-only evidence.', 'stderr'),
     line('Reasoning: keep technical execution out of task-agent Markdown.', 'stderr'),
     line('Tool: read projects/coding-agent-chat/core/src/conversation-projection.ts', 'stderr'),
@@ -121,7 +121,12 @@ export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
     line(' * JSDoc bullets must stay technical, not turn into chat prose.', 'stderr'),
     line(' */', 'stderr'),
     line('* 10,975 contiguous stderr lines', 'stderr'),
-    line('* final token count: 12,345 tokens', 'stderr'),
+    line('Process exited with code 1', 'stderr'),
+    line('Final output:', 'stderr'),
+    line('src/example.ts(12,3): error TS2322: Type mismatch', 'stderr'),
+    line('Reasoning: recover from the tool failure and finish the task.', 'stderr'),
+    line('tokens used', 'stderr'),
+    line('12,345', 'stderr'),
     line('The stdout reply is still the visible answer, and it appears in the correct turn.', 'stdout')
   ];
 }
@@ -131,7 +136,7 @@ export function codexTextModeStderrFailureFragment(): CliOutputLine[] {
   resetFixtureClock();
   return [
     line('[runner] spawning codex exec system marker', 'system'),
-    line('OpenAI Codex v0.144.1', 'stderr'),
+    line('OpenAI Codex v0.144.1 (research preview)', 'stderr'),
     line('Prompt: collapse the stderr transcript into trace-only evidence.', 'stderr'),
     line('Reasoning: keep technical execution out of task-agent Markdown.', 'stderr'),
     line('Tool: read projects/coding-agent-chat/core/src/conversation-projection.ts', 'stderr'),
