@@ -93,6 +93,22 @@ describe('ConversationViewComponent', () => {
     );
   });
 
+  it('starts a new labelled boundary when only the thinking level changes', async () => {
+    const fixture = await render([
+      msg('message.taskAgent', 'First pass.', { model: 'gpt-5-codex', thinkingLevel: 'low' }),
+      msg('message.taskAgent', 'Deeper pass.', { model: 'gpt-5-codex', thinkingLevel: 'high' }),
+    ]);
+    const rows = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
+      '[data-actor="message.taskAgent"]',
+    );
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0].getAttribute('data-show-header')).toBe('true');
+    expect(rows[1].getAttribute('data-show-header')).toBe('true');
+    expect(rows[0].querySelector('[data-testid="conversation-message-model"]')?.textContent?.replace(/\s/g, '')).toBe('CDXL');
+    expect(rows[1].querySelector('[data-testid="conversation-message-model"]')?.textContent?.replace(/\s/g, '')).toBe('CDXH');
+  });
+
   it('renders Codex text-mode stderr as one compact system row and keeps the stdout reply visible', async () => {
     const events = projectConversation({
       source: 'fixture-job',

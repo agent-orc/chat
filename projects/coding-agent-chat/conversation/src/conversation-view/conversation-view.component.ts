@@ -303,10 +303,11 @@ export class ConversationViewComponent {
     // turn → burst → agent turn stays one role); any other rendered event
     // resets it to null so the next message group re-announces its actor.
     let lastRole: MessageEvent['kind'] | null = null;
-    // Generating model of the previous role-bearing bubble. A model switch
-    // re-shows the header even when the actor is unchanged, so the new bubble
-    // can name its model next to the timestamp (the header carries the badge).
+    // Generating model and thinking level of the previous role-bearing bubble.
+    // Either attribution changing re-shows the header even when the actor is
+    // unchanged, so every run boundary has its own compact indicator.
     let lastModel: string | null = null;
+    let lastThinking: string | null = null;
     const sessionCard: { row: SessionMetaRow | null } = { row: null };
 
     const closeGroup = (): void => {
@@ -316,9 +317,12 @@ export class ConversationViewComponent {
       // and zero payload) would paint an empty bubble — drop it instead so
       // the user never sees a hollow "Agent" frame.
       if (open.items.length > 0) {
-        open.showHeader = lastRole !== open.actor || lastModel !== open.model;
+        open.showHeader = lastRole !== open.actor
+          || lastModel !== open.model
+          || lastThinking !== open.thinking;
         lastRole = open.actor;
         lastModel = open.model;
+        lastThinking = open.thinking;
         out.push(open);
       }
       cell.open = null;
@@ -365,10 +369,10 @@ export class ConversationViewComponent {
       thinking: string | null,
     ): MessageGroupRow => {
       const current = cell.open;
-      // Same actor *and* same model stays in the bubble. A mid-run model switch
-      // (core agent → recovery model) closes the group so each bubble names a
-      // single generating model next to its timestamp.
-      if (current && current.actor === actor && current.model === model) return current;
+      // Same actor with the same model and thinking level stays in the bubble.
+      // A mid-run attribution switch (including a thinking-level change) closes
+      // the group so each bubble names one model / level pair at its boundary.
+      if (current && current.actor === actor && current.model === model && current.thinking === thinking) return current;
       closeGroup();
       const next: MessageGroupRow = {
         kind: 'messageGroup',
