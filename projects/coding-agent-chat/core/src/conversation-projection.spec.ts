@@ -212,7 +212,10 @@ describe('projectConversation', () => {
 
     const agent = events.find((event) => event.kind === 'message.taskAgent');
     expect(agent).toBeDefined();
-    expect(probe(agent).body).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(probe(agent).body).toBe(
+      'The stdout reply is still the visible answer, and it appears in the correct turn.\n' +
+      'Its second line is preserved in that same turn.'
+    );
     expect(probe(agent).body).not.toContain('OpenAI Codex v0.144.1');
     expect(probe(agent).body).not.toContain('/**');
     expect(probe(agent).body).not.toContain('* 10,975 contiguous stderr lines');
@@ -223,6 +226,11 @@ describe('projectConversation', () => {
     const lines = codexTextModeStderrTranscriptFragment();
 
     for (let length = 1; length <= lines.length; length += 1) {
+      const stdoutBody = lines
+        .slice(0, length)
+        .filter((line) => line.stream === 'stdout')
+        .map((line) => line.text)
+        .join('\n');
       const events = projectConversation({
         source: SOURCE,
         lines: lines.slice(0, length)
@@ -235,7 +243,10 @@ describe('projectConversation', () => {
       expect(agentBodies.join('\n')).not.toContain('/**');
       expect(agentBodies.join('\n')).not.toContain('Process exited with code 1');
       expect(events.filter((event) => probe(event).category === 'codex-transcript')).toHaveLength(1);
-      expect(agentBodies).toHaveLength(length === lines.length ? 1 : 0);
+      expect(agentBodies).toHaveLength(stdoutBody ? 1 : 0);
+      if (stdoutBody) {
+        expect(agentBodies[0]).toBe(stdoutBody);
+      }
     }
   });
 
@@ -268,7 +279,7 @@ describe('projectConversation', () => {
   });
 
   it('uses persisted run failure metadata without mistaking an inner tool exit for the run outcome', () => {
-    const lines = codexTextModeStderrTranscriptFragment().slice(0, -1);
+    const lines = codexTextModeStderrTranscriptFragment().filter((line) => line.stream !== 'stdout');
     const events = projectConversation({
       source: SOURCE,
       lines,

@@ -7,10 +7,12 @@ Audit date: 2026-07-24
 - `npm test`: 10 files and 192 tests passed. The parser/projection cases prove
   the AGT-2176-shaped stderr transcript stays out of `message.taskAgent`,
   remains bounded during streaming/replay, keeps its raw range for Trace, and
-  preserves the final stdout response.
-- `npx ng test coding-agent-chat --no-watch`: 34 files and 394 tests passed.
-  The canonical conversation component renders one compact technical row and
-  the complete stdout reply.
+  preserves a multi-line final stdout response as one complete turn.
+- `npm run build` followed by `npx ng test coding-agent-chat --no-watch`: 34
+  files and 395 tests passed. The build-first order is required because the
+  component suite deliberately resolves the package's built secondary entry
+  points. The canonical conversation component renders one compact technical
+  row and the complete stdout reply.
 - `npx ng test conversation-lab --no-watch`: 2 files and 33 tests passed. The
   host fixture proves the JSDoc source dump does not become Markdown bullets.
 - `npm run build`: all package entry points, including the Node attachment

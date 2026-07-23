@@ -37,6 +37,10 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
   const groups: ActivityLogGroup[] = [];
   let current: ActivityLogGroup | null = null;
   let codexTranscript: ActivityLogGroup | null = null;
+  // Once the stderr transcript ends, stdout is the model's final response.
+  // Keep its physical lines together so action-shaped Markdown cannot split
+  // one response into several projected agent turns.
+  let codexStdoutReply: ActivityLogGroup | null = null;
   // True while inside a ``` fenced code block. Fenced content (blank lines,
   // prose, even `*`-prefixed lines that look like tool markers) must stay in
   // ONE group, or the block is rendered as separate items and the fence
@@ -45,6 +49,15 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
   const completedCodexCommandIds = collectCompletedCodexCommandIds(lines);
 
   for (const line of lines) {
+    if (codexStdoutReply) {
+      if (line.stream === 'stdout' || isBlank(line.text)) {
+        codexStdoutReply.lines.push(line);
+        continue;
+      }
+      codexStdoutReply = null;
+      current = null;
+    }
+
     if (codexTranscript) {
       if (line.stream === 'stderr' || isBlank(line.text)) {
         codexTranscript.lines.push(line);
@@ -67,6 +80,21 @@ export function parseActivityLog(lines: CliOutputLine[]): ActivityLogGroup[] {
       }
       codexTranscript = null;
       current = null;
+      if (line.stream === 'stdout') {
+        const reply: ActivityLogGroup = {
+          id: `${groups.length}-${line.timestamp}-codex-stdout-reply`,
+          kind: 'message',
+          title: line.text,
+          subtitle: '',
+          status: 'neutral',
+          lines: [line],
+          collapsedByDefault: false
+        };
+        groups.push(reply);
+        current = reply;
+        codexStdoutReply = reply;
+        continue;
+      }
     }
 
     if (inFence) {

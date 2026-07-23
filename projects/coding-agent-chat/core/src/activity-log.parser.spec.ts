@@ -245,6 +245,10 @@ describe('parseActivityLog', () => {
     expect(groups[0].lines.some((line) => line.text.startsWith('export function projectConversation'))).toBe(true);
     expect(groups[0].lines.some((line) => line.text === 'Process exited with code 1')).toBe(true);
     expect(groups[1].kind).toBe('message');
+    expect(groups[1].lines.map((line) => line.text)).toEqual([
+      'The stdout reply is still the visible answer, and it appears in the correct turn.',
+      'Its second line is preserved in that same turn.'
+    ]);
 
     const turns = buildConversationTurns(groups);
     expect(turns.map((turn) => turn.kind)).toEqual(['system', 'agent']);
@@ -252,6 +256,7 @@ describe('parseActivityLog', () => {
     expect(turns[0].text).toContain('Open Trace for the raw technical log.');
     expect(turns[0].text).toContain('OpenAI Codex v0.144.1');
     expect(turns[1].text).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(turns[1].text).toContain('\nIts second line is preserved in that same turn.');
     expect(turns[1].text).not.toContain('OpenAI Codex v0.144.1');
 
     const messages = buildChatMessages(groups);

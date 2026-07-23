@@ -102,8 +102,8 @@ export function envelopeStreamingBoundaryFragment(): CliOutputLine[] {
 /**
  * AGT-2176-shaped Codex text-mode run: a stderr transcript with a banner,
  * echoed prompt, reasoning / tool text, a compact TypeScript + JSDoc source
- * dump, a token count, and the final stdout answer that must remain in the
- * visible chat turn.
+ * dump, a token count, and the multi-line final stdout answer that must
+ * remain complete in one visible chat turn.
  */
 export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
   resetFixtureClock();
@@ -127,7 +127,8 @@ export function codexTextModeStderrTranscriptFragment(): CliOutputLine[] {
     line('Reasoning: recover from the tool failure and finish the task.', 'stderr'),
     line('tokens used', 'stderr'),
     line('12,345', 'stderr'),
-    line('The stdout reply is still the visible answer, and it appears in the correct turn.', 'stdout')
+    line('The stdout reply is still the visible answer, and it appears in the correct turn.', 'stdout'),
+    line('Its second line is preserved in that same turn.', 'stdout')
   ];
 }
 

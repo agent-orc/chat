@@ -109,6 +109,7 @@ describe('App', () => {
     const agentRows = conversation?.querySelectorAll('[data-actor="message.taskAgent"]');
     expect(agentRows).toHaveLength(1);
     expect(agentRows?.[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(agentRows?.[0].textContent).toContain('Its second line is preserved in that same turn.');
     expect(agentRows?.[0].textContent).not.toContain('/**');
     expect(conversation?.querySelectorAll('cac-markdown li')).toHaveLength(0);
 

@@ -127,6 +127,7 @@ describe('ConversationViewComponent', () => {
     const agentRows = el.querySelectorAll('[data-actor="message.taskAgent"]');
     expect(agentRows).toHaveLength(1);
     expect(agentRows[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
+    expect(agentRows[0].textContent).toContain('Its second line is preserved in that same turn.');
     expect(agentRows[0].textContent).not.toContain('OpenAI Codex v0.144.1');
     expect(agentRows[0].textContent).not.toContain('export function projectConversation');
     expect(agentRows[0].querySelectorAll('.msg__body li')).toHaveLength(0);
