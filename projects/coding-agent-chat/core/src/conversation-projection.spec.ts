@@ -678,6 +678,24 @@ describe('projectConversation', () => {
     expect(runs[0].thinkingLevel).toBe('high');
   });
 
+  it('does not carry a prior run thinking level into a Started marker that omits it', () => {
+    const events = projectConversation({
+      source: SOURCE,
+      lines: [
+        line('[taskboard] Started codex CLI (PID 11), model=gpt-5-codex, thinkingLevel=high', 'system'),
+        line('First run reply.'),
+        line('[taskboard] Started claude CLI (PID 22), model=claude-opus-4-7', 'system'),
+        line('Second run reply.'),
+      ],
+    });
+
+    const agents = events.filter((event) => event.kind === 'message.taskAgent');
+    expect(agents.map((event) => [event.model, event.thinkingLevel])).toEqual([
+      ['gpt-5-codex', 'high'],
+      ['claude-opus-4-7', null],
+    ]);
+  });
+
   it('does not fabricate a model for orchestrator or user rows the log never names', () => {
     const events = projectConversation({
       source: SOURCE,

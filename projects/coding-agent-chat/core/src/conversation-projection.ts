@@ -124,8 +124,14 @@ export function projectConversation(
     // it is run bookkeeping, not a chat message (the legacy
     // buildConversationTurns view filters it the same way).
     const marker = readTaskboardMarker(group);
-    if (marker?.model) currentModel = marker.model;
-    if (marker?.thinkingLevel) currentThinking = marker.thinkingLevel;
+    if (marker) {
+      // A Started marker begins a distinct run.  Unlike an explicit model
+      // change, omitted metadata here must not inherit the prior run's
+      // attribution (otherwise a low/high chip can be shown for a run that
+      // did not report a thinking level at all).
+      currentModel = marker.model;
+      currentThinking = marker.thinkingLevel;
+    }
 
     const matchedRun = runByLineIndex.get(startLineIdx);
     if (matchedRun?.run && matchedRun.run.index !== currentRun?.run?.index) {
