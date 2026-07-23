@@ -281,12 +281,15 @@ describe('ProjectChatListComponent (load older / step-load strategy)', () => {
       },
     });
     const component = fixture.componentInstance;
+    // The component's project effect completes its initial load on a later
+    // turn. Set test-only window state only after that lifecycle work is
+    // settled, otherwise it can overwrite the confirmation precondition.
+    await flush(fixture);
     component.totalCount.set(5000); // above jumpToStartConfirmAt
     component.hasMoreOlder.set(true);
     const callsBefore = source.scrollCalls.length;
 
     await component.jumpToStart();
-    await flush(fixture);
 
     expect(confirmCalls).toBe(1);
     expect(source.scrollCalls.length).toBe(callsBefore);
