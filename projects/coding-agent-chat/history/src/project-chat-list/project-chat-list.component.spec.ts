@@ -148,6 +148,22 @@ describe('ProjectChatListComponent (initial load)', () => {
     expect(fixture.componentInstance.hasMoreOlder()).toBe(false);
   });
 
+  it('keeps attributed model and thinking indicators compact in history rows', async () => {
+    const corpus = makeCorpus(2);
+    corpus[0] = { ...corpus[0], model: 'gpt-5-codex', thinkingLevel: 'high' };
+    corpus[1] = { ...corpus[1], model: 'claude-sonnet-5', thinkingLevel: 'low' };
+    const fixture = await render(new StubDataSource(corpus));
+    const el: HTMLElement = fixture.nativeElement;
+
+    const rows = el.querySelectorAll<HTMLElement>('cac-chat-row');
+    expect(rows).toHaveLength(2);
+    expect(rows[0].querySelector('[data-testid="chat-row-model"]')?.textContent?.replace(/\s/g, '')).toBe('CDXH');
+    expect(rows[1].querySelector('[data-testid="chat-row-model"]')?.textContent?.replace(/\s/g, '')).toBe('CLDL');
+    // The marker remains in the existing row header, so it does not add a
+    // separate list row or alter virtualisation's one-turn-per-row contract.
+    expect(el.querySelectorAll('[data-testid="chat-row-model"]')).toHaveLength(2);
+  });
+
   it('renders the empty state with the default no-op data source (no host wiring)', async () => {
     const fixture = await render(null);
     const el: HTMLElement = fixture.nativeElement;
