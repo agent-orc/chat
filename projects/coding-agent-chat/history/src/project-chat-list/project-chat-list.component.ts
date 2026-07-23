@@ -23,11 +23,23 @@ import { TooltipDirective } from 'coding-agent-chat/shared';
 
 import { CHAT_HISTORY_CONFIRM } from '../chat-history-confirm.token';
 import { ChatRowComponent, type ChatRowInput } from '../chat-row/chat-row.component';
-import { decideLoadAction, formatLoadedSummary } from '../load-strategy';
+import {
+  CHAT_HISTORY_WINDOW_CONFIG,
+  type ChatHistoryWindowEvent,
+} from '../history-window-config';
+import {
+  decideLoadAction,
+  formatLoadedSummary,
+  planInitialHistoryWindow,
+} from '../load-strategy';
 import { PhaseSummaryListComponent } from '../phase-summary-list/phase-summary-list.component';
 import { PROJECT_CHAT_DATA_SOURCE } from '../project-chat-data-source.token';
 import { ProjectChatRailComponent } from '../project-chat-rail/project-chat-rail.component';
-import type { ProjectChatSearchHit, ProjectChatTurn } from '../project-chat.model';
+import type {
+  ProjectChatSearchHit,
+  ProjectChatStatsResponse,
+  ProjectChatTurn,
+} from '../project-chat.model';
 
 /**
  * Virtualised chat-history list. A windowed view over a per-project
@@ -72,7 +84,13 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
    *  any per-project state (e.g. local optimistic turns). */
   readonly turnSelected = output<{ turnId: string }>();
 
+  /** Stable operational events for initial policy decisions and explicit extension loads. */
+  readonly historyWindowEvent = output<ChatHistoryWindowEvent>();
+
   @ViewChild('scrollHost', { static: true }) scrollHost!: ElementRef<HTMLDivElement>;
+
+  /** Resolved once per component; hosts can override it through the public provider. */
+  readonly historyWindowConfig = inject(CHAT_HISTORY_WINDOW_CONFIG);
 
   // ── Live mode ─────────────────────────────────────────────────────
   readonly allTurns = signal<ProjectChatTurn[]>([]);
@@ -92,8 +110,8 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
   // ── Virtualisation state ──────────────────────────────────────────
   readonly visibleStart = signal(0);
   readonly visibleEnd = signal(50);
-  readonly rowHeightPx = 120; // estimate; tuned for typical short turns
-  readonly bufferRows = 50;
+  readonly rowHeightPx = this.historyWindowConfig.estimatedRowHeightPx;
+  readonly bufferRows = this.historyWindowConfig.virtualBufferRows;
 
   // ── Step-load panel state ─────────────────────────────────────────
   /**
@@ -102,11 +120,10 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
    * further to go — "scroll for days/weeks" must not freeze the
    * browser.
    */
-  readonly deepHistoryThreshold = 1000;
-  /** Confirm before doing a "jump to start" when total exceeds this. */
-  readonly jumpToStartConfirmAt = 2000;
   readonly totalCount = signal<number | null>(null);
   readonly oldestServerTs = signal<string | null>(null);
+  /** True when the initial request deliberately stopped at the age cutoff. */
+  readonly ageBoundaryHidden = signal(false);
   readonly jumpDate = signal('');
 
   // ── Phase summary layer ──────────────────────────────────────────
@@ -184,12 +201,24 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
     return Math.max(0, remaining) * this.rowHeightPx;
   });
 
+  readonly maximumWindowReached = computed(
+    () => this.allTurns().length >= this.historyWindowConfig.maxWindowMessageCount,
+  );
+
   /** Threshold reached + still more older history available + not searching. */
   readonly showStepLoadPanel = computed(() => {
     if (this.mode() !== 'live') return false;
     if (!this.hasMoreOlder()) return false;
-    return this.allTurns().length >= this.deepHistoryThreshold;
+    return (
+      this.ageBoundaryHidden() ||
+      this.maximumWindowReached() ||
+      this.allTurns().length >= this.historyWindowConfig.messageCountThreshold
+    );
   });
+
+  readonly loadMoreLabel = `Load ${this.historyWindowConfig.loadMoreMessageCount.toLocaleString(
+    'en-US',
+  )} older messages`;
 
   /** Headline rendered inside the step-load panel. Pure-function call
    *  keeps the wording locked by `load-strategy.spec.ts`. */
@@ -238,6 +267,10 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
       // Live appends are most-recent; the list is chronological.
       const next = [...curr, turn];
       next.sort((a, b) => a.ts.localeCompare(b.ts));
+      const excess = next.length - this.historyWindowConfig.maxWindowMessageCount;
+      if (excess > 0) {
+        for (const dropped of next.splice(0, excess)) this.seenIds.delete(dropped.turnId);
+      }
       return next;
     });
     this.recomputeWindow();
@@ -251,6 +284,7 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
     this.errorMsg.set(null);
     this.totalCount.set(null);
     this.oldestServerTs.set(null);
+    this.ageBoundaryHidden.set(false);
     const proj = this.project();
     if (!proj) {
       this.loadingInitial.set(false);
@@ -261,17 +295,43 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
     // Every callback below re-checks the active project: with an async
     // host transport a response for project A can land after the host
     // already switched to B — stale pages must never poison B's state.
+    let initialLoadStarted = false;
+    const startInitialLoad = (stats: ProjectChatStatsResponse | null): void => {
+      if (initialLoadStarted || this.project() !== proj) return;
+      initialLoadStarted = true;
+      this.loadInitialPage(proj, stats);
+    };
     this.dataSource.stats(proj).subscribe({
       next: (resp) => {
         if (this.project() !== proj) return;
         this.totalCount.set(resp.totalCount ?? null);
         this.oldestServerTs.set(resp.oldestTs ?? null);
+        startInitialLoad(resp);
       },
-      error: () => {
-        /* tolerate; panel falls back to loaded-only counts */
-      },
+      error: () => startInitialLoad(null),
+      complete: () => startInitialLoad(null),
     });
-    this.dataSource.scroll(proj, { limit: 50 }).subscribe({
+  }
+
+  private loadInitialPage(proj: string, stats: ProjectChatStatsResponse | null): void {
+    const startedAt = performance.now();
+    const cfg = this.historyWindowConfig;
+    const plan = stats
+      ? planInitialHistoryWindow({
+          totalCount: stats.totalCount,
+          oldestTs: stats.oldestTs,
+          newestTs: stats.newestTs,
+          messageCountThreshold: cfg.messageCountThreshold,
+          messageAgeDays: cfg.messageAgeDays,
+          smallChatMessageCount: cfg.smallChatMessageCount,
+          maxWindowMessageCount: cfg.maxWindowMessageCount,
+        })
+      : {
+          limit: Math.min(cfg.initialPageMessageCount, cfg.maxWindowMessageCount),
+          hidesOlderMessages: false,
+        };
+    this.ageBoundaryHidden.set(plan.hidesOlderMessages);
+    this.dataSource.scroll(proj, { after: plan.after, limit: plan.limit }).subscribe({
       next: (resp) => {
         if (this.project() !== proj) return;
         // The scroll tail returns reverse-chronological; flip so the
@@ -280,7 +340,18 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
         for (const t of ordered) this.seenIds.add(t.turnId);
         this.allTurns.set(ordered);
         this.loadingInitial.set(false);
-        this.hasMoreOlder.set(ordered.length === 50);
+        const knownTotal = stats?.totalCount ?? null;
+        this.hasMoreOlder.set(
+          plan.hidesOlderMessages ||
+            (knownTotal != null ? ordered.length < knownTotal : ordered.length === plan.limit),
+        );
+        this.emitHistoryWindowEvent({
+          name: 'history_window_initialized',
+          project: proj,
+          loadedMessageCount: ordered.length,
+          durationMs: performance.now() - startedAt,
+          requestedMessageCount: plan.limit,
+        });
         // Snap to bottom on first load so the user sees recent turns.
         queueMicrotask(() => {
           this.scrollHost.nativeElement.scrollTop = this.scrollHost.nativeElement.scrollHeight;
@@ -289,8 +360,17 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         if (this.project() !== proj) return;
-        this.errorMsg.set(err?.error?.error || err?.message || 'Failed to load chat');
+        const message = err?.error?.error || err?.message || 'Failed to load chat';
+        this.errorMsg.set(message);
         this.loadingInitial.set(false);
+        this.emitHistoryWindowEvent({
+          name: 'history_window_load_failed',
+          project: proj,
+          loadedMessageCount: 0,
+          durationMs: performance.now() - startedAt,
+          requestedMessageCount: plan.limit,
+          error: message,
+        });
       },
     });
   }
@@ -316,12 +396,18 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
         resolve(0);
         return;
       }
+      const remainingCapacity = this.historyWindowConfig.maxWindowMessageCount - all.length;
+      const boundedPageSize = Math.min(pageSize, remainingCapacity);
+      if (boundedPageSize <= 0) {
+        resolve(0);
+        return;
+      }
       this.loadingOlder.set(true);
       const oldest = all[0].ts;
       const host = this.scrollHost.nativeElement;
       const beforeHeight = host.scrollHeight;
       const beforeTop = host.scrollTop;
-      this.dataSource.scroll(proj, { before: oldest, limit: pageSize }).subscribe({
+      this.dataSource.scroll(proj, { before: oldest, limit: boundedPageSize }).subscribe({
         next: (resp) => {
           if (this.project() !== proj) {
             this.loadingOlder.set(false);
@@ -334,7 +420,7 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
           if (fresh.length === 0) this.hasMoreOlder.set(false);
           this.allTurns.update((curr) => [...fresh, ...curr]);
           this.loadingOlder.set(false);
-          if (resp.turns && resp.turns.length < pageSize) this.hasMoreOlder.set(false);
+          if (resp.turns && resp.turns.length < boundedPageSize) this.hasMoreOlder.set(false);
           // Preserve scroll position relative to the previously-top item.
           queueMicrotask(() => {
             const afterHeight = host.scrollHeight;
@@ -345,7 +431,17 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           if (this.project() === proj) {
-            this.errorMsg.set(err?.error?.error || err?.message || 'Failed to load older turns');
+            const message =
+              err?.error?.error || err?.message || 'Failed to load older turns';
+            this.errorMsg.set(message);
+            this.emitHistoryWindowEvent({
+              name: 'history_window_load_failed',
+              project: proj,
+              loadedMessageCount: this.allTurns().length,
+              durationMs: 0,
+              requestedMessageCount: boundedPageSize,
+              error: message,
+            });
           }
           this.loadingOlder.set(false);
           resolve(0);
@@ -357,13 +453,15 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
   onScroll(): void {
     this.recomputeWindow();
     const host = this.scrollHost.nativeElement;
-    const isNearTop = host.scrollTop < 200;
+    const isNearTop = host.scrollTop < this.historyWindowConfig.boundaryTriggerPx;
     const action = decideLoadAction({
       loadedCount: this.allTurns().length,
       hasMoreOlder: this.hasMoreOlder(),
       isLoading: this.loadingOlder(),
       isNearTop,
-      threshold: this.deepHistoryThreshold,
+      threshold: this.historyWindowConfig.messageCountThreshold,
+      hidesOlderMessages: this.ageBoundaryHidden(),
+      maximumReached: this.maximumWindowReached(),
     });
     if (action === 'continue-backfill') {
       void this.loadOlder();
@@ -550,7 +648,10 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
    * count safety cap. Each page is `loadOlder(200)`; scroll-position
    * preservation is handled by `loadOlder` itself.
    */
-  async loadBackTo(targetTs: string, safetyCap = 5000): Promise<void> {
+  async loadBackTo(
+    targetTs: string,
+    safetyCap = this.historyWindowConfig.maxWindowMessageCount,
+  ): Promise<void> {
     const targetMs = new Date(targetTs).getTime();
     if (!Number.isFinite(targetMs)) return;
     let safety = 0;
@@ -558,8 +659,8 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
       const all = this.allTurns();
       const oldestLoaded = all.length ? new Date(all[0].ts).getTime() : Number.POSITIVE_INFINITY;
       if (oldestLoaded <= targetMs) break;
-      if (safety++ > Math.ceil(safetyCap / 200)) break;
-      const fresh = await this.loadOlder(200);
+      if (safety++ > Math.ceil(safetyCap / this.historyWindowConfig.pageMessageCount)) break;
+      const fresh = await this.loadOlder(this.historyWindowConfig.pageMessageCount);
       if (fresh === 0) break;
     }
   }
@@ -568,15 +669,45 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
    *  the server reports end-of-history. */
   async loadMoreMessages(targetExtra: number): Promise<void> {
     const startCount = this.allTurns().length;
+    const allowedExtra = Math.max(
+      0,
+      Math.min(
+        targetExtra,
+        this.historyWindowConfig.maxWindowMessageCount - startCount,
+      ),
+    );
     let safety = 0;
     while (this.hasMoreOlder()) {
-      if (this.allTurns().length - startCount >= targetExtra) break;
-      if (safety++ > Math.ceil(targetExtra / 200) + 1) break;
-      const remaining = targetExtra - (this.allTurns().length - startCount);
-      const page = Math.max(50, Math.min(200, remaining));
+      if (this.allTurns().length - startCount >= allowedExtra) break;
+      if (
+        safety++ >
+        Math.ceil(allowedExtra / this.historyWindowConfig.pageMessageCount) + 1
+      ) {
+        break;
+      }
+      const remaining = allowedExtra - (this.allTurns().length - startCount);
+      const page = Math.min(this.historyWindowConfig.pageMessageCount, remaining);
       const fresh = await this.loadOlder(page);
       if (fresh === 0) break;
     }
+  }
+
+  /** Primary boundary action: one deliberate click extends by the configured chunk. */
+  async loadOlderMessages(): Promise<void> {
+    const proj = this.project();
+    if (!proj) return;
+    const startedAt = performance.now();
+    const before = this.allTurns().length;
+    await this.loadMoreMessages(this.historyWindowConfig.loadMoreMessageCount);
+    const after = this.allTurns().length;
+    this.emitHistoryWindowEvent({
+      name: 'history_window_extended',
+      project: proj,
+      loadedMessageCount: after,
+      durationMs: performance.now() - startedAt,
+      requestedMessageCount: this.historyWindowConfig.loadMoreMessageCount,
+      addedMessageCount: after - before,
+    });
   }
 
   /** "Another day / week / month" — shifts the target backwards from
@@ -609,7 +740,7 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
    *  cannot freeze the UI. */
   async jumpToStart(): Promise<void> {
     const total = this.totalCount();
-    if (total != null && total > this.jumpToStartConfirmAt) {
+    if (total != null && total > this.historyWindowConfig.jumpToStartConfirmMessageCount) {
       const ok = await this.confirmDialog.confirm({
         title: 'Load entire chat history?',
         message: `Load all ${total.toLocaleString('en-US')} messages? This may take a moment.`,
@@ -638,5 +769,25 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
     } catch {
       return iso;
     }
+  }
+
+  private emitHistoryWindowEvent(
+    event: Pick<
+      ChatHistoryWindowEvent,
+      | 'name'
+      | 'project'
+      | 'loadedMessageCount'
+      | 'durationMs'
+      | 'requestedMessageCount'
+      | 'addedMessageCount'
+      | 'error'
+    >,
+  ): void {
+    this.historyWindowEvent.emit({
+      ...event,
+      totalMessageCount: this.totalCount(),
+      hidesOlderMessages: this.ageBoundaryHidden(),
+      maximumReached: this.maximumWindowReached(),
+    });
   }
 }

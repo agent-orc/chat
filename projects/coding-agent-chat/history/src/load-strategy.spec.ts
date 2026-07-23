@@ -3,7 +3,11 @@
  * the step-load panel headline. Vendored 1:1 from the host frontend so
  * the wording + threshold semantics stay locked across the extraction.
  */
-import { decideLoadAction, formatLoadedSummary } from './load-strategy';
+import {
+  decideLoadAction,
+  formatLoadedSummary,
+  planInitialHistoryWindow,
+} from './load-strategy';
 
 describe('decideLoadAction', () => {
   const base = {
@@ -37,8 +41,83 @@ describe('decideLoadAction', () => {
     expect(decideLoadAction({ ...base, loadedCount: 200 })).toBe('continue-backfill');
   });
 
+  it('shows the boundary prompt when the age layer is hidden', () => {
+    expect(
+      decideLoadAction({
+        ...base,
+        loadedCount: 100,
+        hidesOlderMessages: true,
+      }),
+    ).toBe('show-panel');
+  });
+
+  it('never silently crosses the configured maximum', () => {
+    expect(
+      decideLoadAction({
+        ...base,
+        loadedCount: 5000,
+        threshold: 10_000,
+        maximumReached: true,
+      }),
+    ).toBe('show-panel');
+  });
+
   it('returns no-op below the threshold when not near top', () => {
     expect(decideLoadAction({ ...base, loadedCount: 200, isNearTop: false })).toBe('no-op');
+  });
+});
+
+describe('planInitialHistoryWindow', () => {
+  const base = {
+    totalCount: 501,
+    oldestTs: '2026-06-01T12:00:00.000Z',
+    newestTs: '2026-06-30T12:00:00.000Z',
+    messageCountThreshold: 500,
+    messageAgeDays: 7,
+    smallChatMessageCount: 30,
+    maxWindowMessageCount: 5000,
+  };
+
+  it('hides the old layer only when count is greater than N and old messages exist', () => {
+    expect(planInitialHistoryWindow(base)).toEqual({
+      after: '2026-06-23T11:59:59.999Z',
+      limit: 5000,
+      hidesOlderMessages: true,
+    });
+    expect(planInitialHistoryWindow({ ...base, totalCount: 500 })).toEqual({
+      limit: 500,
+      hidesOlderMessages: false,
+    });
+    expect(
+      planInitialHistoryWindow({
+        ...base,
+        oldestTs: '2026-06-24T12:00:00.000Z',
+      }).hidesOlderMessages,
+    ).toBe(false);
+  });
+
+  it('keeps a message exactly D days old inside the recent layer', () => {
+    const plan = planInitialHistoryWindow(base);
+    expect(Date.parse(plan.after!)).toBe(
+      Date.parse(base.newestTs) - base.messageAgeDays * 24 * 60 * 60 * 1000 - 1,
+    );
+  });
+
+  it('loads small chats in full even when their messages span previous days', () => {
+    expect(planInitialHistoryWindow({ ...base, totalCount: 30 })).toEqual({
+      limit: 30,
+      hidesOlderMessages: false,
+    });
+  });
+
+  it('caps an unwindowed initial request at the overall maximum', () => {
+    expect(
+      planInitialHistoryWindow({
+        ...base,
+        totalCount: 6000,
+        oldestTs: '2026-06-29T12:00:00.000Z',
+      }),
+    ).toEqual({ limit: 5000, hidesOlderMessages: false });
   });
 });
 

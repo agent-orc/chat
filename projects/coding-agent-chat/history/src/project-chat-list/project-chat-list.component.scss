@@ -134,6 +134,10 @@
   color: var(--studio-fg, #e2e8f0);
   font-size: 12px;
 }
+.pchat__step-title {
+  color: var(--studio-fg, #f8fafc);
+  font-size: 13px;
+}
 .pchat__step-row {
   display: flex;
   flex-wrap: wrap;
@@ -157,6 +161,12 @@
   transition: background 0.15s ease;
 }
 .pchat__step-btn:hover { background: rgba(124,58,237,0.18); }
+.pchat__step-btn--primary {
+  background: var(--studio-accent, #7c3aed);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}
 .pchat__step-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

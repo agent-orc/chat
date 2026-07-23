@@ -1,6 +1,12 @@
 import { EnvironmentProviders, Provider, Type, makeEnvironmentProviders } from '@angular/core';
 
 import {
+  CHAT_HISTORY_WINDOW_CONFIG,
+  resolveChatHistoryWindowConfig,
+  type ChatHistoryWindowOptions,
+} from 'coding-agent-chat/history';
+
+import {
   CHAT_TASK_REFERENCE_PROVIDER,
   ChatTaskReferenceProvider,
   INLINE_REFERENCE_RENDERERS,
@@ -32,6 +38,11 @@ export interface CodingAgentChatOptions {
    * Omit to leave message text rendered exactly as before.
    */
   inlineReferences?: readonly InlineReferenceMatcher[];
+  /**
+   * Library-owned history-window thresholds. Omitted values retain the
+   * benchmark-backed defaults exported as DEFAULT_CHAT_HISTORY_WINDOW_CONFIG.
+   */
+  historyWindow?: ChatHistoryWindowOptions;
 }
 
 /**
@@ -61,6 +72,12 @@ export function provideCodingAgentChat(options: CodingAgentChatOptions = {}): En
   }
   if (options.inlineReferences?.length) {
     providers.push({ provide: INLINE_REFERENCE_RENDERERS, useValue: options.inlineReferences });
+  }
+  if (options.historyWindow) {
+    providers.push({
+      provide: CHAT_HISTORY_WINDOW_CONFIG,
+      useValue: resolveChatHistoryWindowConfig(options.historyWindow),
+    });
   }
   return makeEnvironmentProviders(providers);
 }

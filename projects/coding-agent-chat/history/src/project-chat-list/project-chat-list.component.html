@@ -54,8 +54,25 @@
             class="pchat__step-panel"
             data-testid="pchat-step-load-panel"
             aria-label="Load more chat history">
+            <strong class="pchat__step-title" data-testid="pchat-boundary-prompt">
+              @if (maximumWindowReached()) {
+                Maximum history window reached
+              } @else {
+                Older messages are hidden
+              }
+            </strong>
             <div class="pchat__step-summary" data-testid="pchat-step-summary">
               {{ stepLoadSummary() }}
+            </div>
+            <div class="pchat__step-row">
+              <button
+                type="button"
+                class="pchat__step-btn pchat__step-btn--primary"
+                data-testid="pchat-load-older"
+                [disabled]="maximumWindowReached() || loadingOlder()"
+                (click)="loadOlderMessages()">
+                {{ loadMoreLabel }}
+              </button>
             </div>
             <div class="pchat__step-row">
               <span class="pchat__step-label">Load more by time:</span>
@@ -82,23 +99,6 @@
                 [cacTooltip]="'Load one more month of history'"
                 (click)="stepBackByDays(30)">
                 Another month
-              </button>
-            </div>
-            <div class="pchat__step-row">
-              <span class="pchat__step-label">Load more by count:</span>
-              <button
-                type="button"
-                class="pchat__step-btn"
-                data-testid="pchat-step-500"
-                (click)="stepBackByCount(500)">
-                +500 messages
-              </button>
-              <button
-                type="button"
-                class="pchat__step-btn"
-                data-testid="pchat-step-2000"
-                (click)="stepBackByCount(2000)">
-                +2000 messages
               </button>
             </div>
             <div class="pchat__step-row">

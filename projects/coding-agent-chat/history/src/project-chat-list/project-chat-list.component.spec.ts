@@ -9,9 +9,14 @@
  */
 import type { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { EMPTY, of } from 'rxjs';
+import { EMPTY, of, throwError } from 'rxjs';
 
 import { CHAT_HISTORY_CONFIRM, type ChatHistoryConfirm } from '../chat-history-confirm.token';
+import {
+  CHAT_HISTORY_WINDOW_CONFIG,
+  resolveChatHistoryWindowConfig,
+  type ChatHistoryWindowOptions,
+} from '../history-window-config';
 import {
   PROJECT_CHAT_DATA_SOURCE,
   type ProjectChatDataSource,
@@ -33,12 +38,12 @@ beforeAll(() => {
 });
 
 /** Chronological fixture corpus: turn-0000 is the oldest. */
-function makeCorpus(count: number): ProjectChatTurn[] {
+function makeCorpus(count: number, intervalMs = 1000): ProjectChatTurn[] {
   return Array.from({ length: count }, (_, i) => ({
     turnId: `turn-${String(i).padStart(4, '0')}`,
     author: 'agent' as const,
     kind: 'turn' as const,
-    ts: new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(),
+    ts: new Date(Date.UTC(2026, 0, 1) + i * intervalMs).toISOString(),
     body: `body of turn ${i}`,
   }));
 }
@@ -52,6 +57,7 @@ class StubDataSource implements ProjectChatDataSource {
   readonly scrollCalls: Array<{ project: string; request: ProjectChatScrollRequest }> = [];
   readonly searchCalls: Array<{ project: string; query: string; limit: number }> = [];
   searchResults: ProjectChatSearchHit[] = [];
+  statsError = false;
 
   constructor(readonly corpus: ProjectChatTurn[]) {}
 
@@ -59,7 +65,12 @@ class StubDataSource implements ProjectChatDataSource {
     this.scrollCalls.push({ project, request });
     const limit = request.limit ?? 50;
     const before = request.before;
-    const eligible = before ? this.corpus.filter((t) => t.ts < before) : this.corpus;
+    const after = request.after;
+    const eligible = before
+      ? this.corpus.filter((t) => t.ts < before)
+      : after
+        ? this.corpus.filter((t) => t.ts > after)
+        : this.corpus;
     const turns = eligible.slice(-limit).reverse(); // newest first
     return of({ project, direction: before ? ('before' as const) : ('tail' as const), turns });
   }
@@ -70,6 +81,7 @@ class StubDataSource implements ProjectChatDataSource {
   }
 
   stats(project: string) {
+    if (this.statsError) return throwError(() => new Error('stats unavailable'));
     const corpus = this.corpus;
     return of({
       project,
@@ -93,23 +105,23 @@ async function flush(fixture: { whenStable(): Promise<unknown> }): Promise<void>
 
 interface RenderOptions {
   confirm?: ChatHistoryConfirm;
-  /** Applied before the first change detection so non-reactive knobs
-   *  (deep-history threshold) are seen by the initial computed run. */
-  deepHistoryThreshold?: number;
+  historyWindow?: ChatHistoryWindowOptions;
 }
 
 async function render(dataSource: ProjectChatDataSource | null, options: RenderOptions = {}) {
   const providers: Provider[] = [];
   if (dataSource) providers.push({ provide: PROJECT_CHAT_DATA_SOURCE, useValue: dataSource });
   if (options.confirm) providers.push({ provide: CHAT_HISTORY_CONFIRM, useValue: options.confirm });
+  if (options.historyWindow) {
+    providers.push({
+      provide: CHAT_HISTORY_WINDOW_CONFIG,
+      useValue: resolveChatHistoryWindowConfig(options.historyWindow),
+    });
+  }
   if (providers.length > 0) {
     TestBed.configureTestingModule({ providers });
   }
   const fixture = TestBed.createComponent(ProjectChatListComponent);
-  if (options.deepHistoryThreshold != null) {
-    (fixture.componentInstance as unknown as { deepHistoryThreshold: number }).deepHistoryThreshold =
-      options.deepHistoryThreshold;
-  }
   fixture.componentRef.setInput('project', 'demo');
   await fixture.whenStable();
   await flush(fixture);
@@ -123,7 +135,7 @@ describe('ProjectChatListComponent (initial load)', () => {
 
     expect(source.scrollCalls.length).toBe(1);
     expect(source.scrollCalls[0].project).toBe('demo');
-    expect(source.scrollCalls[0].request.limit).toBe(50);
+    expect(source.scrollCalls[0].request.limit).toBe(5);
     expect(source.scrollCalls[0].request.before).toBeUndefined();
 
     const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('cac-chat-row');
@@ -148,7 +160,10 @@ describe('ProjectChatListComponent (initial load)', () => {
 describe('ProjectChatListComponent (load older / step-load strategy)', () => {
   it('backfills one page with a before-cursor when scrolled near the top', async () => {
     const source = new StubDataSource(makeCorpus(80));
-    const fixture = await render(source);
+    source.statsError = true;
+    const fixture = await render(source, {
+      historyWindow: { initialPageMessageCount: 50 },
+    });
     const component = fixture.componentInstance;
 
     expect(component.allTurns().length).toBe(50);
@@ -168,8 +183,10 @@ describe('ProjectChatListComponent (load older / step-load strategy)', () => {
   });
 
   it('stops silent backfill past the deep-history threshold and shows the step-load panel', async () => {
-    const source = new StubDataSource(makeCorpus(80));
-    const fixture = await render(source, { deepHistoryThreshold: 10 });
+    const source = new StubDataSource(makeCorpus(80, 24 * 60 * 60 * 1000));
+    const fixture = await render(source, {
+      historyWindow: { messageCountThreshold: 10, smallChatMessageCount: 5 },
+    });
     const component = fixture.componentInstance;
 
     component.onScroll();
@@ -182,26 +199,74 @@ describe('ProjectChatListComponent (load older / step-load strategy)', () => {
     const el: HTMLElement = fixture.nativeElement;
     const panel = el.querySelector('[data-testid="pchat-step-load-panel"]');
     expect(panel).toBeTruthy();
-    expect(el.querySelector('[data-testid="pchat-step-summary"]')?.textContent).toContain(
-      'Viewing 50 of 80 messages.',
+    expect(el.querySelector('[data-testid="pchat-boundary-prompt"]')?.textContent).toContain(
+      'Older messages are hidden',
     );
+    expect(el.querySelector('[data-testid="pchat-step-summary"]')?.textContent).toContain('of 80 messages.');
   });
 
-  it('pages explicitly through the panel ("+500 messages") until the corpus is exhausted', async () => {
-    const source = new StubDataSource(makeCorpus(80));
-    const fixture = await render(source, { deepHistoryThreshold: 10 });
+  it('extends the age window by the configured chunk only after the prompt is confirmed', async () => {
+    const source = new StubDataSource(makeCorpus(80, 24 * 60 * 60 * 1000));
+    const fixture = await render(source, {
+      historyWindow: {
+        messageCountThreshold: 10,
+        smallChatMessageCount: 5,
+        loadMoreMessageCount: 20,
+        pageMessageCount: 10,
+      },
+    });
     const component = fixture.componentInstance;
+    const initialCount = component.allTurns().length;
+    const windowEvents: Array<{ name: string; addedMessageCount?: number }> = [];
+    component.historyWindowEvent.subscribe((event) => windowEvents.push(event));
 
     const button = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
-      '[data-testid="pchat-step-500"]',
+      '[data-testid="pchat-load-older"]',
     );
     expect(button).toBeTruthy();
+    expect(button?.textContent).toContain('Load 20 older messages');
     button!.click();
     await flush(fixture);
     await flush(fixture);
 
-    expect(component.allTurns().length).toBe(80);
-    expect(component.hasMoreOlder()).toBe(false);
+    expect(component.allTurns().length).toBe(initialCount + 20);
+    expect(source.scrollCalls.slice(1).map((call) => call.request.limit)).toEqual([10, 10]);
+    expect(windowEvents).toContainEqual(
+      expect.objectContaining({
+        name: 'history_window_extended',
+        addedMessageCount: 20,
+      }),
+    );
+  });
+
+  it('shows all previous days immediately for a small chat', async () => {
+    const source = new StubDataSource(makeCorpus(25, 24 * 60 * 60 * 1000));
+    const fixture = await render(source, {
+      historyWindow: { messageCountThreshold: 10, smallChatMessageCount: 30 },
+    });
+
+    expect(fixture.componentInstance.allTurns().length).toBe(25);
+    expect(fixture.componentInstance.ageBoundaryHidden()).toBe(false);
+    expect(fixture.componentInstance.showStepLoadPanel()).toBe(false);
+    expect(source.scrollCalls[0].request.after).toBeUndefined();
+  });
+
+  it('enforces the overall maximum and disables further extension', async () => {
+    const source = new StubDataSource(makeCorpus(80));
+    const fixture = await render(source, {
+      historyWindow: {
+        messageCountThreshold: 50,
+        smallChatMessageCount: 10,
+        maxWindowMessageCount: 20,
+      },
+    });
+
+    expect(fixture.componentInstance.allTurns().length).toBe(20);
+    expect(fixture.componentInstance.maximumWindowReached()).toBe(true);
+    const button = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '[data-testid="pchat-load-older"]',
+    );
+    expect(button?.disabled).toBe(true);
   });
 
   it('asks the CHAT_HISTORY_CONFIRM seam before "jump to start" and aborts on decline', async () => {
@@ -239,9 +304,9 @@ describe('ProjectChatListComponent (windowing)', () => {
     await fixture.whenStable();
 
     expect(component.windowedTurns().length).toBe(10);
-    expect(component.windowedTurns()[0].turnId).toBe('turn-0040'); // 30..79 loaded, +10
+    expect(component.windowedTurns()[0].turnId).toBe('turn-0010');
     expect(component.topSpacerPx()).toBe(10 * component.rowHeightPx);
-    expect(component.bottomSpacerPx()).toBe((50 - 20) * component.rowHeightPx);
+    expect(component.bottomSpacerPx()).toBe((80 - 20) * component.rowHeightPx);
 
     const rows = (fixture.nativeElement as HTMLElement).querySelectorAll('cac-chat-row');
     expect(rows.length).toBe(10);

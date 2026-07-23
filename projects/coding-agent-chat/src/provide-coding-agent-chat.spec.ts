@@ -18,6 +18,10 @@ import {
   ChatMediaLightbox,
   MediaLightboxGalleryRequest,
 } from 'coding-agent-chat/shared';
+import {
+  CHAT_HISTORY_WINDOW_CONFIG,
+  DEFAULT_CHAT_HISTORY_WINDOW_CONFIG,
+} from 'coding-agent-chat/history';
 
 import { provideCodingAgentChat } from './provide-coding-agent-chat';
 
@@ -115,5 +119,27 @@ describe('provideCodingAgentChat', () => {
       providers: [provideCodingAgentChat({ inlineReferences: matchers })],
     });
     expect(TestBed.inject(INLINE_REFERENCE_RENDERERS)).toBe(matchers);
+  });
+
+  it('keeps history defaults and merges partial historyWindow overrides', () => {
+    TestBed.configureTestingModule({ providers: [provideCodingAgentChat()] });
+    expect(TestBed.inject(CHAT_HISTORY_WINDOW_CONFIG)).toBe(
+      DEFAULT_CHAT_HISTORY_WINDOW_CONFIG,
+    );
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideCodingAgentChat({
+          historyWindow: { messageAgeDays: 14, loadMoreMessageCount: 250 },
+        }),
+      ],
+    });
+    expect(TestBed.inject(CHAT_HISTORY_WINDOW_CONFIG)).toMatchObject({
+      messageAgeDays: 14,
+      loadMoreMessageCount: 250,
+      messageCountThreshold: 500,
+      maxWindowMessageCount: 5000,
+    });
   });
 });

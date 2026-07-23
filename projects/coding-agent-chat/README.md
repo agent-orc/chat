@@ -122,6 +122,10 @@ no-ops. Light them up from your bootstrap providers:
 provideCodingAgentChat({
   taskReferences: TaskReferenceNavigationService, // implements ChatTaskReferenceProvider
   mediaLightbox: MediaLightboxService,            // implements ChatMediaLightbox
+  historyWindow: {
+    messageAgeDays: 7,
+    loadMoreMessageCount: 1000,
+  },
 })
 ```
 
@@ -130,6 +134,52 @@ The `history` entry point adds two more optional seams, provided directly:
 `<cac-project-chat-list>` — defaults to an empty history) and
 `CHAT_HISTORY_CONFIRM` (guard prompt before loading an entire deep history —
 defaults to auto-confirm).
+
+## History windowing
+
+`<cac-project-chat-list>` owns long-history policy in the library. When stats
+report more than 500 messages and any message is older than seven days relative
+to the newest message, the old layer is omitted from the first request. Reaching
+the top shows **Load 1,000 older messages**; each click extends the retained
+window without silently crossing the 5,000-message maximum. Chats with 30 or
+fewer messages always open in full, even when they span older days.
+
+Override any threshold once at bootstrap:
+
+```ts
+provideCodingAgentChat({
+  historyWindow: {
+    messageCountThreshold: 750,
+    messageAgeDays: 14,
+    smallChatMessageCount: 40,
+    loadMoreMessageCount: 500,
+    maxWindowMessageCount: 3000,
+    initialPageMessageCount: 100,
+    pageMessageCount: 200,
+    boundaryTriggerPx: 200,
+    estimatedRowHeightPx: 120,
+    virtualBufferRows: 50,
+    jumpToStartConfirmMessageCount: 2000,
+  },
+})
+```
+
+Omitted properties keep
+`DEFAULT_CHAT_HISTORY_WINDOW_CONFIG`; invalid non-positive values and a
+small-chat threshold above the maximum are rejected during provider creation.
+The same resolved object can be provided directly under
+`CHAT_HISTORY_WINDOW_CONFIG`.
+
+The data source's `stats()` result supplies `totalCount`, `oldestTs`, and
+`newestTs` for the age decision. If stats are unavailable, the component falls
+back to the configured initial tail page and progressive cursor loading. The
+optional `historyWindowEvent` output emits stable
+`history_window_initialized`, `history_window_extended`, and
+`history_window_load_failed` events with counts and duration for host
+instrumentation.
+
+The reproducible measurements and rationale for these defaults live in
+[`docs/history-window-benchmark.md`](../../docs/history-window-benchmark.md).
 
 ## Model selector: the catalog contract
 

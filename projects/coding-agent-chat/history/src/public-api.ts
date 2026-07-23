@@ -11,6 +11,7 @@
  */
 
 export * from './project-chat.model';
+export * from './history-window-config';
 export * from './load-strategy';
 export * from './project-chat-data-source.token';
 export * from './chat-history-confirm.token';
