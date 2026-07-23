@@ -6,6 +6,7 @@
     "paths": {
       "coding-agent-chat": ["./dist/coding-agent-chat"],
       "coding-agent-chat/core": ["./dist/coding-agent-chat/core"],
+      "coding-agent-chat/node": ["./dist/coding-agent-chat/node"],
       "coding-agent-chat/markdown": ["./dist/coding-agent-chat/markdown"],
       "coding-agent-chat/shared": ["./dist/coding-agent-chat/shared"],
       "coding-agent-chat/conversation": ["./dist/coding-agent-chat/conversation"],

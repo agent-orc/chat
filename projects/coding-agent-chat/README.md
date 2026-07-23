@@ -24,6 +24,7 @@ and `rxjs ~7.8`.
 |---|---|
 | `coding-agent-chat` | everything + `provideCodingAgentChat()` |
 | `coding-agent-chat/core` | wire contract + projection + pure helpers (zero Angular) |
+| `coding-agent-chat/node` | durable project-filesystem attachment storage for Node.js hosts and runners |
 | `coding-agent-chat/markdown` | `<cac-markdown>` + markdown utils + task-reference seam + inline-reference renderers |
 | `coding-agent-chat/conversation` | `<cac-conversation-view>` + tool-burst chip + session card |
 | `coding-agent-chat/composer` | `<cac-chat>` composer + role badge + workforce/phase helpers |
@@ -51,27 +52,26 @@ The well-known layout is:
 
 Names are content-addressed, so retries are idempotent and the same conversation
 and bytes always produce the same path. Conversation ids are percent-encoded as
-one portable path segment. A host supplies the three-operation filesystem seam;
-the core package stays usable by browser, SSR and runner code without depending
-on Node:
+one portable path segment. Node.js hosts and runners can use the included
+durable storage adapter. Other hosts can implement the same three-operation
+filesystem seam, keeping the core package usable in browsers and SSR without a
+Node dependency:
 
 ```ts
+import { NodeChatAttachmentStorage } from 'coding-agent-chat/node';
 import {
   ChatAttachmentContract,
-  type ChatAttachmentStorage,
   type ChatDraftAttachment,
   type ChatMessage,
 } from 'coding-agent-chat/core';
 
-// Implement this with the Studio/backend's project-rooted filesystem service.
-// write() must create parents and complete atomically before it resolves.
-declare const projectStorage: ChatAttachmentStorage;
+declare const projectRoot: string;
 declare const conversationId: string;
 declare const draft: ChatDraftAttachment;
 declare const structuredLogger: { info(event: unknown): void };
 declare function archive(message: ChatMessage): Promise<void>;
 
-const attachments = new ChatAttachmentContract(projectStorage, {
+const attachments = new ChatAttachmentContract(new NodeChatAttachmentStorage(projectRoot), {
   log: event => structuredLogger.info(event),
 });
 const ref = await attachments.persistDraft(conversationId, draft);
