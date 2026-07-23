@@ -110,6 +110,7 @@ describe('App', () => {
     expect(agentRows).toHaveLength(1);
     expect(agentRows?.[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
     expect(agentRows?.[0].textContent).not.toContain('/**');
+    expect(conversation?.querySelectorAll('cac-markdown li')).toHaveLength(0);
 
     compiled.querySelector<HTMLButtonElement>('[data-testid="conversation-open-trace"]')!.click();
     await fixture.whenStable();
@@ -118,6 +119,7 @@ describe('App', () => {
     const traceText = Array.from(traceLines).map((line) => line.textContent ?? '').join('\n');
     expect(traceText).toContain('export function projectConversation(): string {');
     expect(traceText).toContain('* 10,975 contiguous stderr lines');
+    expect(compiled.querySelector('[data-testid="lab-trace-lines"] cac-markdown')).toBeNull();
   });
 
   it('explains the missing activity log when tracing a fixture scenario', async () => {
