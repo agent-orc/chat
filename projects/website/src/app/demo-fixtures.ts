@@ -41,6 +41,7 @@ const runStart: RunMarkerEvent = {
   runId: 4,
   cli: 'claude',
   model: 'claude-fable-5',
+  thinkingLevel: 'high',
   sessionId: '7f3d9a2c-51e8-4b06-9c44-d0a2b7e1f985',
   rawRange: nextRange(),
 };
@@ -182,6 +183,7 @@ const runComplete: RunMarkerEvent = {
   runId: 4,
   cli: 'claude',
   model: 'claude-fable-5',
+  thinkingLevel: 'high',
   durationSeconds: 510,
   exitCode: 0,
   tokens: { inputTokens: 36420, outputTokens: 7180 },
@@ -275,6 +277,7 @@ const bRunStart: RunMarkerEvent = {
   runId: 7,
   cli: 'claude',
   model: 'claude-fable-5',
+  thinkingLevel: 'medium',
   sessionId: 'a41c6f80-2b9d-47e3-8c15-6e9f0d3b7a24',
   rawRange: nextRangeB(),
 };
@@ -423,6 +426,7 @@ const bRunComplete: RunMarkerEvent = {
   runId: 7,
   cli: 'claude',
   model: 'claude-fable-5',
+  thinkingLevel: 'medium',
   durationSeconds: 660,
   exitCode: 0,
   tokens: { inputTokens: 48210, outputTokens: 9040 },

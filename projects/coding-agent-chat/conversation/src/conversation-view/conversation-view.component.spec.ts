@@ -79,6 +79,20 @@ async function render(
 }
 
 describe('ConversationViewComponent', () => {
+  it('shows the shared compact indicator on an attributed message boundary', async () => {
+    const fixture = await render([
+      msg('message.taskAgent', 'Working.', { model: 'gpt-5-codex', thinkingLevel: 'high' }),
+    ]);
+    const indicator = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-testid="conversation-message-model"]',
+    );
+
+    expect(indicator?.textContent?.replace(/\s/g, '')).toBe('CDXH');
+    expect(indicator?.querySelector('.model-level')?.getAttribute('title')).toBe(
+      'gpt-5-codex, thinking high',
+    );
+  });
+
   it('renders Codex text-mode stderr as one compact system row and keeps the stdout reply visible', async () => {
     const events = projectConversation({
       source: 'fixture-job',
@@ -242,6 +256,7 @@ describe('ConversationViewComponent', () => {
       runId: 4,
       cli: 'claude',
       model: 'claude-opus-4-7',
+      thinkingLevel: 'xhigh',
       rawRange: RANGE,
     };
     const fixture = await render([start, msg('message.taskAgent', 'Working.'), complete]);
@@ -252,7 +267,11 @@ describe('ConversationViewComponent', () => {
     expect(markers.length).toBe(1);
     expect(markers[0].getAttribute('data-marker')).toBe('complete');
     expect(markers[0].textContent).toContain('Run 4 · complete');
-    expect(markers[0].textContent).toContain('claude-opus-4-7');
+    const indicator = markers[0].querySelector('[data-testid="conversation-run-model"]');
+    expect(indicator?.textContent?.replace(/\s/g, '')).toBe('CLDXH');
+    expect(indicator?.querySelector('.model-level')?.getAttribute('title')).toBe(
+      'claude-opus-4-7, thinking xhigh',
+    );
 
     // The start marker's session id lands on the following message group.
     const agentRow = el.querySelector('[data-actor="message.taskAgent"]');
