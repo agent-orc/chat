@@ -11,6 +11,7 @@
 
 import type {
   ArtifactImageEvent,
+  ChatMessage,
   ConversationEvent,
   MessageEvent,
   MetricTokenEvent,
@@ -468,6 +469,52 @@ export const LAB_IMAGE_EVENTS: readonly ConversationEvent[] = [
     body: `Und dasselbe Diagramm inline im Markdown-Text:\n\n![Dashboard-Diagramm](${LAB_IMAGE_CHART})\n\nAuch dieses Bild ist anklickbar.`,
     rawRange: nextRange(),
   } as MessageEvent,
+];
+
+/** Complete chat turns for visually checking immutable provenance and details. */
+export const LAB_TURN_METADATA_MESSAGES: readonly ChatMessage[] = [
+  {
+    id: 'turn-meta-user',
+    role: 'user',
+    text: 'Show the complete answer and the immutable metadata captured for this run.',
+    timestamp: at(18),
+  },
+  {
+    id: 'turn-meta-agent',
+    role: 'agent',
+    text:
+      'The conversation body remains fully rendered. It is never replaced by a preview or an Expand action.\n\n' +
+      Array.from({ length: 12 }, (_, index) => `Complete verification line ${index + 1}.`).join(
+        '\n\n'
+      ) +
+      '\n\n```ts\nconst visible = true;\nconst collapsible = false;\n```',
+    timestamp: at(19, 38),
+    provenance: {
+      cli: 'Codex CLI',
+      provider: 'OpenAI',
+      model: 'gpt-5.4-mini',
+      thinkingLevel: 'high',
+      durationMs: 98_000,
+      tokenUsage: {
+        inputTokens: 12_345,
+        outputTokens: 6_789,
+        reasoningTokens: 432,
+        totalTokens: 19_566,
+        cost: 0.1234,
+      },
+      taskKey: 'CAC-6',
+      taskId: '000',
+      project: 'coding-agent-chat',
+      contextKey: 'orchestrator-chat',
+      contextType: 'side-sheet',
+      turnId: 'turn-77',
+      sessionId: 'sess-cac-6',
+      runId: 7,
+      navigationContext: ['project chat', 'orchestrator side sheet'],
+    },
+    attachments: [{ url: LAB_IMAGE_CHART, alt: 'visual-check-chart' }],
+    error: 'Technical diagnostic example: command exited with code 1.',
+  },
 ];
 
 let localTurnSeq = 0;

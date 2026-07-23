@@ -99,7 +99,7 @@ describe('ConversationViewComponent', () => {
     expect(agentRows[0].textContent).toContain('The stdout reply is still the visible answer, and it appears in the correct turn.');
     expect(agentRows[0].textContent).not.toContain('OpenAI Codex v0.144.1');
     expect(agentRows[0].textContent).not.toContain('export function projectConversation');
-    expect(agentRows[0].querySelectorAll('cac-markdown li')).toHaveLength(0);
+    expect(agentRows[0].querySelectorAll('.msg__body li')).toHaveLength(0);
   });
 
   it('shows the empty state when there are no events', async () => {
@@ -143,6 +143,37 @@ describe('ConversationViewComponent', () => {
     ).toContain('2 events');
     expect(agentRow.textContent).toContain('Starting on the flag now.');
     expect(agentRow.textContent).toContain('Flag added, wiring the projection next.');
+  });
+
+  it('keeps short and long normal messages fully visible without disclosure controls', async () => {
+    const longLines = Array.from({ length: 24 }, (_, index) => `complete line ${index + 1}`);
+    const codeLines = Array.from({ length: 18 }, (_, index) => `const value${index + 1} = ${index + 1};`);
+    const fixture = await render([
+      msg('message.taskAgent', 'Short answer.'),
+      ...Array.from({ length: 5 }, (_, index) =>
+        msg('message.taskAgent', `Intermediate answer ${index + 1}.`)
+      ),
+      msg(
+        'message.taskAgent',
+        `${longLines.join('\n\n')}\n\n\`\`\`ts\n${codeLines.join('\n')}\n\`\`\``
+      ),
+    ]);
+    const el: HTMLElement = fixture.nativeElement;
+    const row = el.querySelector('[data-actor="message.taskAgent"]')!;
+
+    expect(row.querySelectorAll('[data-testid="conversation-message-item"]')).toHaveLength(7);
+    expect(row.textContent).toContain('Short answer.');
+    expect(row.textContent).toContain('Intermediate answer 5.');
+    expect(row.textContent).toContain('complete line 24');
+    expect(row.textContent).toContain('const value18 = 18;');
+    expect(row.querySelector('[data-testid="conversation-message-item-expand"]')).toBeNull();
+    expect(row.querySelector('[data-testid="conversation-message-show-more"]')).toBeNull();
+    expect(row.querySelector('.msg__item--clampable')).toBeNull();
+
+    const code = row.querySelector<HTMLElement>('.msg__body pre');
+    expect(code).toBeTruthy();
+    expect(code?.style.maxHeight).toBe('');
+    expect(code?.style.overflow).toBe('');
   });
 
   it('renders a tool burst between agent turns, keeps the role continuous, and hides bursts when toolsVisible is false', async () => {

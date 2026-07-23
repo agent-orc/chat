@@ -69,6 +69,7 @@
                                 [attr.data-testid]="'chat-msg-details-toggle-' + item.message.id"
                                 [attr.aria-haspopup]="'dialog'"
                                 [attr.aria-expanded]="isMessageDetailsOpen(item.message.id)"
+                                [attr.aria-controls]="'chat-msg-details-' + item.message.id"
                                 [cacTooltip]="'Open turn details'"
                                 (click)="toggleMessageDetails(item.message.id, $event)">
                           Details
@@ -113,6 +114,7 @@
                          [attr.data-testid]="'chat-msg-details-backdrop-' + item.message.id"
                          (mousedown)="closeMessageDetails(item.message.id); $event.preventDefault()"></div>
                     <div class="chat__msg-details"
+                         [id]="'chat-msg-details-' + item.message.id"
                          role="dialog"
                          aria-modal="false"
                          [cacAnchoredPopover]="activeMessageDetailsAnchor()"

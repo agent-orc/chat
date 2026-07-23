@@ -86,8 +86,9 @@ if (packageJson.version !== effectiveVersion) {
 }
 
 const releaseInfoPattern =
-  /tag:\s*(?:null|"[^"]*")[\s\S]*?commit:\s*(?:null|"[^"]*")[\s\S]*?buildTimestamp:\s*(?:null|"[^"]*")/;
+  /version:\s*(?:"[^"]*"|'[^']*')[\s\S]*?tag:\s*(?:null|"[^"]*")[\s\S]*?commit:\s*(?:null|"[^"]*")[\s\S]*?buildTimestamp:\s*(?:null|"[^"]*")/;
 const replacement = [
+  `version: ${JSON.stringify(effectiveVersion)}`,
   `tag: ${JSON.stringify(effectiveTag)}`,
   `commit: ${JSON.stringify(effectiveCommit)}`,
   `buildTimestamp: ${JSON.stringify(effectiveTimestamp)}`,

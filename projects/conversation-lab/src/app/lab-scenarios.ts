@@ -21,6 +21,7 @@
  */
 
 import type {
+  ChatMessage,
   CliOutputLine,
   ConversationEvent,
   RunInfoLite,
@@ -28,7 +29,11 @@ import type {
 } from 'coding-agent-chat/core';
 import { codexTextModeStderrTranscriptFragment } from 'coding-agent-chat/core';
 
-import { LAB_CONVERSATION_EVENTS, LAB_IMAGE_EVENTS } from './lab-fixtures';
+import {
+  LAB_CONVERSATION_EVENTS,
+  LAB_IMAGE_EVENTS,
+  LAB_TURN_METADATA_MESSAGES,
+} from './lab-fixtures';
 
 export type LabScenarioKind = 'events' | 'replay' | 'live';
 export type LiveCliType = 'claude' | 'codex' | 'gemini';
@@ -44,6 +49,8 @@ interface LabScenarioBase {
 export interface EventsScenario extends LabScenarioBase {
   kind: 'events';
   events: readonly ConversationEvent[];
+  /** Optional `<cac-chat>` turns for composer/message-specific fixtures. */
+  messages?: readonly ChatMessage[];
 }
 
 /** Scripted raw lines replayed through `projectConversation`. */
@@ -238,6 +245,15 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
     description:
       'Handgebaute ConversationEvents: Message-Gruppen, Tool-Burst, Bild-Artefakte (durable + scratch), Orchestrator-Entscheidung mit Retry-Budget, Token-Metrik, Run-Marker.',
     events: LAB_CONVERSATION_EVENTS,
+  },
+  {
+    id: 'turn-metadata',
+    kind: 'events',
+    title: 'Turn-Metadaten + vollständige Nachricht',
+    description:
+      'Vollständige kurze/lange Chat-Turns mit unveränderlicher CLI-, Modell-, Token-, Zeit- und Run-Provenienz. „Details“ öffnet die leise Metadatenansicht mit Kopieraktionen.',
+    events: [],
+    messages: LAB_TURN_METADATA_MESSAGES,
   },
   {
     id: 'images',

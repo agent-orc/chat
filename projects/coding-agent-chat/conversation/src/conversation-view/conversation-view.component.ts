@@ -44,8 +44,6 @@ interface MessageGroupItem {
   target?: string;
   attachments?: readonly string[];
   severity?: ConversationEventSeverity;
-  /** True when the rendered body is long enough that the row clamps it by default. */
-  clampable: boolean;
 }
 
 interface SessionMeta {
@@ -125,15 +123,6 @@ const MESSAGE_KINDS = new Set<MessageEvent['kind']>([
   'message.supportingAgent',
 ]);
 
-/**
- * Number of items rendered before the group offers a "show N more" affordance.
- * Tracks the operator's "first 3-5 items" requirement on the meta-collapse task.
- */
-const VISIBLE_ITEM_LIMIT = 5;
-
-/** Lines longer than this — or with more than two newlines — clamp to two rows. */
-const ITEM_CLAMP_CHAR_LIMIT = 180;
-
 const SESSION_INIT_RE = /^\s*●?\s*Session init\s+([0-9a-fA-F][\w-]+)/i;
 const RATE_LIMIT_RE = /^\s*●?\s*Rate limit\b/i;
 // `Session task_started <id>` and `Session task_notification <id> <payload>`
@@ -149,22 +138,6 @@ function isMessageKind(kind: ConversationEvent['kind']): kind is MessageEvent['k
 function shortenSessionId(sessionId: string): string {
   if (sessionId.length <= 8) return sessionId;
   return `${sessionId.slice(0, 8)}…`;
-}
-
-function isClampable(body: string): boolean {
-  if (!body) return false;
-  // A fenced code block is a self-contained, already-compact unit whose
-  // newlines are structural — clamping it to two rows is meaningless (and
-  // -webkit-line-clamp mangles the <pre> anyway), so the expand toggle just
-  // confuses. Long code scrolls inside its own block instead.
-  if (body.includes('```')) return false;
-  if (body.length > ITEM_CLAMP_CHAR_LIMIT) return true;
-  let nl = 0;
-  for (let i = 0; i < body.length; i++) {
-    if (body.charCodeAt(i) === 10 /* \n */) nl += 1;
-    if (nl > 1) return true;
-  }
-  return false;
 }
 
 interface ClassifiedBody {
@@ -202,10 +175,9 @@ function classifyMessageBody(body: string): ClassifiedBody {
  * coalesce rule is "same actor stays in the same box" — a USER turn or a
  * session change is the only trigger that closes the group.
  *
- * Progressive disclosure: only the first {@link VISIBLE_ITEM_LIMIT} items
- * render by default; longer groups expose a "show N more" affordance, and
- * individual items whose body would dominate the bubble clamp to two lines
- * with a per-item "expand" toggle.
+ * Normal message bodies are conversation content: every coalesced item and
+ * every Markdown/code line renders in full. Progressive disclosure remains
+ * reserved for explicitly technical rows such as tool bursts.
  *
  * See `docs/research/embedded-chat-integration-2026-05.md` and
  * `docs/mockups/chat-window-next-gen/integration-plan.md`.
@@ -261,11 +233,6 @@ export class ConversationViewComponent {
   /** Raised when a rendered tool output hit is clicked. The host may open a richer file viewer later. */
   readonly openSourceLocation = output<ToolOutputHit & { rawRange: RawLineRange }>();
 
-  // Sets stay small enough that copy-on-write is fine; they only mutate on
-  // user clicks ("show more", "expand"), not on every signal pass.
-  private readonly expandedGroups = signal<ReadonlySet<string>>(new Set());
-  private readonly expandedItems = signal<ReadonlySet<string>>(new Set());
-
   /** The stick-to-bottom directive on the scroll root (see the template). */
   private readonly stick = viewChild(StickToBottomDirective);
   /** The scroll-root element — only read in virtualised mode for scroll math. */
@@ -308,8 +275,6 @@ export class ConversationViewComponent {
    */
   private readonly localShowTools = signal(true);
   readonly showTools = computed(() => this.toolsVisible() ?? this.localShowTools());
-
-  readonly visibleItemLimit = VISIBLE_ITEM_LIMIT;
 
   readonly rows = computed<RenderRow[]>(() => {
     const out: RenderRow[] = [];
@@ -531,7 +496,6 @@ export class ConversationViewComponent {
           target: m.target,
           attachments: m.attachments,
           severity: m.severity,
-          clampable: isClampable(body),
         });
         group.lastTs = ts;
         if (classified.sessionId) {
@@ -841,40 +805,6 @@ export class ConversationViewComponent {
     if (n < 1000) return `${n}`;
     if (n < 1_000_000) return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0)}k`;
     return `${(n / 1_000_000).toFixed(1)}M`;
-  }
-
-  // ── Progressive disclosure ──────────────────────────────────────────
-
-  isGroupExpanded(groupId: string): boolean {
-    return this.expandedGroups().has(groupId);
-  }
-
-  toggleGroup(groupId: string): void {
-    const next = new Set(this.expandedGroups());
-    if (next.has(groupId)) next.delete(groupId);
-    else next.add(groupId);
-    this.expandedGroups.set(next);
-  }
-
-  visibleItems(group: MessageGroupRow): MessageGroupItem[] {
-    if (this.isGroupExpanded(group.id)) return group.items;
-    return group.items.slice(0, VISIBLE_ITEM_LIMIT);
-  }
-
-  hiddenItemCount(group: MessageGroupRow): number {
-    if (this.isGroupExpanded(group.id)) return 0;
-    return Math.max(0, group.items.length - VISIBLE_ITEM_LIMIT);
-  }
-
-  isItemExpanded(itemId: string): boolean {
-    return this.expandedItems().has(itemId);
-  }
-
-  toggleItem(itemId: string): void {
-    const next = new Set(this.expandedItems());
-    if (next.has(itemId)) next.delete(itemId);
-    else next.add(itemId);
-    this.expandedItems.set(next);
   }
 
   // ── Session-meta tooltip ────────────────────────────────────────────

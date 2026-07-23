@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/). Releases are cut by
 pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 `release` workflow builds and publishes to npm.
 
+## [0.2.2] - 2026-07-23
+
+### Added
+
+- Conversation Lab now includes a dedicated immutable turn-provenance fixture
+  for dark, light, narrow, copy-action, and technical-detail checks.
+
+### Fixed
+
+- Normal `<cac-conversation-view>` messages now render every coalesced item and
+  every Markdown/code line in full. Message bodies no longer clamp, expose
+  expand/show-more controls, or create nested code-block scrolling.
+- The turn-details popover now has stable accessible relationships, closes on
+  Escape, and restores focus to its trigger.
+- Built release identity now reports the package version consistently, and the
+  release stamper enforces that version alongside tag/commit/timestamp.
+
 ## [0.2.1] - 2026-07-17
 
 ### Added
@@ -60,4 +77,5 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 [0.2.1]: https://github.com/agent-orc/chat/releases/tag/v0.2.1
 [0.2.0]: https://github.com/agent-orc/chat/releases/tag/v0.2.0
 [0.2.1]: https://github.com/agent-orc/chat/releases/tag/v0.2.1
+[0.2.2]: https://github.com/agent-orc/chat/releases/tag/v0.2.2
 [0.1.0]: https://github.com/agent-orc/chat/releases/tag/v0.1.0

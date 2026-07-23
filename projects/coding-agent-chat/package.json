@@ -1,7 +1,7 @@
 {
   "name": "coding-agent-chat",
-  "version": "0.2.1",
-  "description": "Angular chat UI components for coding agents: render messages, tool calls, waits, decisions, artifacts, context, and conversation history.",
+  "version": "0.2.2",
+  "description": "Best-in-class Angular library for rendering coding-agent conversations - the frontend counterpart to coding-agent-runner.",
   "license": "Apache-2.0",
   "homepage": "https://agent-orchestrator.dev/chat/",
   "repository": {

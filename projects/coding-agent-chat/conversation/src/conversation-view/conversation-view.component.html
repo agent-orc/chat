@@ -102,10 +102,8 @@
                 </header>
               }
               <ol class="msg__items" data-testid="conversation-message-items">
-                @for (item of visibleItems(row); track item.id) {
+                @for (item of row.items; track item.id) {
                   <li class="msg__item"
-                      [class.msg__item--clampable]="item.clampable"
-                      [class.msg__item--expanded]="isItemExpanded(item.id)"
                       [attr.data-testid]="'conversation-message-item'"
                       [attr.data-item-id]="item.id">
                     @if (item.target) {
@@ -119,31 +117,6 @@
                         }
                       </ul>
                     }
-                    @if (item.clampable) {
-                      <button type="button"
-                              class="msg__item-toggle"
-                              data-testid="conversation-message-item-expand"
-                              [cacTooltip]="isItemExpanded(item.id) ? 'Collapse this item' : 'Show full body'"
-                              (click)="toggleItem(item.id)">{{ isItemExpanded(item.id) ? 'collapse' : 'expand' }}</button>
-                    }
-                  </li>
-                }
-                @if (hiddenItemCount(row) > 0) {
-                  <li class="msg__more">
-                    <button type="button"
-                            class="msg__more-btn"
-                            data-testid="conversation-message-show-more"
-                            [attr.aria-expanded]="isGroupExpanded(row.id) ? 'true' : 'false'"
-                            (click)="toggleGroup(row.id)">show {{ hiddenItemCount(row) }} more
-                      {{ hiddenItemCount(row) === 1 ? 'item' : 'items' }}</button>
-                  </li>
-                } @else if (row.items.length > visibleItemLimit && isGroupExpanded(row.id)) {
-                  <li class="msg__more">
-                    <button type="button"
-                            class="msg__more-btn"
-                            data-testid="conversation-message-show-less"
-                            [attr.aria-expanded]="'true'"
-                            (click)="toggleGroup(row.id)">show fewer</button>
                   </li>
                 }
               </ol>

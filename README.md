@@ -72,7 +72,27 @@ provenance. Each package includes `release-manifest.json` (version, tag,
 commit, build timestamp, SHA-512 hashes); verify an unpacked package with
 `node scripts/verify-release.mjs <dir>`.
 
-Requires Angular 21 (`>=21 <22`) and RxJS `~7.8`. See `CHANGELOG.md`.
+Upgrade a registry consumer with `npm install --save-exact
+coding-agent-chat@0.2.2` and commit `package-lock.json`. Agent Studio may instead
+consume a reviewed, pinned artifact: download `coding-agent-chat-0.2.2.tgz`,
+verify it against the release manifest/provenance, store it in the Studio
+artifact location, then use `npm install --save-exact
+./artifacts/coding-agent-chat-0.2.2.tgz`. Do not point Studio at a mutable local
+`dist/` directory or an unversioned tarball.
+
+After unpacking a downloaded artifact, its payload can be checked with
+`node scripts/verify-release.mjs <unpacked-package-directory>`. The verifier
+checks both npm's effective publish file list and every recorded SHA-512 digest.
+
+Compatibility follows SemVer: patch upgrades are fixes, minor upgrades are
+backward-compatible additions, and major upgrades may require host changes.
+CAC 0.2.x requires Angular 21 (`>=21 <22`) and RxJS `~7.8`; check
+`CHANGELOG.md`, update the pinned version, run the host tests/build, and verify
+the Lab/Studio runtime release label before deployment.
+
+This release packages the CAC-6 public library surface, CAC-7 host integration,
+and CAC-8 Conversation Lab validation into the reproducible delivery contract
+tracked by CAC-9.
 
 ## License
 

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, computed, inject, sig
 import type {
   ChatCliOption,
   ChatContextUsage,
+  ChatMessage,
   ChatModelControl,
   ChatModelOption,
   ChatModelSelection,
@@ -147,6 +148,12 @@ export class App {
       default:
         return this.showcaseEvents();
     }
+  });
+
+  /** Optional `<cac-chat>` message fixtures owned by renderer-only scenarios. */
+  protected readonly messages = computed<ChatMessage[]>(() => {
+    const scenario = this.scenario();
+    return scenario.kind === 'events' ? [...(scenario.messages ?? [])] : [];
   });
 
   protected readonly liveScenario = computed<LiveScenario | null>(() => {

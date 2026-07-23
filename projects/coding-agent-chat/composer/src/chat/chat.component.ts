@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostListener,
   OnDestroy,
   computed,
   effect,
@@ -623,12 +624,23 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
 
   closeMessageDetails(messageId: string): void {
     if (!this.openMessageDetailsIds().has(messageId)) return;
+    const anchor = this.activeMessageDetailsAnchor();
     this.openMessageDetailsIds.set(new Set());
     this.activeMessageDetailsAnchor.set(null);
+    queueMicrotask(() => anchor?.focus());
   }
 
   isMessageDetailsOpen(messageId: string): boolean {
     return this.openMessageDetailsIds().has(messageId);
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onMessageDetailsEscape(event: Event): void {
+    const messageId = this.openMessageDetailsIds().values().next().value;
+    if (!messageId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.closeMessageDetails(messageId);
   }
 
   async copyToClipboard(text: string): Promise<void> {

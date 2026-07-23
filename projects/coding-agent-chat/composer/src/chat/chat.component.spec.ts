@@ -417,11 +417,18 @@ describe('ChatComponent', () => {
     expect(chips.join(' | ')).toContain('Codex CLI');
     expect(chips.join(' | ')).toContain('gpt-5.4-mini');
 
-    query<HTMLButtonElement>(fixture, '[data-testid="chat-msg-details-toggle-m1"]')!.click();
+    const detailsToggle = query<HTMLButtonElement>(
+      fixture,
+      '[data-testid="chat-msg-details-toggle-m1"]'
+    )!;
+    expect(detailsToggle.getAttribute('aria-controls')).toBe('chat-msg-details-m1');
+    detailsToggle.focus();
+    detailsToggle.click();
     await fixture.whenStable();
 
     const popover = query(fixture, '[data-testid="chat-msg-details-m1"]');
     expect(popover).toBeTruthy();
+    expect(popover?.id).toBe('chat-msg-details-m1');
     expect(popover?.textContent).toContain('CAC-6');
     expect(popover?.textContent).toContain('conversation');
     expect(popover?.textContent).toContain('sess-abc');
@@ -433,6 +440,14 @@ describe('ChatComponent', () => {
     query<HTMLButtonElement>(fixture, '[data-testid="chat-msg-details-m1"] .chat__msg-detail-copy')!.click();
     await fixture.whenStable();
     expect(clipboard).toHaveBeenCalled();
+
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    );
+    await fixture.whenStable();
+    await Promise.resolve();
+    expect(query(fixture, '[data-testid="chat-msg-details-m1"]')).toBeNull();
+    expect(document.activeElement).toBe(detailsToggle);
   });
 
   it('renders legacy turns cleanly without metadata chrome', async () => {
