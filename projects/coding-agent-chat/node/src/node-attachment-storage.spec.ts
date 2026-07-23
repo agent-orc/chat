@@ -32,11 +32,10 @@ describe('NodeChatAttachmentStorage', () => {
     expect(archivedRef.relativePath).toBe(
       `.coding-agent-chat/conversations/task%2FCAC-12/attachments/${HELLO_SHA256}.png`,
     );
-    expect(
-      new Uint8Array(
-        await readFile(join(projectRoot, ...archivedRef.relativePath.split('/'))),
-      ),
-    ).toEqual(hello());
+    const persistedBytes = await readFile(
+      join(projectRoot, ...archivedRef.relativePath.split('/')),
+    );
+    expect(Array.from(persistedBytes)).toEqual(Array.from(hello()));
 
     const restartedProcess = new ChatAttachmentContract(
       new NodeChatAttachmentStorage(projectRoot),
@@ -50,7 +49,7 @@ describe('NodeChatAttachmentStorage', () => {
     expect(resolution.absolutePath).toBe(
       join(projectRoot, ...archivedRef.relativePath.split('/')),
     );
-    expect(resolution.bytes).toEqual(hello());
+    expect(Array.from(resolution.bytes)).toEqual(Array.from(hello()));
   });
 
   it('confines direct storage operations to the configured project root', async () => {
