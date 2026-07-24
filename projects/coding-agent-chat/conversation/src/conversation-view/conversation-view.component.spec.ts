@@ -116,13 +116,21 @@ describe('ConversationViewComponent', () => {
     });
     const fixture = await render(events);
     const el: HTMLElement = fixture.nativeElement;
+    const openedRanges: Array<RawLineRange | null> = [];
+    fixture.componentInstance.openTrace.subscribe((range) => openedRanges.push(range));
 
     const statusRows = el.querySelectorAll('[data-testid="conversation-system-status"]');
     expect(statusRows).toHaveLength(1);
     expect(statusRows[0].textContent).toContain('Codex transcript');
     expect(statusRows[0].textContent).not.toContain('/**');
     expect(statusRows[0].textContent).not.toContain('* 10,975 contiguous stderr lines');
-    expect(statusRows[0].querySelector('[data-testid="conversation-status-open-trace"]')).toBeTruthy();
+    const traceButton = statusRows[0].querySelector<HTMLButtonElement>(
+      '[data-testid="conversation-status-open-trace"]',
+    );
+    expect(traceButton).toBeTruthy();
+    traceButton!.click();
+    expect(openedRanges).toEqual([events[0].rawRange]);
+    expect(openedRanges[0]).toEqual({ source: 'fixture-job', start: 1, end: 19 });
 
     const agentRows = el.querySelectorAll('[data-actor="message.taskAgent"]');
     expect(agentRows).toHaveLength(1);

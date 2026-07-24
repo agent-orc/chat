@@ -113,9 +113,15 @@ describe('App', () => {
     expect(agentRows?.[0].textContent).not.toContain('/**');
     expect(conversation?.querySelectorAll('cac-markdown li')).toHaveLength(0);
 
-    compiled.querySelector<HTMLButtonElement>('[data-testid="conversation-open-trace"]')!.click();
+    conversation
+      ?.querySelector<HTMLButtonElement>('[data-testid="conversation-status-open-trace"]')
+      ?.click();
     await fixture.whenStable();
 
+    expect(compiled.querySelector('[data-testid="lab-trace-range"]')?.textContent).toContain(
+      'lab-scenario:codex-stderr-transcript:1–19',
+    );
+    expect(compiled.querySelectorAll('.lab-trace__line--hit')).toHaveLength(19);
     const traceLines = compiled.querySelectorAll('[data-testid="lab-trace-lines"] .lab-trace__line');
     const traceText = Array.from(traceLines).map((line) => line.textContent ?? '').join('\n');
     expect(traceText).toContain('export function projectConversation(): string {');

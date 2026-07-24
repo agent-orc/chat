@@ -14,7 +14,9 @@ Audit date: 2026-07-24
   points. The canonical conversation component renders one compact technical
   row and the complete stdout reply.
 - `npx ng test conversation-lab --no-watch`: 2 files and 33 tests passed. The
-  host fixture proves the JSDoc source dump does not become Markdown bullets.
+  host fixture proves the compact transcript row opens its bounded 1–19 raw
+  range in Trace, where the JSDoc source remains plain technical text rather
+  than becoming Markdown bullets.
 - `npm run build`: all package entry points, including the Node attachment
   storage entry point added by CAC-7, built successfully.
 - `npx ng build conversation-lab`: passed with the existing bundle-budget
