@@ -1,6 +1,6 @@
 {
   "name": "coding-agent-chat",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Best-in-class Angular library for rendering coding-agent conversations - the frontend counterpart to coding-agent-runner.",
   "license": "Apache-2.0",
   "homepage": "https://agent-orchestrator.dev/chat/",

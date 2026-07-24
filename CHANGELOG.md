@@ -6,9 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/). Releases are cut by
 pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 `release` workflow builds and publishes to npm.
 
-## [0.2.2] - 2026-07-23
+## [0.3.0] - 2026-07-24
 
 ### Added
+
+- Composer context is now a first-class input on the conversation view, so hosts can bind and restore it without side channels.
+- Attachment contract: durable storage plus resolvable references for pasted images.
 
 - Conversation Lab now includes a dedicated immutable turn-provenance fixture
   for dark, light, narrow, copy-action, and technical-detail checks.
