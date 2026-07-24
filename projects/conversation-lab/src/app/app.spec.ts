@@ -127,6 +127,7 @@ describe('App', () => {
     expect(traceText).toContain('export function projectConversation(): string {');
     expect(traceText).toContain('* 10,975 contiguous stderr lines');
     expect(compiled.querySelector('[data-testid="lab-trace-lines"] cac-markdown')).toBeNull();
+    expect(compiled.querySelectorAll('[data-testid="lab-trace-lines"] code.lab-trace__text')).toHaveLength(21);
   });
 
   it('explains the missing activity log when tracing a fixture scenario', async () => {

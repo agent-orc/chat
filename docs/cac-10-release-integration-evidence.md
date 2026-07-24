@@ -27,6 +27,16 @@ The compact visual regression is captured in both themes:
 - `screenshots/agt-2176-light.png`
 - `screenshots/agt-2176-dark.png`
 
+## Targeted operator sweep
+
+The 2026-07-24 completion/evidence sweep reran the locked checkout from a
+fresh `npm ci`. The parser/projection suite (192 tests), Coding Agent Chat
+component suite (395 tests), Conversation Lab host suite (33 tests), package
+build, and host build all passed. The host fixture additionally asserts that
+every raw Trace line is emitted through a plain technical `code` element and
+never through the Markdown component. Both committed theme captures were
+visually checked after the gate run.
+
 ## Agent Studio integration follow-up
 
 This Coding Agent Chat worktree does not contain the Agent Studio repository or
