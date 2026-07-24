@@ -20,16 +20,16 @@ and `rxjs ~7.8`.
 
 ## Entry points
 
-| Import | Contents |
-|---|---|
-| `coding-agent-chat` | everything + `provideCodingAgentChat()` |
-| `coding-agent-chat/core` | wire contract + projection + pure helpers (zero Angular) |
-| `coding-agent-chat/node` | durable project-filesystem attachment storage for Node.js hosts and runners |
-| `coding-agent-chat/markdown` | `<cac-markdown>` + markdown utils + task-reference seam + inline-reference renderers |
-| `coding-agent-chat/conversation` | `<cac-conversation-view>` + tool-burst chip + session card |
-| `coding-agent-chat/composer` | `<cac-chat>` composer + role badge + workforce/phase helpers |
-| `coding-agent-chat/history` | `<cac-project-chat-list>` virtualised history + `<cac-chat-row>` + minimap rail + phase summary strip |
-| `coding-agent-chat/shared` | `cacTooltip`, `cacStickToBottom`, lightbox directive + tokens |
+| Import                           | Contents                                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `coding-agent-chat`              | everything + `provideCodingAgentChat()`                                                               |
+| `coding-agent-chat/core`         | wire contract + projection + pure helpers (zero Angular)                                              |
+| `coding-agent-chat/node`         | durable project-filesystem attachment storage for Node.js hosts and runners                           |
+| `coding-agent-chat/markdown`     | `<cac-markdown>` + markdown utils + task-reference seam + inline-reference renderers                  |
+| `coding-agent-chat/conversation` | `<cac-conversation-view>` + tool-burst chip + session card                                            |
+| `coding-agent-chat/composer`     | `<cac-chat>` composer + role badge + workforce/phase helpers                                          |
+| `coding-agent-chat/history`      | `<cac-project-chat-list>` virtualised history + `<cac-chat-row>` + minimap rail + phase summary strip |
+| `coding-agent-chat/shared`       | `cacTooltip`, `cacStickToBottom`, lightbox directive + tokens                                         |
 
 The `core` entry point keeps the `ConversationEvent` wire contract importable with
 zero Angular weight, so backends, SSR and tests can consume the types without the
@@ -72,7 +72,7 @@ declare const structuredLogger: { info(event: unknown): void };
 declare function archive(message: ChatMessage): Promise<void>;
 
 const attachments = new ChatAttachmentContract(new NodeChatAttachmentStorage(projectRoot), {
-  log: event => structuredLogger.info(event),
+  log: (event) => structuredLogger.info(event),
 });
 const ref = await attachments.persistDraft(conversationId, draft);
 
@@ -121,12 +121,12 @@ no-ops. Light them up from your bootstrap providers:
 ```ts
 provideCodingAgentChat({
   taskReferences: TaskReferenceNavigationService, // implements ChatTaskReferenceProvider
-  mediaLightbox: MediaLightboxService,            // implements ChatMediaLightbox
+  mediaLightbox: MediaLightboxService, // implements ChatMediaLightbox
   historyWindow: {
     messageAgeDays: 7,
     loadMoreMessageCount: 1000,
   },
-})
+});
 ```
 
 The `history` entry point adds two more optional seams, provided directly:
@@ -161,7 +161,7 @@ provideCodingAgentChat({
     virtualBufferRows: 50,
     jumpToStartConfirmMessageCount: 2000,
   },
-})
+});
 ```
 
 Omitted properties keep
@@ -194,12 +194,12 @@ A catalog is a list of `ChatModelOption` (from `coding-agent-chat/core`):
 
 ```ts
 interface ChatModelOption {
-  id: string;                          // the model id you pass back to your CLI
-  label?: string;                      // display label; falls back to `id`
-  isDefault?: boolean;                 // the CLI's default when no model is set
-  available?: boolean;                 // `false` hides it from the picker
-  thinkingLevels?: readonly string[];  // reasoning levels — empty ⇒ no level row
-  defaultThinkingLevel?: string | null;// preselected level when this model is picked
+  id: string; // the model id you pass back to your CLI
+  label?: string; // display label; falls back to `id`
+  isDefault?: boolean; // the CLI's default when no model is set
+  available?: boolean; // `false` hides it from the picker
+  thinkingLevels?: readonly string[]; // reasoning levels — empty ⇒ no level row
+  defaultThinkingLevel?: string | null; // preselected level when this model is picked
 }
 ```
 
@@ -250,16 +250,16 @@ plain tokens inside message text — task keys (`AGT-1234`), ticket ids, URLs,
 `@mentions` — into **live host components** (micro-cards, chips, links). The
 library owns only the mechanics: it scans the rendered prose, matches each
 registered pattern, and slots your component in place of the match. It never
-learns what a reference *means* — that stays with the host.
+learns what a reference _means_ — that stays with the host.
 
 Register one or more matchers via the `INLINE_REFERENCE_RENDERERS` token (or the
 `inlineReferences` option of `provideCodingAgentChat`). Each matcher is:
 
 ```ts
 interface InlineReferenceMatcher {
-  id: string;                    // stable id; also the precedence tiebreaker
-  pattern: RegExp;               // whole-match becomes the slot (cloned; safe to share)
-  component: Type<unknown>;      // standalone host component slotted per match
+  id: string; // stable id; also the precedence tiebreaker
+  pattern: RegExp; // whole-match becomes the slot (cloned; safe to share)
+  component: Type<unknown>; // standalone host component slotted per match
   inputs?: (match) => Record<string, unknown>; // defaults to { token, match }
 }
 ```
@@ -272,7 +272,7 @@ bootstrapApplication(AppComponent, {
     provideCodingAgentChat({
       inlineReferences: [
         { id: 'task', pattern: /\b[A-Z]{2,}-\d+\b/g, component: TaskMicroCardComponent },
-        { id: 'url',  pattern: /https?:\/\/\S+/g,    component: UrlChipComponent },
+        { id: 'url', pattern: /https?:\/\/\S+/g, component: UrlChipComponent },
       ],
     }),
     // …or provide the token directly:
@@ -308,8 +308,8 @@ Contract guarantees:
 - **Precedence.** Matchers are tried in registration order. The earliest match
   in reading order wins; when two matchers claim the same span, the one listed
   first wins.
-- **Multiple matchers.** Register as many as you like — task keys *and* ticket
-  ids *and* URLs — each mapped to its own component.
+- **Multiple matchers.** Register as many as you like — task keys _and_ ticket
+  ids _and_ URLs — each mapped to its own component.
 
 This composes with the task-reference auto-linker (`CHAT_TASK_REFERENCE_PROVIDER`),
 which remains a separate, anchor-based seam; inline renderers skip existing

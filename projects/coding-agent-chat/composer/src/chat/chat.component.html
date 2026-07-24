@@ -1,52 +1,64 @@
-    <div class="chat" [class.chat--embedded]="variant() === 'embedded'">
-      <!-- No content and no empty-state text → no body at all: an empty
+<div class="chat" [class.chat--embedded]="variant() === 'embedded'">
+  <!-- No content and no empty-state text → no body at all: an empty
            framed strip above the composer helps nobody. -->
-      @if (rendered().length > 0 || emptyState()) {
-      <div #body
-           class="chat__body"
-           cacArrowKeyScroll
-           [style.max-height]="bodyMaxHeight()"
-           data-testid="chat-body"
-           (scroll)="onBodyScroll()">
-        @if (!stickToBottom()) {
-          <button type="button"
-                  class="chat__jump"
-                  data-testid="chat-jump-bottom"
-                  (click)="jumpToBottom()">↓ Jump to latest</button>
-        }
+  @if (rendered().length > 0 || emptyState()) {
+    <div
+      #body
+      class="chat__body"
+      cacArrowKeyScroll
+      [style.max-height]="bodyMaxHeight()"
+      data-testid="chat-body"
+      (scroll)="onBodyScroll()"
+    >
+      @if (!stickToBottom()) {
+        <button
+          type="button"
+          class="chat__jump"
+          data-testid="chat-jump-bottom"
+          (click)="jumpToBottom()"
+        >
+          ↓ Jump to latest
+        </button>
+      }
 
-        @if (rendered().length === 0) {
-          @if (emptyState()) {
-            <div class="chat__empty" data-testid="chat-empty">{{ emptyState() }}</div>
-          }
-        } @else {
-          @if (virtualised() && topSpacerPx() > 0) {
-            <div class="chat__spacer chat__spacer--top"
-                 data-testid="chat-spacer-top"
-                 [style.height.px]="topSpacerPx()"></div>
-          }
-          @for (item of windowedItems(); track item.id) {
-            @switch (item.kind) {
-              @case ('message') {
-                @if (item.message.presentation === 'notice') {
-                  <!-- Meta notice (e.g. "Model changed: Sonnet 5 → Opus 4.8"):
+      @if (rendered().length === 0) {
+        @if (emptyState()) {
+          <div class="chat__empty" data-testid="chat-empty">{{ emptyState() }}</div>
+        }
+      } @else {
+        @if (virtualised() && topSpacerPx() > 0) {
+          <div
+            class="chat__spacer chat__spacer--top"
+            data-testid="chat-spacer-top"
+            [style.height.px]="topSpacerPx()"
+          ></div>
+        }
+        @for (item of windowedItems(); track item.id) {
+          @switch (item.kind) {
+            @case ('message') {
+              @if (item.message.presentation === 'notice') {
+                <!-- Meta notice (e.g. "Model changed: Sonnet 5 → Opus 4.8"):
                        a centered divider line in the chronology, not a bubble. -->
-                  <div class="chat__notice"
-                       data-testid="chat-notice"
-                       [attr.data-turn-id]="item.message.id">
-                    <span class="chat__notice-text">{{ item.message.text }}</span>
-                  </div>
-                } @else {
-                <article class="chat__msg"
-                         [class.chat__msg--user]="item.message.role === 'user'"
-                         [class.chat__msg--agent]="item.message.role === 'agent'"
-                         [class.chat__msg--orchestrator]="item.message.role === 'orchestrator'"
-                         [class.chat__msg--system]="item.message.role === 'system'"
-                         [class.chat__msg--pending]="item.message.pending"
-                         [class.chat__msg--error]="!!item.message.error"
-                         [class.chat__msg--stale-error]="item.staleError"
-                         [attr.data-testid]="'chat-msg-' + item.message.role"
-                         [attr.data-turn-id]="item.message.id">
+                <div
+                  class="chat__notice"
+                  data-testid="chat-notice"
+                  [attr.data-turn-id]="item.message.id"
+                >
+                  <span class="chat__notice-text">{{ item.message.text }}</span>
+                </div>
+              } @else {
+                <article
+                  class="chat__msg"
+                  [class.chat__msg--user]="item.message.role === 'user'"
+                  [class.chat__msg--agent]="item.message.role === 'agent'"
+                  [class.chat__msg--orchestrator]="item.message.role === 'orchestrator'"
+                  [class.chat__msg--system]="item.message.role === 'system'"
+                  [class.chat__msg--pending]="item.message.pending"
+                  [class.chat__msg--error]="!!item.message.error"
+                  [class.chat__msg--stale-error]="item.staleError"
+                  [attr.data-testid]="'chat-msg-' + item.message.role"
+                  [attr.data-turn-id]="item.message.id"
+                >
                   <header class="chat__msg-head">
                     @if (item.message.role === 'user') {
                       <span class="chat__msg-role">You</span>
@@ -54,53 +66,70 @@
                       <cac-role-badge [author]="item.message.role" />
                     }
                     <div class="chat__msg-head-meta">
-                      <span class="chat__msg-time"
-                            [cacTooltip]="formatDateTime(item.message.timestamp)">{{ item.formattedTime }}</span>
+                      <span
+                        class="chat__msg-time"
+                        [cacTooltip]="formatDateTime(item.message.timestamp)"
+                        >{{ item.formattedTime }}</span
+                      >
                       @for (chip of item.provenanceChips; track chip.label + ':' + chip.value) {
-                        <span class="chat__msg-meta-chip"
-                              [cacTooltip]="chip.tooltip ?? chip.value">
+                        <span class="chat__msg-meta-chip" [cacTooltip]="chip.tooltip ?? chip.value">
                           <span class="chat__msg-meta-label">{{ chip.label }}</span>
                           <span class="chat__msg-meta-value">{{ chip.value }}</span>
                         </span>
                       }
                       @if (item.hasDetails) {
-                        <button type="button"
-                                class="chat__msg-details-toggle"
-                                [attr.data-testid]="'chat-msg-details-toggle-' + item.message.id"
-                                [attr.aria-haspopup]="'dialog'"
-                                [attr.aria-expanded]="isMessageDetailsOpen(item.message.id)"
-                                [attr.aria-controls]="'chat-msg-details-' + item.message.id"
-                                [cacTooltip]="'Open turn details'"
-                                (click)="toggleMessageDetails(item.message.id, $event)">
+                        <button
+                          type="button"
+                          class="chat__msg-details-toggle"
+                          [attr.data-testid]="'chat-msg-details-toggle-' + item.message.id"
+                          [attr.aria-haspopup]="'dialog'"
+                          [attr.aria-expanded]="isMessageDetailsOpen(item.message.id)"
+                          [attr.aria-controls]="'chat-msg-details-' + item.message.id"
+                          [cacTooltip]="'Open turn details'"
+                          (click)="toggleMessageDetails(item.message.id, $event)"
+                        >
                           Details
                         </button>
                       }
                     </div>
                   </header>
-                  <cac-markdown class="chat__msg-body chat__msg-body--markdown"
-                                [source]="item.message.text"
-                                [dense]="true"
-                                [codeLineNumbers]="true"
-                                testId="chat-turn-md" />
+                  <cac-markdown
+                    class="chat__msg-body chat__msg-body--markdown"
+                    [source]="item.message.text"
+                    [dense]="true"
+                    [codeLineNumbers]="true"
+                    testId="chat-turn-md"
+                  />
                   @if (item.message.attachments?.length) {
-                    <ul class="chat__msg-attachments"
-                        cacMarkdownLightbox
-                        data-testid="chat-msg-attachments">
+                    <ul
+                      class="chat__msg-attachments"
+                      cacMarkdownLightbox
+                      data-testid="chat-msg-attachments"
+                    >
                       @for (att of item.message.attachments; track attachmentKey(att)) {
-                        <li class="chat__msg-attachment"
-                            [class.chat__msg-attachment--pending]="att.pending"
-                            [class.chat__msg-attachment--unavailable]="!!attachmentStatus(att)">
+                        <li
+                          class="chat__msg-attachment"
+                          [class.chat__msg-attachment--pending]="att.pending"
+                          [class.chat__msg-attachment--unavailable]="!!attachmentStatus(att)"
+                        >
                           @if (attachmentUrl(att); as url) {
-                            <img [src]="url"
-                                 [alt]="att.alt"
-                                 data-testid="chat-msg-attachment-image" />
+                            <img
+                              [src]="url"
+                              [alt]="att.alt"
+                              data-testid="chat-msg-attachment-image"
+                            />
                           } @else {
-                            <span class="chat__msg-attachment-placeholder" aria-hidden="true">&#128206;</span>
+                            <span class="chat__msg-attachment-placeholder" aria-hidden="true"
+                              >&#128206;</span
+                            >
                           }
                           <span class="chat__msg-attachment-name">{{ att.alt }}</span>
                           @if (attachmentStatus(att); as status) {
-                            <span class="chat__msg-attachment-status"
-                                  data-testid="chat-msg-attachment-status">{{ status }}</span>
+                            <span
+                              class="chat__msg-attachment-status"
+                              data-testid="chat-msg-attachment-status"
+                              >{{ status }}</span
+                            >
                           }
                         </li>
                       }
@@ -110,38 +139,62 @@
                     <div class="chat__msg-error">{{ item.message.error }}</div>
                   }
                   @if (item.hasDetails && isMessageDetailsOpen(item.message.id)) {
-                    <div class="chat__msg-details-backdrop"
-                         [attr.data-testid]="'chat-msg-details-backdrop-' + item.message.id"
-                         (mousedown)="closeMessageDetails(item.message.id); $event.preventDefault()"></div>
-                    <div class="chat__msg-details"
-                         [id]="'chat-msg-details-' + item.message.id"
-                         role="dialog"
-                         aria-modal="false"
-                         [cacAnchoredPopover]="activeMessageDetailsAnchor()"
-                         popoverAlign="right"
-                         [attr.data-testid]="'chat-msg-details-' + item.message.id"
-                         [attr.aria-label]="'Turn details for ' + item.message.id"
-                         (mousedown)="$event.stopPropagation()">
+                    <div
+                      class="chat__msg-details-backdrop"
+                      [attr.data-testid]="'chat-msg-details-backdrop-' + item.message.id"
+                      (mousedown)="closeMessageDetails(item.message.id); $event.preventDefault()"
+                    ></div>
+                    <div
+                      class="chat__msg-details"
+                      [id]="'chat-msg-details-' + item.message.id"
+                      role="dialog"
+                      aria-modal="false"
+                      [cacAnchoredPopover]="activeMessageDetailsAnchor()"
+                      popoverAlign="right"
+                      [attr.data-testid]="'chat-msg-details-' + item.message.id"
+                      [attr.aria-label]="'Turn details for ' + item.message.id"
+                      (mousedown)="$event.stopPropagation()"
+                    >
                       <div class="chat__msg-details-head">
                         <strong>Turn details</strong>
-                        <button type="button"
-                                class="chat__msg-details-close"
-                                [cacTooltip]="'Close turn details'"
-                                (click)="closeMessageDetails(item.message.id)">Close</button>
+                        <button
+                          type="button"
+                          class="chat__msg-details-close"
+                          [cacTooltip]="'Close turn details'"
+                          (click)="closeMessageDetails(item.message.id)"
+                        >
+                          Close
+                        </button>
                       </div>
                       @if (item.detailRows.length > 0) {
                         <div class="chat__msg-details-rows">
                           @for (row of item.detailRows; track row.label + ':' + row.value) {
-                            <div class="chat__msg-detail-row" [class.chat__msg-detail-row--mono]="row.mono">
+                            <div
+                              class="chat__msg-detail-row"
+                              [class.chat__msg-detail-row--mono]="row.mono"
+                            >
                               <span class="chat__msg-detail-label">{{ row.label }}</span>
-                              <span class="chat__msg-detail-value"
-                                    [attr.data-testid]="'chat-msg-detail-value-' + item.message.id + '-' + row.label.toLowerCase()">
+                              <span
+                                class="chat__msg-detail-value"
+                                [attr.data-testid]="
+                                  'chat-msg-detail-value-' +
+                                  item.message.id +
+                                  '-' +
+                                  row.label.toLowerCase()
+                                "
+                              >
                                 {{ row.value }}
                               </span>
-                              <button type="button"
-                                      class="chat__msg-detail-copy"
-                                      [cacTooltip]="'Copy ' + row.label.toLowerCase()"
-                                      (click)="copyMessageDetail(item.message.id, row.copyText ?? row.value)">Copy</button>
+                              <button
+                                type="button"
+                                class="chat__msg-detail-copy"
+                                [cacTooltip]="'Copy ' + row.label.toLowerCase()"
+                                (click)="
+                                  copyMessageDetail(item.message.id, row.copyText ?? row.value)
+                                "
+                              >
+                                Copy
+                              </button>
                             </div>
                           }
                         </div>
@@ -149,240 +202,294 @@
                         <div class="chat__msg-details-empty">No extra metadata.</div>
                       }
                       <div class="chat__msg-details-foot">
-                        <button type="button"
-                                class="chat__msg-details-copy-all"
-                                [disabled]="item.detailRows.length === 0"
-                                [cacTooltip]="item.detailRows.length === 0 ? 'Nothing to copy' : 'Copy all turn details'"
-                                (click)="copyMessageSummary(item.message)">Copy all</button>
+                        <button
+                          type="button"
+                          class="chat__msg-details-copy-all"
+                          [disabled]="item.detailRows.length === 0"
+                          [cacTooltip]="
+                            item.detailRows.length === 0
+                              ? 'Nothing to copy'
+                              : 'Copy all turn details'
+                          "
+                          (click)="copyMessageSummary(item.message)"
+                        >
+                          Copy all
+                        </button>
                       </div>
                     </div>
                   }
                 </article>
-                }
-              }
-              @case ('event') {
-                <article class="chat__event"
-                         [class.chat__event--warn]="item.event.severity === 'warn'"
-                         [class.chat__event--error]="item.event.severity === 'error'"
-                         [class.chat__event--stale-error]="item.staleError"
-                         [class.chat__event--session-recovered]="item.event.kind === 'session-recovered'"
-                         [class.chat__event--memory-refreshed]="item.event.kind === 'memory-refreshed'"
-                         [class.chat__event--tool]="item.event.kind === 'tool-call'"
-                         [class.chat__event--decision]="item.event.kind === 'decision'"
-                         [class.chat__event--expanded]="item.expanded"
-                         [attr.data-testid]="'chat-event-' + item.event.kind"
-                         [attr.data-event-id]="item.event.id"
-                         [attr.data-decision-type]="item.event.kind === 'decision' ? (item.event.decisionType ?? null) : null"
-                         [attr.data-expanded]="item.expanded ? 'true' : 'false'">
-                  <button type="button"
-                          class="chat__event-head"
-                          [attr.data-testid]="'chat-event-toggle-' + item.event.id"
-                          [attr.aria-expanded]="item.expanded"
-                          [disabled]="!item.hasDetail"
-                          (click)="toggleEventExpanded(item.event.id)">
-                    <span class="chat__event-icon" aria-hidden="true">{{ item.icon }}</span>
-                    <span class="chat__event-kind">{{ item.label }}</span>
-                    <span class="chat__event-summary">{{ item.event.summary }}</span>
-                    <span class="chat__event-time">{{ item.formattedTime }}</span>
-                    @if (item.hasDetail) {
-                      <span class="chat__event-caret" aria-hidden="true">{{ item.expanded ? '▴' : '▾' }}</span>
-                    }
-                  </button>
-                  @if (item.event.actionLabel) {
-                    <button type="button"
-                            class="chat__event-action"
-                            [attr.data-testid]="'chat-event-action-' + item.event.id"
-                            (click)="onEventAction($event, item.event.id)">
-                      {{ item.event.actionLabel }} →
-                    </button>
-                  }
-                  @if (item.expanded && item.event.detail) {
-                    <cac-markdown class="chat__event-detail"
-                                  [source]="item.event.detail"
-                                  [dense]="true"
-                                  [codeLineNumbers]="true"
-                                  testId="chat-event-detail" />
-                  }
-                </article>
               }
             }
+            @case ('event') {
+              <article
+                class="chat__event"
+                [class.chat__event--warn]="item.event.severity === 'warn'"
+                [class.chat__event--error]="item.event.severity === 'error'"
+                [class.chat__event--stale-error]="item.staleError"
+                [class.chat__event--session-recovered]="item.event.kind === 'session-recovered'"
+                [class.chat__event--memory-refreshed]="item.event.kind === 'memory-refreshed'"
+                [class.chat__event--tool]="item.event.kind === 'tool-call'"
+                [class.chat__event--decision]="item.event.kind === 'decision'"
+                [class.chat__event--expanded]="item.expanded"
+                [attr.data-testid]="'chat-event-' + item.event.kind"
+                [attr.data-event-id]="item.event.id"
+                [attr.data-decision-type]="
+                  item.event.kind === 'decision' ? (item.event.decisionType ?? null) : null
+                "
+                [attr.data-expanded]="item.expanded ? 'true' : 'false'"
+              >
+                <button
+                  type="button"
+                  class="chat__event-head"
+                  [attr.data-testid]="'chat-event-toggle-' + item.event.id"
+                  [attr.aria-expanded]="item.expanded"
+                  [disabled]="!item.hasDetail"
+                  (click)="toggleEventExpanded(item.event.id)"
+                >
+                  <span class="chat__event-icon" aria-hidden="true">{{ item.icon }}</span>
+                  <span class="chat__event-kind">{{ item.label }}</span>
+                  <span class="chat__event-summary">{{ item.event.summary }}</span>
+                  <span class="chat__event-time">{{ item.formattedTime }}</span>
+                  @if (item.hasDetail) {
+                    <span class="chat__event-caret" aria-hidden="true">{{
+                      item.expanded ? '▴' : '▾'
+                    }}</span>
+                  }
+                </button>
+                @if (item.event.actionLabel) {
+                  <button
+                    type="button"
+                    class="chat__event-action"
+                    [attr.data-testid]="'chat-event-action-' + item.event.id"
+                    (click)="onEventAction($event, item.event.id)"
+                  >
+                    {{ item.event.actionLabel }} →
+                  </button>
+                }
+                @if (item.expanded && item.event.detail) {
+                  <cac-markdown
+                    class="chat__event-detail"
+                    [source]="item.event.detail"
+                    [dense]="true"
+                    [codeLineNumbers]="true"
+                    testId="chat-event-detail"
+                  />
+                }
+              </article>
+            }
           }
-          @if (virtualised() && bottomSpacerPx() > 0) {
-            <div class="chat__spacer chat__spacer--bottom"
-                 data-testid="chat-spacer-bottom"
-                 [style.height.px]="bottomSpacerPx()"></div>
-          }
-          @if (pending()) {
-            <div class="chat__typing" data-testid="chat-typing">
-              <span></span><span></span><span></span>
-            </div>
-          }
-          <!-- A real end-of-feed target lets the scroll logic verify that
+        }
+        @if (virtualised() && bottomSpacerPx() > 0) {
+          <div
+            class="chat__spacer chat__spacer--bottom"
+            data-testid="chat-spacer-bottom"
+            [style.height.px]="bottomSpacerPx()"
+          ></div>
+        }
+        @if (pending()) {
+          <div class="chat__typing" data-testid="chat-typing">
+            <span></span><span></span><span></span>
+          </div>
+        }
+        <!-- A real end-of-feed target lets the scroll logic verify that
                delayed layout (notably lazy images) has not pushed the latest
                content back below the viewport after a jump. -->
-          <span #latestAnchor
-                class="chat__latest-anchor"
-                data-testid="chat-latest-anchor"
-                aria-hidden="true"></span>
-        }
-      </div>
+        <span
+          #latestAnchor
+          class="chat__latest-anchor"
+          data-testid="chat-latest-anchor"
+          aria-hidden="true"
+        ></span>
       }
+    </div>
+  }
 
-      <!-- Generic projection slot for host-specific content rendered
+  <!-- Generic projection slot for host-specific content rendered
            directly above the composer (e.g. orchestrator side sheet's
            subtle context indicator). The chat surface stays agent- and
            model-agnostic; hosts use this slot for surface-specific
            affordances that should sit immediately above the input. -->
-      <ng-content select="[chat-above-composer]"></ng-content>
+  <ng-content select="[chat-above-composer]"></ng-content>
 
-      <form class="chat__composer"
-            [class.chat__composer--drag]="isDragging()"
-            (submit)="onSubmit($event)"
-            (dragover)="onDragOver($event)"
-            (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)">
-
-        @if (drafts().length > 0) {
-          <ul class="chat__drafts" data-testid="chat-drafts">
-            @for (att of drafts(); track att.id) {
-              <li class="chat__draft">
-                <img [src]="att.previewUrl" [alt]="att.alt" />
-                <span class="chat__draft-name">{{ att.alt }}</span>
-                <button type="button"
-                        class="chat__draft-remove"
-                        [cacTooltip]="'Remove attachment'"
-                        (click)="removeDraftAttachment(att.id)">×</button>
-              </li>
-            }
-          </ul>
-        }
-
-        @if (attachmentError()) {
-          <div class="chat__attachment-error">{{ attachmentError() }}</div>
-        }
-
-        @if (toolbarVisible()) {
-          <div class="chat__toolbar" data-testid="chat-toolbar">
-            <div class="chat__toolbar-start">
-              @if (contextLabel(); as label) {
-                <span class="chat__toolbar-context" data-testid="chat-toolbar-context">{{ label }}</span>
-              }
-              @for (item of toolbarStart(); track item.id) {
-                <button type="button"
-                        class="chat__toolbar-btn"
-                        [class.chat__toolbar-btn--pill]="item.variant === 'pill'"
-                        [cacTooltip]="item.label"
-                        [attr.aria-label]="item.label"
-                        [attr.data-testid]="'chat-toolbar-' + item.id"
-                        [disabled]="item.disabled || disabled()"
-                        (click)="onToolbarAction(item.id)">{{ item.glyph }}</button>
-              }
-            </div>
-            <div class="chat__toolbar-end">
-              @if (routingLabel(); as label) {
-                <span class="chat__toolbar-routing" data-testid="chat-toolbar-routing">{{ label }}</span>
-              }
-              @for (item of toolbarEnd(); track item.id) {
-                <button type="button"
-                        class="chat__toolbar-btn"
-                        [class.chat__toolbar-btn--pill]="item.variant === 'pill'"
-                        [cacTooltip]="item.label"
-                        [attr.aria-label]="item.label"
-                        [attr.data-testid]="'chat-toolbar-' + item.id"
-                        [disabled]="item.disabled || disabled()"
-                        (click)="onToolbarAction(item.id)">{{ item.glyph }}</button>
-              }
-            </div>
-          </div>
-        }
-
-        <div class="chat__composer-row">
-          <textarea #input
-                    class="chat__input"
-                    data-testid="chat-input"
-                    rows="2"
-                    [placeholder]="placeholder()"
-                    [disabled]="disabled()"
-                    [(ngModel)]="draftText"
-                    [ngModelOptions]="{ standalone: true }"
-                    (paste)="onPaste($event)"
-                    (keydown)="onInputKeydown($event)"></textarea>
-
-          <div class="chat__composer-actions">
-            @if (allowAttachments()) {
-              <button type="button"
-                      class="chat__icon-btn"
-                      [cacTooltip]="'Attach image'"
-                      data-testid="chat-attach"
-                      [disabled]="disabled()"
-                      (click)="triggerFilePicker()">📎</button>
-              <input #fileInput
-                     type="file"
-                     accept="image/*"
-                     multiple
-                     class="chat__file-input"
-                     (change)="onFileInputChange($event)" />
-            }
-            <button type="submit"
-                    class="chat__send-btn"
-                    data-testid="chat-send"
-                    [disabled]="disabled() || !canSend()">
-              {{ pending() ? '…' : submitLabel() }}
+  <form
+    class="chat__composer"
+    [class.chat__composer--drag]="isDragging()"
+    (submit)="onSubmit($event)"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    @if (drafts().length > 0) {
+      <ul class="chat__drafts" data-testid="chat-drafts">
+        @for (att of drafts(); track att.id) {
+          <li class="chat__draft">
+            <img [src]="att.previewUrl" [alt]="att.alt" />
+            <span class="chat__draft-name">{{ att.alt }}</span>
+            <button
+              type="button"
+              class="chat__draft-remove"
+              [cacTooltip]="'Remove attachment'"
+              (click)="removeDraftAttachment(att.id)"
+            >
+              ×
             </button>
-          </div>
-        </div>
+          </li>
+        }
+      </ul>
+    }
 
-        <!-- Composer footer. Built-in controls (permission select, model
+    @if (attachmentError()) {
+      <div class="chat__attachment-error">{{ attachmentError() }}</div>
+    }
+
+    @if (toolbarVisible()) {
+      <div class="chat__toolbar" data-testid="chat-toolbar">
+        <div class="chat__toolbar-start">
+          @if (contextLabel(); as label) {
+            <span class="chat__toolbar-context" data-testid="chat-toolbar-context">{{
+              label
+            }}</span>
+          }
+          @for (item of toolbarStart(); track item.id) {
+            <button
+              type="button"
+              class="chat__toolbar-btn"
+              [class.chat__toolbar-btn--pill]="item.variant === 'pill'"
+              [cacTooltip]="item.label"
+              [attr.aria-label]="item.label"
+              [attr.data-testid]="'chat-toolbar-' + item.id"
+              [disabled]="item.disabled || disabled()"
+              (click)="onToolbarAction(item.id)"
+            >
+              {{ item.glyph }}
+            </button>
+          }
+        </div>
+        <div class="chat__toolbar-end">
+          @if (routingLabel(); as label) {
+            <span class="chat__toolbar-routing" data-testid="chat-toolbar-routing">{{
+              label
+            }}</span>
+          }
+          @for (item of toolbarEnd(); track item.id) {
+            <button
+              type="button"
+              class="chat__toolbar-btn"
+              [class.chat__toolbar-btn--pill]="item.variant === 'pill'"
+              [cacTooltip]="item.label"
+              [attr.aria-label]="item.label"
+              [attr.data-testid]="'chat-toolbar-' + item.id"
+              [disabled]="item.disabled || disabled()"
+              (click)="onToolbarAction(item.id)"
+            >
+              {{ item.glyph }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="chat__composer-row">
+      <textarea
+        #input
+        class="chat__input"
+        data-testid="chat-input"
+        rows="2"
+        [placeholder]="placeholder()"
+        [disabled]="disabled()"
+        [(ngModel)]="draftText"
+        [ngModelOptions]="{ standalone: true }"
+        (paste)="onPaste($event)"
+        (keydown)="onInputKeydown($event)"
+      ></textarea>
+
+      <div class="chat__composer-actions">
+        @if (allowAttachments()) {
+          <button
+            type="button"
+            class="chat__icon-btn"
+            [cacTooltip]="'Attach image'"
+            data-testid="chat-attach"
+            [disabled]="disabled()"
+            (click)="triggerFilePicker()"
+          >
+            📎
+          </button>
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            multiple
+            class="chat__file-input"
+            (change)="onFileInputChange($event)"
+          />
+        }
+        <button
+          type="submit"
+          class="chat__send-btn"
+          data-testid="chat-send"
+          [disabled]="disabled() || !canSend()"
+        >
+          {{ pending() ? '…' : submitLabel() }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Composer footer. Built-in controls (permission select, model
              selector, context ring) render as soon as the host supplies each
              one's data — the show-by-default policy — and each can be turned
              off via its show* input. The [chat-foot-start]/[chat-foot-end]
              projection slots remain for extra host-specific affordances. The
              row collapses entirely when nothing is present. -->
-        <div class="chat__composer-foot" data-testid="chat-composer-foot">
-          <div class="chat__composer-foot-start">
-            @if (composerContext(); as context) {
-              <div class="chat__composer-context" data-testid="chat-composer-context">
-                <span data-testid="chat-composer-context-project">{{ context.project }}</span>
-                <span class="chat__composer-context-separator" aria-hidden="true">/</span>
-                <span data-testid="chat-composer-context-surface">{{ context.surface }}</span>
-                <span class="chat__composer-context-separator" aria-hidden="true">/</span>
-                <span data-testid="chat-composer-context-detail">{{ context.detail }}</span>
-              </div>
-            }
-            @if (showPermissionSelect()) {
-              <cac-permission-select
-                [options]="permissionControl()!.options"
-                [value]="permissionControl()!.value ?? null"
-                [disabled]="permissionControl()!.disabled ?? disabled()"
-                [disabledReason]="permissionControl()!.disabledReason ?? null"
-                (valueChange)="permissionChange.emit($event)" />
-            }
-            <ng-content select="[chat-foot-start]"></ng-content>
+    <div class="chat__composer-foot" data-testid="chat-composer-foot">
+      <div class="chat__composer-foot-start">
+        @if (composerContext(); as context) {
+          <div class="chat__composer-context" data-testid="chat-composer-context">
+            <span data-testid="chat-composer-context-project">{{ context.project }}</span>
+            <span class="chat__composer-context-separator" aria-hidden="true">/</span>
+            <span data-testid="chat-composer-context-surface">{{ context.surface }}</span>
+            <span class="chat__composer-context-separator" aria-hidden="true">/</span>
+            <span data-testid="chat-composer-context-detail">{{ context.detail }}</span>
           </div>
-          <div class="chat__composer-foot-end">
-            <ng-content select="[chat-foot-end]"></ng-content>
-            @if (showModelSelector()) {
-              <cac-model-selector
-                [cliOptions]="modelControl()!.cliOptions ?? []"
-                [cliType]="modelControl()!.cliType ?? null"
-                [model]="modelControl()!.model ?? null"
-                [thinkingLevel]="modelControl()!.thinkingLevel ?? null"
-                [models]="modelControl()!.catalog ?? []"
-                [catalogLoading]="modelControl()!.catalogLoading ?? false"
-                [catalogError]="modelControl()!.catalogError ?? null"
-                [disabled]="modelControl()!.disabled ?? disabled()"
-                [disabledReason]="modelControl()!.disabledReason ?? null"
-                (commit)="modelCommit.emit($event)"
-                (catalogRequested)="modelCatalogRequested.emit($event)"
-                (refreshRequested)="modelRefreshRequested.emit($event)" />
-            }
-            @if (showContextIndicator()) {
-              <cac-context-ring
-                [usage]="contextUsage()"
-                [busy]="contextBusy()"
-                (refreshRequested)="contextRefreshRequested.emit()" />
-            }
-          </div>
-        </div>
-      </form>
+        }
+        @if (showPermissionSelect()) {
+          <cac-permission-select
+            [options]="permissionControl()!.options"
+            [value]="permissionControl()!.value ?? null"
+            [disabled]="permissionControl()!.disabled ?? disabled()"
+            [disabledReason]="permissionControl()!.disabledReason ?? null"
+            (valueChange)="permissionChange.emit($event)"
+          />
+        }
+        <ng-content select="[chat-foot-start]"></ng-content>
+      </div>
+      <div class="chat__composer-foot-end">
+        <ng-content select="[chat-foot-end]"></ng-content>
+        @if (showModelSelector()) {
+          <cac-model-selector
+            [cliOptions]="modelControl()!.cliOptions ?? []"
+            [cliType]="modelControl()!.cliType ?? null"
+            [model]="modelControl()!.model ?? null"
+            [thinkingLevel]="modelControl()!.thinkingLevel ?? null"
+            [models]="modelControl()!.catalog ?? []"
+            [catalogLoading]="modelControl()!.catalogLoading ?? false"
+            [catalogError]="modelControl()!.catalogError ?? null"
+            [disabled]="modelControl()!.disabled ?? disabled()"
+            [disabledReason]="modelControl()!.disabledReason ?? null"
+            (commit)="modelCommit.emit($event)"
+            (catalogRequested)="modelCatalogRequested.emit($event)"
+            (refreshRequested)="modelRefreshRequested.emit($event)"
+          />
+        }
+        @if (showContextIndicator()) {
+          <cac-context-ring
+            [usage]="contextUsage()"
+            [busy]="contextBusy()"
+            (refreshRequested)="contextRefreshRequested.emit()"
+          />
+        }
+      </div>
     </div>
+  </form>
+</div>

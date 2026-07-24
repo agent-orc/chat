@@ -21,11 +21,11 @@ const message = (
   id: string,
   role: ChatMessage['role'],
   text: string,
-  timestamp = '2026-01-01T10:00:00.000Z'
+  timestamp = '2026-01-01T10:00:00.000Z',
 ): ChatMessage => ({ id, role, text, timestamp });
 
 async function createChat(
-  inputs: Record<string, unknown> = {}
+  inputs: Record<string, unknown> = {},
 ): Promise<ComponentFixture<ChatComponent>> {
   const fixture = TestBed.createComponent(ChatComponent);
   for (const [key, value] of Object.entries(inputs)) {
@@ -35,7 +35,10 @@ async function createChat(
   return fixture;
 }
 
-function query<T extends Element>(fixture: ComponentFixture<ChatComponent>, selector: string): T | null {
+function query<T extends Element>(
+  fixture: ComponentFixture<ChatComponent>,
+  selector: string,
+): T | null {
   return (fixture.nativeElement as HTMLElement).querySelector<T>(selector);
 }
 
@@ -64,7 +67,10 @@ const TURN_PROVENANCE: ChatMessage['provenance'] = {
 };
 
 /** Type into the composer textarea through the DOM so ngModel updates. */
-async function typeDraft(fixture: ComponentFixture<ChatComponent>, text: string): Promise<HTMLTextAreaElement> {
+async function typeDraft(
+  fixture: ComponentFixture<ChatComponent>,
+  text: string,
+): Promise<HTMLTextAreaElement> {
   const textarea = query<HTMLTextAreaElement>(fixture, '[data-testid="chat-input"]')!;
   textarea.value = text;
   textarea.dispatchEvent(new Event('input'));
@@ -106,7 +112,9 @@ describe('ChatComponent', () => {
   it('renders the configured empty state when there are no messages or events', async () => {
     const fixture = await createChat({ emptyState: 'Nothing here yet.' });
 
-    expect(query(fixture, '[data-testid="chat-empty"]')?.textContent?.trim()).toBe('Nothing here yet.');
+    expect(query(fixture, '[data-testid="chat-empty"]')?.textContent?.trim()).toBe(
+      'Nothing here yet.',
+    );
     expect(query(fixture, '[data-testid="chat-msg-user"]')).toBeNull();
   });
 
@@ -152,19 +160,23 @@ describe('ChatComponent', () => {
 
   it('renders migrated attachment tombstones as explicitly unavailable', async () => {
     const archived = message('m1', 'user', 'Old screenshot');
-    archived.attachments = [{
-      kind: 'unavailable',
-      alt: 'deleted screenshot',
-      reason: 'legacy-not-found',
-      legacyUrl: 'attachments/deleted.png',
-    }];
+    archived.attachments = [
+      {
+        kind: 'unavailable',
+        alt: 'deleted screenshot',
+        reason: 'legacy-not-found',
+        legacyUrl: 'attachments/deleted.png',
+      },
+    ];
     const fixture = await createChat({ messages: [archived] });
 
     expect(query(fixture, '[data-testid="chat-msg-attachment-image"]')).toBeNull();
     expect(query(fixture, '[data-testid="chat-msg-attachment-status"]')?.textContent).toContain(
       'Unavailable: legacy-not-found',
     );
-    expect(query(fixture, '.chat__msg-attachment-name')?.textContent).toContain('deleted screenshot');
+    expect(query(fixture, '.chat__msg-attachment-name')?.textContent).toContain(
+      'deleted screenshot',
+    );
   });
 
   it('keeps a single jump-to-latest click pinned through tall lazy layout growth', async () => {
@@ -179,8 +191,10 @@ describe('ChatComponent', () => {
         observe = observe;
         unobserve(): void {}
         disconnect(): void {}
-        takeRecords(): IntersectionObserverEntry[] { return []; }
-      }
+        takeRecords(): IntersectionObserverEntry[] {
+          return [];
+        }
+      },
     );
 
     const frames = new Map<number, FrameRequestCallback>();
@@ -231,7 +245,7 @@ describe('ChatComponent', () => {
             intersectionRatio: 0,
           } as unknown as IntersectionObserverEntry,
         ],
-        undefined as unknown as IntersectionObserver
+        undefined as unknown as IntersectionObserver,
       );
     };
 
@@ -281,8 +295,9 @@ describe('ChatComponent', () => {
     await typeDraft(fixture, '  hello world  ');
     expect(sendBtn.disabled).toBe(false);
 
-    query<HTMLFormElement>(fixture, 'form.chat__composer')!
-      .dispatchEvent(new Event('submit', { cancelable: true }));
+    query<HTMLFormElement>(fixture, 'form.chat__composer')!.dispatchEvent(
+      new Event('submit', { cancelable: true }),
+    );
     await fixture.whenStable();
 
     expect(emissions).toHaveLength(1);
@@ -297,7 +312,9 @@ describe('ChatComponent', () => {
     fixture.componentInstance.submitMessage.subscribe((e) => emissions.push(e));
 
     const textarea = await typeDraft(fixture, 'line one');
-    textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, cancelable: true }));
+    textarea.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, cancelable: true }),
+    );
     await fixture.whenStable();
     expect(emissions).toHaveLength(0);
 
@@ -323,7 +340,10 @@ describe('ChatComponent', () => {
     const emissions: ChatSubmitEvent[] = [];
     fixture.componentInstance.submitMessage.subscribe((e) => emissions.push(e));
 
-    dropFiles(fixture, [pngFile('screen-grab.png'), new File(['x'], 'notes.txt', { type: 'text/plain' })]);
+    dropFiles(fixture, [
+      pngFile('screen-grab.png'),
+      new File(['x'], 'notes.txt', { type: 'text/plain' }),
+    ]);
     await fixture.whenStable();
 
     // Only the image survives the filter; alt derives from the file stem.
@@ -334,8 +354,9 @@ describe('ChatComponent', () => {
     // A staged attachment alone is submittable (no text required).
     expect(query<HTMLButtonElement>(fixture, '[data-testid="chat-send"]')!.disabled).toBe(false);
 
-    query<HTMLFormElement>(fixture, 'form.chat__composer')!
-      .dispatchEvent(new Event('submit', { cancelable: true }));
+    query<HTMLFormElement>(fixture, 'form.chat__composer')!.dispatchEvent(
+      new Event('submit', { cancelable: true }),
+    );
     await fixture.whenStable();
 
     expect(emissions).toHaveLength(1);
@@ -372,7 +393,9 @@ describe('ChatComponent', () => {
 
   it('renders toolbar items plus context and routing labels, and emits toolbarAction on click', async () => {
     const start: ChatToolbarItem[] = [{ id: 'ref', glyph: '#', label: 'Reference a task' }];
-    const end: ChatToolbarItem[] = [{ id: 'slash', glyph: '/', label: 'Quick action', variant: 'pill' }];
+    const end: ChatToolbarItem[] = [
+      { id: 'slash', glyph: '/', label: 'Quick action', variant: 'pill' },
+    ];
     const fixture = await createChat({
       toolbarStart: start,
       toolbarEnd: end,
@@ -387,12 +410,16 @@ describe('ChatComponent', () => {
     expect(refBtn.textContent?.trim()).toBe('#');
     expect(refBtn.getAttribute('aria-label')).toBe('Reference a task');
     expect(
-      query(fixture, '[data-testid="chat-toolbar-slash"]')?.classList.contains('chat__toolbar-btn--pill')
+      query(fixture, '[data-testid="chat-toolbar-slash"]')?.classList.contains(
+        'chat__toolbar-btn--pill',
+      ),
     ).toBe(true);
-    expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim())
-      .toBe('acme-website · Fix login redirect');
-    expect(query(fixture, '[data-testid="chat-toolbar-routing"]')?.textContent?.trim())
-      .toBe('routing: Codex');
+    expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim()).toBe(
+      'acme-website · Fix login redirect',
+    );
+    expect(query(fixture, '[data-testid="chat-toolbar-routing"]')?.textContent?.trim()).toBe(
+      'routing: Codex',
+    );
 
     refBtn.click();
     await fixture.whenStable();
@@ -406,8 +433,9 @@ describe('ChatComponent', () => {
 
   it('shows the toolbar row for contextLabel alone, with no other toolbar inputs', async () => {
     const fixture = await createChat({ contextLabel: 'conversation-lab · Live scenario' });
-    expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim())
-      .toBe('conversation-lab · Live scenario');
+    expect(query(fixture, '[data-testid="chat-toolbar-context"]')?.textContent?.trim()).toBe(
+      'conversation-lab · Live scenario',
+    );
   });
 
   const MODEL_CONTROL: ChatModelControl = {
@@ -437,26 +465,32 @@ describe('ChatComponent', () => {
     const fixture = await createChat({ composerContext: COMPOSER_CONTEXT });
 
     expect(query(fixture, '[data-testid="chat-composer-context"]')).toBeTruthy();
-    expect(query(fixture, '[data-testid="chat-composer-context-project"]')?.textContent?.trim())
-      .toBe('coding-agent-chat');
-    expect(query(fixture, '[data-testid="chat-composer-context-surface"]')?.textContent?.trim())
-      .toBe('orchestrator');
-    expect(query(fixture, '[data-testid="chat-composer-context-detail"]')?.textContent?.trim())
-      .toBe('CAC-11');
+    expect(
+      query(fixture, '[data-testid="chat-composer-context-project"]')?.textContent?.trim(),
+    ).toBe('coding-agent-chat');
+    expect(
+      query(fixture, '[data-testid="chat-composer-context-surface"]')?.textContent?.trim(),
+    ).toBe('orchestrator');
+    expect(
+      query(fixture, '[data-testid="chat-composer-context-detail"]')?.textContent?.trim(),
+    ).toBe('CAC-11');
   });
 
   it('shows the model selector by default once the host supplies its config', async () => {
     const fixture = await createChat({ modelControl: MODEL_CONTROL });
     expect(query(fixture, 'cac-model-selector')).toBeTruthy();
     // The chip renders the current model label.
-    expect(query(fixture, '[data-testid="cac-model-selector-trigger"]')?.textContent)
-      .toContain('sonnet 5');
+    expect(query(fixture, '[data-testid="cac-model-selector-trigger"]')?.textContent).toContain(
+      'sonnet 5',
+    );
   });
 
   it('shows the context ring once the host supplies a usage snapshot', async () => {
     const fixture = await createChat({ contextUsage: CONTEXT_USAGE });
     expect(query(fixture, 'cac-context-ring')).toBeTruthy();
-    expect(query(fixture, '[data-testid="cac-context-ring-percent"]')?.textContent).toContain('38%');
+    expect(query(fixture, '[data-testid="cac-context-ring-percent"]')?.textContent).toContain(
+      '38%',
+    );
   });
 
   it('shows the permission select once the host supplies options', async () => {
@@ -493,11 +527,17 @@ describe('ChatComponent', () => {
     fixture.componentInstance.modelCommit.subscribe((c) => commits.push(c));
     // Drive the embedded selector directly (its own picker flow is covered by
     // the model-selector spec); assert cac-chat forwards the event.
-    const trigger = query<HTMLButtonElement>(fixture, '[data-testid="cac-model-selector-trigger"]')!;
+    const trigger = query<HTMLButtonElement>(
+      fixture,
+      '[data-testid="cac-model-selector-trigger"]',
+    )!;
     trigger.click();
     await fixture.whenStable();
     // Pick a DIFFERENT model than the committed one so the selector auto-commits.
-    const pill = query<HTMLButtonElement>(fixture, '[data-testid="cac-model-selector-picker-model-claude-opus-4-8"]')!;
+    const pill = query<HTMLButtonElement>(
+      fixture,
+      '[data-testid="cac-model-selector-picker-model-claude-opus-4-8"]',
+    )!;
     pill.click();
     await fixture.whenStable();
     expect(commits).toHaveLength(1);
@@ -536,15 +576,14 @@ describe('ChatComponent', () => {
 
     expect(query(fixture, '[data-testid="chat-msg-details-toggle-m1"]')).toBeTruthy();
     const chips = Array.from(
-      fixture.nativeElement.querySelectorAll('.chat__msg-meta-chip') as NodeListOf<HTMLElement>
-    )
-      .map((el) => el.textContent ?? '');
+      fixture.nativeElement.querySelectorAll('.chat__msg-meta-chip') as NodeListOf<HTMLElement>,
+    ).map((el) => el.textContent ?? '');
     expect(chips.join(' | ')).toContain('Codex CLI');
     expect(chips.join(' | ')).toContain('gpt-5.4-mini');
 
     const detailsToggle = query<HTMLButtonElement>(
       fixture,
-      '[data-testid="chat-msg-details-toggle-m1"]'
+      '[data-testid="chat-msg-details-toggle-m1"]',
     )!;
     expect(detailsToggle.getAttribute('aria-controls')).toBe('chat-msg-details-m1');
     detailsToggle.focus();
@@ -562,12 +601,15 @@ describe('ChatComponent', () => {
     expect(popover?.textContent).toContain('shot');
     expect(popover?.textContent).toContain('Technical error');
 
-    query<HTMLButtonElement>(fixture, '[data-testid="chat-msg-details-m1"] .chat__msg-detail-copy')!.click();
+    query<HTMLButtonElement>(
+      fixture,
+      '[data-testid="chat-msg-details-m1"] .chat__msg-detail-copy',
+    )!.click();
     await fixture.whenStable();
     expect(clipboard).toHaveBeenCalled();
 
     document.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
     );
     await fixture.whenStable();
     await Promise.resolve();

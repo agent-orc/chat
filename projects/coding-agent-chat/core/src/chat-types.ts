@@ -88,9 +88,7 @@ export interface ChatUnavailableAttachmentRef extends ChatAttachmentBase {
 }
 
 export type ChatAttachmentRef =
-  | ChatStoredAttachmentRef
-  | ChatLegacyAttachmentRef
-  | ChatUnavailableAttachmentRef;
+  ChatStoredAttachmentRef | ChatLegacyAttachmentRef | ChatUnavailableAttachmentRef;
 
 export interface ChatMessage {
   id: string;
