@@ -341,6 +341,8 @@ describe('ProjectChatListComponent (search mode)', () => {
         author: 'agent',
         kind: 'turn',
         ts: source.corpus[2].ts,
+        model: 'gpt-5-codex',
+        thinkingLevel: 'high',
         snippet: 'body of <b>turn</b> 2',
         score: 1.23,
       },
@@ -361,6 +363,8 @@ describe('ProjectChatListComponent (search mode)', () => {
     expect(hit?.getAttribute('data-turnid')).toBe('turn-0002');
     // `<b>` highlight markers are resolved to accessible `<mark>`.
     expect(hit?.querySelector('.pchat__hit-snippet mark')?.textContent).toBe('turn');
+    // Search-mode rows use the same compact shared marker as the live list.
+    expect(hit?.querySelector('[data-testid="pchat-hit-model"]')?.textContent?.replace(/\s/g, '')).toBe('CDXH');
 
     const selected: string[] = [];
     component.turnSelected.subscribe((e) => selected.push(e.turnId));

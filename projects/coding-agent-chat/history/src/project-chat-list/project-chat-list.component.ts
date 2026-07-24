@@ -19,7 +19,7 @@ import {
   type ChatPhase,
   type PhaseInputMessage,
 } from 'coding-agent-chat/composer';
-import { TooltipDirective } from 'coding-agent-chat/shared';
+import { ModelLevelIndicatorComponent, TooltipDirective } from 'coding-agent-chat/shared';
 
 import { CHAT_HISTORY_CONFIRM } from '../chat-history-confirm.token';
 import { ChatRowComponent, type ChatRowInput } from '../chat-row/chat-row.component';
@@ -71,6 +71,7 @@ import type {
     RoleBadgeComponent,
     PhaseSummaryListComponent,
     TooltipDirective,
+    ModelLevelIndicatorComponent,
     ChatRowComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

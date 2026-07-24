@@ -172,6 +172,12 @@
                   <cac-role-badge [author]="hit.author" [kind]="hit.kind" />
                 }
                 <span class="pchat__kind">{{ hit.kind }}</span>
+                @if (hit.model) {
+                  <cac-model-level-indicator
+                    [model]="hit.model"
+                    [thinking]="hit.thinkingLevel ?? null"
+                    data-testid="pchat-hit-model" />
+                }
                 <time class="pchat__ts">{{ formatTs(hit.ts) }}</time>
               </span>
               <span class="pchat__hit-snippet" [innerHTML]="renderSnippet(hit.snippet)"></span>

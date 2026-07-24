@@ -47,6 +47,10 @@ export interface ProjectChatSearchHit {
   author: ProjectChatTurn['author'];
   kind: ProjectChatTurn['kind'];
   ts: string;
+  /** Generating model for this hit's run, when the search backend can attribute it. */
+  model?: string | null;
+  /** Thinking level paired with the generating model. */
+  thinkingLevel?: string | null;
   /** HTML-safe snippet with `<b>...</b>` highlight markers around matched terms. */
   snippet: string;
   score: number;
