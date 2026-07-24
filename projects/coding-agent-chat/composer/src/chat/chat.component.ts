@@ -11,7 +11,7 @@ import {
   output,
   signal,
   untracked,
-  viewChild
+  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -59,7 +59,7 @@ interface RenderedMessage {
    * recomputes — never per change-detection pass — so a keystroke in the
    * composer (which dirties this view) does not re-run the expensive
    * `toLocaleTimeString`/Intl path for every row. See the typing-perf note.
-  */
+   */
   formattedTime: string;
   message: ChatMessage;
   /** Top-right provenance chips shown inline when values exist. */
@@ -142,7 +142,7 @@ type RenderedItem = RenderedMessage | RenderedEvent;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss'
+  styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements AfterViewInit, OnDestroy {
   readonly messages = input<ChatMessage[]>([]);
@@ -250,11 +250,15 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   /** The built-in permission select's chosen mode id. */
   readonly permissionChange = output<string>();
 
-  readonly showModelSelector = computed<boolean>(() => this.showModelControl() && this.modelControl() !== null);
+  readonly showModelSelector = computed<boolean>(
+    () => this.showModelControl() && this.modelControl() !== null,
+  );
   readonly showPermissionSelect = computed<boolean>(
     () => this.showPermissionControl() && (this.permissionControl()?.options?.length ?? 0) > 0,
   );
-  readonly showContextIndicator = computed<boolean>(() => this.showContextRing() && this.contextUsage() !== null);
+  readonly showContextIndicator = computed<boolean>(
+    () => this.showContextRing() && this.contextUsage() !== null,
+  );
 
   readonly drafts = signal<ChatDraftAttachment[]>([]);
   readonly attachmentError = signal<string | null>(null);
@@ -303,9 +307,7 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
    * same super-phase, so a single active conversation just paints one
    * "Session" header at the top.
    */
-  readonly superPhases = computed<SuperPhase[]>(() =>
-    groupIntoSuperPhases(this.phases())
-  );
+  readonly superPhases = computed<SuperPhase[]>(() => groupIntoSuperPhases(this.phases()));
 
   /** First index of the rendered() slice that the template should draw
    *  when virtualisation is on. */
@@ -319,9 +321,10 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     // this point belong to a previous session and render dimmed so
     // the operator can tell historical failures apart from a live one.
     const superPhases = this.superPhases();
-    const staleCutoffMs = superPhases.length > 0
-      ? Date.parse(superPhases[superPhases.length - 1].startTs)
-      : Number.NEGATIVE_INFINITY;
+    const staleCutoffMs =
+      superPhases.length > 0
+        ? Date.parse(superPhases[superPhases.length - 1].startTs)
+        : Number.NEGATIVE_INFINITY;
     const isStaleError = (ts: string, hasError: boolean): boolean => {
       if (!hasError) return false;
       const t = Date.parse(ts);
@@ -358,7 +361,10 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       event,
       hasDetail: !!event.detail,
       expanded: expandedEvents.has(event.id),
-      staleError: isStaleError(event.timestamp, event.severity === 'error' || event.severity === 'warn'),
+      staleError: isStaleError(
+        event.timestamp,
+        event.severity === 'error' || event.severity === 'warn',
+      ),
     }));
     // F15: phase / super-phase dividers no longer render inline in the
     // chat stream — in the orchestrator chat every "phase" is a single
@@ -378,7 +384,7 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     const items = this.rendered();
     if (!this.virtualised()) return items;
     const start = Math.max(0, Math.min(this.visibleStart(), items.length));
-    const end   = Math.max(start, Math.min(this.visibleEnd(), items.length));
+    const end = Math.max(start, Math.min(this.visibleEnd(), items.length));
     return items.slice(start, end);
   });
   /** Top-spacer height keeping scroll position correct in virtual mode. */
@@ -468,10 +474,14 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
 
   roleLabel(role: ChatRole): string {
     switch (role) {
-      case 'user': return 'You';
-      case 'agent': return 'Agent';
-      case 'orchestrator': return '⚙ Orchestrator';
-      case 'system': return 'System';
+      case 'user':
+        return 'You';
+      case 'agent':
+        return 'Agent';
+      case 'orchestrator':
+        return '⚙ Orchestrator';
+      case 'system':
+        return 'System';
     }
   }
 
@@ -548,7 +558,9 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
   onDrop(event: DragEvent): void {
     this.isDragging.set(false);
     if (!this.allowAttachments()) return;
-    const files = Array.from(event.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'));
+    const files = Array.from(event.dataTransfer?.files ?? []).filter((f) =>
+      f.type.startsWith('image/'),
+    );
     if (files.length === 0) return;
     event.preventDefault();
     for (const file of files) this.addAttachment(file);
@@ -697,10 +709,12 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
 
   /** True when at least one of the toolbar slots has content. */
   readonly toolbarVisible = computed<boolean>(() => {
-    return this.toolbarStart().length > 0
-      || this.toolbarEnd().length > 0
-      || this.contextLabel() !== null
-      || this.routingLabel() !== null;
+    return (
+      this.toolbarStart().length > 0 ||
+      this.toolbarEnd().length > 0 ||
+      this.contextLabel() !== null ||
+      this.routingLabel() !== null
+    );
   });
 
   toggleEventExpanded(eventId: string): void {
@@ -728,8 +742,18 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     if (provider && provider !== cli) chips.push({ label: 'Provider', value: provider });
     if (model) chips.push({ label: 'Model', value: this.shortModel(model), tooltip: model });
     if (thinkingLevel) chips.push({ label: 'Think', value: thinkingLevel });
-    if (totalTokens !== null) chips.push({ label: 'Tokens', value: this.formatCompactNumber(totalTokens), tooltip: this.formatTokenTooltip(provenance.tokenUsage) });
-    if (duration) chips.push({ label: 'Duration', value: duration, tooltip: this.formatDurationTooltip(provenance.durationMs) });
+    if (totalTokens !== null)
+      chips.push({
+        label: 'Tokens',
+        value: this.formatCompactNumber(totalTokens),
+        tooltip: this.formatTokenTooltip(provenance.tokenUsage),
+      });
+    if (duration)
+      chips.push({
+        label: 'Duration',
+        value: duration,
+        tooltip: this.formatDurationTooltip(provenance.durationMs),
+      });
     return chips;
   }
 
@@ -772,7 +796,9 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
         });
       }
 
-      const cliBits = [this.cleanText(provenance.cli), this.cleanText(provenance.provider)].filter((bit): bit is string => !!bit);
+      const cliBits = [this.cleanText(provenance.cli), this.cleanText(provenance.provider)].filter(
+        (bit): bit is string => !!bit,
+      );
       if (cliBits.length > 0) {
         rows.push({
           label: 'CLI',
@@ -799,15 +825,20 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
           this.formatTokenMetric('reasoning', tokenUsage.reasoningTokens),
         ].filter((bit): bit is string => !!bit);
         const total = this.totalTokens(tokenUsage);
-        const tokenSummary = total !== null ? `${this.formatCount(total)} total` : tokenBits.join(' · ');
+        const tokenSummary =
+          total !== null ? `${this.formatCount(total)} total` : tokenBits.join(' · ');
         rows.push({
           label: 'Tokens',
           value: tokenSummary || 'Unavailable',
           copyText: [
             total !== null ? `total=${total}` : null,
             tokenBits.join(' '),
-            tokenUsage.cost !== undefined && tokenUsage.cost !== null ? `cost=$${tokenUsage.cost.toFixed(4)}` : null,
-          ].filter((bit): bit is string => !!bit).join(' | '),
+            tokenUsage.cost !== undefined && tokenUsage.cost !== null
+              ? `cost=$${tokenUsage.cost.toFixed(4)}`
+              : null,
+          ]
+            .filter((bit): bit is string => !!bit)
+            .join(' | '),
         });
         if (tokenUsage.cost !== undefined && tokenUsage.cost !== null) {
           rows.push({
@@ -882,19 +913,26 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     return text;
   }
 
-  private totalTokens(tokenUsage: NonNullable<ChatTurnProvenance['tokenUsage']> | null | undefined): number | null {
+  private totalTokens(
+    tokenUsage: NonNullable<ChatTurnProvenance['tokenUsage']> | null | undefined,
+  ): number | null {
     if (!tokenUsage) return null;
     if (tokenUsage.totalTokens !== undefined && tokenUsage.totalTokens !== null) {
       return tokenUsage.totalTokens;
     }
-    const parts = [tokenUsage.inputTokens, tokenUsage.outputTokens, tokenUsage.reasoningTokens]
-      .filter((part): part is number => typeof part === 'number' && Number.isFinite(part));
+    const parts = [
+      tokenUsage.inputTokens,
+      tokenUsage.outputTokens,
+      tokenUsage.reasoningTokens,
+    ].filter((part): part is number => typeof part === 'number' && Number.isFinite(part));
     if (parts.length === 0) return null;
     return parts.reduce((sum, part) => sum + part, 0);
   }
 
   private formatCount(value: number): string {
-    return new Intl.NumberFormat([], { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+    return new Intl.NumberFormat([], { notation: 'compact', maximumFractionDigits: 1 }).format(
+      value,
+    );
   }
 
   private formatCompactNumber(value: number): string {
@@ -925,14 +963,18 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     return `${durationMs} ms`;
   }
 
-  private formatTokenTooltip(tokenUsage: NonNullable<ChatTurnProvenance['tokenUsage']> | null | undefined): string {
+  private formatTokenTooltip(
+    tokenUsage: NonNullable<ChatTurnProvenance['tokenUsage']> | null | undefined,
+  ): string {
     if (!tokenUsage) return '';
     const parts = [
       tokenUsage.inputTokens !== undefined ? `input=${tokenUsage.inputTokens}` : null,
       tokenUsage.outputTokens !== undefined ? `output=${tokenUsage.outputTokens}` : null,
       tokenUsage.reasoningTokens !== undefined ? `reasoning=${tokenUsage.reasoningTokens}` : null,
       tokenUsage.totalTokens !== undefined ? `total=${tokenUsage.totalTokens}` : null,
-      tokenUsage.cost !== undefined && tokenUsage.cost !== null ? `cost=$${tokenUsage.cost.toFixed(4)}` : null,
+      tokenUsage.cost !== undefined && tokenUsage.cost !== null
+        ? `cost=$${tokenUsage.cost.toFixed(4)}`
+        : null,
     ].filter((part): part is string => !!part);
     return parts.join(' · ');
   }
@@ -943,13 +985,20 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     // without forcing the operator to expand the detail body.
     if (event.kind === 'decision') return decisionIcon(event.decisionType);
     switch (event.kind) {
-      case 'tool-call':         return '🔧';
-      case 'watchdog':          return '⏱';
-      case 'rate-limit':        return '⏳';
-      case 'update':            return '↻';
-      case 'task':              return '🎯';
-      case 'session-recovered': return '⟳';
-      case 'memory-refreshed':  return '⊕';
+      case 'tool-call':
+        return '🔧';
+      case 'watchdog':
+        return '⏱';
+      case 'rate-limit':
+        return '⏳';
+      case 'update':
+        return '↻';
+      case 'task':
+        return '🎯';
+      case 'session-recovered':
+        return '⟳';
+      case 'memory-refreshed':
+        return '⊕';
     }
     return '•';
   }
@@ -962,13 +1011,20 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       return sub ? `Orchestrator: ${sub}` : 'Orchestrator';
     }
     switch (event.kind) {
-      case 'tool-call':         return 'Tool call';
-      case 'watchdog':          return 'Watchdog';
-      case 'rate-limit':        return 'Rate limit';
-      case 'update':            return 'Update';
-      case 'task':              return 'Task';
-      case 'session-recovered': return 'Session recovered';
-      case 'memory-refreshed':  return 'Memory refreshed';
+      case 'tool-call':
+        return 'Tool call';
+      case 'watchdog':
+        return 'Watchdog';
+      case 'rate-limit':
+        return 'Rate limit';
+      case 'update':
+        return 'Update';
+      case 'task':
+        return 'Task';
+      case 'session-recovered':
+        return 'Session recovered';
+      case 'memory-refreshed':
+        return 'Memory refreshed';
     }
     return '';
   }
@@ -998,7 +1054,9 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
       this.suppressScrollEvent = true;
       el.scrollTop = el.scrollHeight;
       this.lastScrollTop = el.scrollTop;
-      requestAnimationFrame(() => { this.suppressScrollEvent = false; });
+      requestAnimationFrame(() => {
+        this.suppressScrollEvent = false;
+      });
     });
   }
 
@@ -1022,11 +1080,14 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
     this.observedLatestAnchor = anchor;
     if (!body || !anchor) return;
 
-    this.latestIntersectionObserver = new IntersectionObserver((entries) => {
-      const latest = entries.find((entry) => entry.target === anchor);
-      if (!latest || latest.intersectionRatio >= 1 || !this.stickToBottom()) return;
-      this.scheduleScrollToBottom();
-    }, { root: body, threshold: 1 });
+    this.latestIntersectionObserver = new IntersectionObserver(
+      (entries) => {
+        const latest = entries.find((entry) => entry.target === anchor);
+        if (!latest || latest.intersectionRatio >= 1 || !this.stickToBottom()) return;
+        this.scheduleScrollToBottom();
+      },
+      { root: body, threshold: 1 },
+    );
     this.latestIntersectionObserver.observe(anchor);
   }
 }
@@ -1071,11 +1132,16 @@ function makeId(): string {
  */
 function decisionIcon(decisionType: string | undefined): string {
   switch ((decisionType ?? '').toLowerCase()) {
-    case 'reissue':   return '↻';
-    case 'heuristic': return '◌';
-    case 'giveup':    return '⊘';
-    case 'decision':  return '⚙';
-    default:          return '⚙';
+    case 'reissue':
+      return '↻';
+    case 'heuristic':
+      return '◌';
+    case 'giveup':
+      return '⊘';
+    case 'decision':
+      return '⚙';
+    default:
+      return '⚙';
   }
 }
 

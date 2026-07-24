@@ -33,23 +33,17 @@ describe('NodeChatAttachmentStorage', () => {
       `.coding-agent-chat/conversations/task%2FCAC-12/attachments/${HELLO_SHA256}.png`,
     );
     expect(
-      Array.from(
-        await readFile(join(projectRoot, ...archivedRef.relativePath.split('/'))),
-      ),
+      Array.from(await readFile(join(projectRoot, ...archivedRef.relativePath.split('/')))),
     ).toEqual(Array.from(hello()));
 
-    const restartedProcess = new ChatAttachmentContract(
-      new NodeChatAttachmentStorage(projectRoot),
-    );
+    const restartedProcess = new ChatAttachmentContract(new NodeChatAttachmentStorage(projectRoot));
     const resolution = await restartedProcess.resolve(
       JSON.parse(JSON.stringify(archivedRef)) as ChatStoredAttachmentRef,
     );
 
     expect(resolution.status).toBe('available');
     if (resolution.status !== 'available') throw new Error('Expected attachment to resolve');
-    expect(resolution.absolutePath).toBe(
-      join(projectRoot, ...archivedRef.relativePath.split('/')),
-    );
+    expect(resolution.absolutePath).toBe(join(projectRoot, ...archivedRef.relativePath.split('/')));
     expect(Array.from(resolution.bytes)).toEqual(Array.from(hello()));
   });
 

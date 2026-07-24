@@ -54,12 +54,7 @@ export class NodeChatAttachmentStorage implements ChatAttachmentStorage {
     }
     const absolute = resolve(this.projectRoot, ...relativePath.split('/'));
     const fromRoot = relative(this.projectRoot, absolute);
-    if (
-      !fromRoot ||
-      fromRoot === '..' ||
-      fromRoot.startsWith(`..${sep}`) ||
-      isAbsolute(fromRoot)
-    ) {
+    if (!fromRoot || fromRoot === '..' || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot)) {
       throw new Error(`Attachment path escapes project root: ${relativePath}`);
     }
     return absolute;
