@@ -32,10 +32,11 @@ describe('NodeChatAttachmentStorage', () => {
     expect(archivedRef.relativePath).toBe(
       `.coding-agent-chat/conversations/task%2FCAC-12/attachments/${HELLO_SHA256}.png`,
     );
-    const persistedBytes = await readFile(
-      join(projectRoot, ...archivedRef.relativePath.split('/')),
-    );
-    expect(Array.from(persistedBytes)).toEqual(Array.from(hello()));
+    expect(
+      Array.from(
+        await readFile(join(projectRoot, ...archivedRef.relativePath.split('/'))),
+      ),
+    ).toEqual(Array.from(hello()));
 
     const restartedProcess = new ChatAttachmentContract(
       new NodeChatAttachmentStorage(projectRoot),
