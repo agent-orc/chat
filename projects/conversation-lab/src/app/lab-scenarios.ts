@@ -168,11 +168,11 @@ const needsInputLines = script([
 ]);
 
 const modelSwitchLines = script([
-  ['Implementiere das Model-Badge im Conversation-Header.', 'user'],
+  ['Implement the model badge in the conversation header.', 'user'],
   ['[taskboard] Started codex CLI (PID 11), model=gpt-5-codex, thinkingLevel=high', 'system'],
-  ['Erster Anlauf auf dem Startmodell — ich lege das Badge-Markup an.'],
+  ['First pass on the initial model — I am adding the badge markup.'],
   ['[taskboard] Started claude CLI (PID 22), model=claude-sonnet-5, thinkingLevel=high', 'system'],
-  ['Recovery-Lauf auf dem gewechselten Modell — Badge liest jetzt das per-Run-Modell.'],
+  ['Recovery run on the switched model — the badge now reads the per-run model.'],
 ]);
 
 const stderrCrashLines = script([
@@ -309,9 +309,9 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
   {
     id: 'model-switch',
     kind: 'replay',
-    title: 'Modellwechsel über zwei Runs',
+    title: 'Model switch across two runs',
     description:
-      'Zwei Runs mit unterschiedlichen Modellen (codex → claude). Jede Agent-Ausgabe muss das Modell IHRES Runs tragen; der Run-Marker zeigt den Wechsel.',
+      'Two runs use different models (Codex → Claude). Each agent message carries the model of its own run, and the run marker shows the switch.',
     lines: modelSwitchLines,
     runTimeline: {
       runCount: 2,
