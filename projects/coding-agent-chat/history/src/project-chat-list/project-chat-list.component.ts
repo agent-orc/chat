@@ -11,6 +11,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 
 import {
@@ -242,7 +243,11 @@ export class ProjectChatListComponent implements OnInit, OnDestroy {
         this.seenIds.clear();
         return;
       }
-      this.resetAndLoad();
+      // `resetAndLoad` performs synchronous data-source work for hosts backed
+      // by `of(...)`. Keep those callbacks outside this effect's dependency
+      // tracking so reads of total/window state do not accidentally turn a
+      // count update or an explicit extension into a second initial load.
+      untracked(() => this.resetAndLoad());
     });
   }
 
