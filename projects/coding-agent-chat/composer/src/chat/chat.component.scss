@@ -216,6 +216,13 @@
    dim color, low opacity. Reads as a byline directly above the body
    — same line height as the body so it integrates rather than
    floats. */
+.chat__metadata-summary {
+  padding: var(--studio-spacing-1, 4px) var(--studio-spacing-2, 8px);
+  color: var(--studio-fg-dim, #94a3b8);
+  font: 11px/1.4 var(--font-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+
 .chat__msg-head {
   display: flex;
   align-items: flex-start;

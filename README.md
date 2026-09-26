@@ -79,15 +79,18 @@ windowing, the model-selector catalog contract, attachments, and inline
 reference renderers — is documented in
 [`projects/coding-agent-chat/README.md`](projects/coding-agent-chat/README.md).
 
+Per-turn model, token, cost, and timing metadata is opt-out when a host declares
+mode capabilities. See [the per-turn metadata API](projects/coding-agent-chat/README.md#per-turn-metadata).
+
 ## Repository layout
 
 Angular CLI workspace (Angular 21.2, `ng-packagr`):
 
-| Project | Path | Purpose |
-|---|---|---|
-| `coding-agent-chat` | [`projects/coding-agent-chat`](projects/coding-agent-chat) | the publishable library |
-| `conversation-lab` | [`projects/conversation-lab`](projects/conversation-lab) | demo / playground app (port 4201) |
-| `website` | [`projects/website`](projects/website) | public website with live component demos (port 4202) |
+| Project             | Path                                                       | Purpose                                              |
+| ------------------- | ---------------------------------------------------------- | ---------------------------------------------------- |
+| `coding-agent-chat` | [`projects/coding-agent-chat`](projects/coding-agent-chat) | the publishable library                              |
+| `conversation-lab`  | [`projects/conversation-lab`](projects/conversation-lab)   | demo / playground app (port 4201)                    |
+| `website`           | [`projects/website`](projects/website)                     | public website with live component demos (port 4202) |
 
 ## Build & test
 
@@ -188,13 +191,13 @@ for the build/test loop and the project conventions,
 [agent-orc](https://github.com/agent-orc) stack, and it is usable on its own —
 any Angular host with an event stream can render it.
 
-| Project | Layer |
-| --- | --- |
-| [agent-studio](https://github.com/agent-orc/agent-studio) | the orchestrator: tasks, lanes, pipelines, review — the application on top |
-| [runner](https://github.com/agent-orc/runner) | .NET process + protocol layer for coding-agent CLIs; produces the event stream this library renders |
-| [chat](https://github.com/agent-orc/chat) | this repository: the Angular rendering layer |
-| [token-economy](https://github.com/agent-orc/token-economy) | token accounting and cost models for agent runs |
-| [quality-studio](https://github.com/agent-orc/quality-studio) | quality gates and review tooling for agent-produced changes |
+| Project                                                       | Layer                                                                                               |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [agent-studio](https://github.com/agent-orc/agent-studio)     | the orchestrator: tasks, lanes, pipelines, review — the application on top                          |
+| [runner](https://github.com/agent-orc/runner)                 | .NET process + protocol layer for coding-agent CLIs; produces the event stream this library renders |
+| [chat](https://github.com/agent-orc/chat)                     | this repository: the Angular rendering layer                                                        |
+| [token-economy](https://github.com/agent-orc/token-economy)   | token accounting and cost models for agent runs                                                     |
+| [quality-studio](https://github.com/agent-orc/quality-studio) | quality gates and review tooling for agent-produced changes                                         |
 
 More context on the [Agent Orchestrator website](https://agent-orchestrator.dev/).
 

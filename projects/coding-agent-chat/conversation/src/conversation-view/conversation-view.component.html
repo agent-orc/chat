@@ -17,7 +17,16 @@
     <header class="conv__head">
       <div class="conv__head-titles">
         <strong class="conv__title">Conversation</strong>
-        <span class="conv__subtitle">Next-gen chat preview</span>
+        @if (metadataSummary(); as summary) {
+          <span
+            class="conv__subtitle"
+            data-testid="conversation-metadata-summary"
+            [attr.aria-label]="'Session summary: ' + summary"
+            >{{ summary }}</span
+          >
+        } @else {
+          <span class="conv__subtitle">Next-gen chat preview</span>
+        }
       </div>
       <div class="conv__head-actions">
         <button
@@ -193,6 +202,9 @@
                             </li>
                           }
                         </ul>
+                      }
+                      @if (item.metadataChips?.length) {
+                        <cac-turn-metadata-line [chips]="item.metadataChips ?? []" />
                       }
                       @if (item.collapsible) {
                         <button

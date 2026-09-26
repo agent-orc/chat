@@ -6,6 +6,7 @@ import {
   OnDestroy,
   computed,
   effect,
+  inject,
   input,
   output,
   signal,
@@ -17,6 +18,8 @@ import {
   ArrowKeyScrollDirective,
   MarkdownImageLightboxDirective,
   TooltipDirective,
+  CHAT_TURN_METADATA_OPTIONS,
+  TurnMetadataLineComponent,
 } from 'coding-agent-chat/shared';
 import { MarkdownViewComponent } from 'coding-agent-chat/markdown';
 import {
@@ -35,6 +38,11 @@ import {
   ChatSubmitEvent,
   ChatToolbarItem,
   ChatTurnProvenance,
+  summarizeTurnMetadata,
+  turnMetadataChips,
+  turnMetadataSummaryLabel,
+  TurnMetadataChip,
+  TurnMetadataOptions,
 } from 'coding-agent-chat/core';
 import { RoleBadgeComponent } from '../role-badge/role-badge.component';
 import { ModelSelectorComponent } from '../model-selector/model-selector.component';
@@ -63,6 +71,7 @@ interface RenderedMessage {
   message: ChatMessage;
   /** Top-right provenance chips shown inline when values exist. */
   provenanceChips: readonly MessageProvenanceChip[];
+  metadataChips: readonly TurnMetadataChip[];
   /**
    * F7: true when this is an error message that belongs to an older
    * super-phase (i.e. session). Stale errors get a dimmed look so the
@@ -134,13 +143,31 @@ type RenderedItem = RenderedMessage | RenderedEvent;
     ModelSelectorComponent,
     PermissionSelectComponent,
     ContextRingComponent,
+    TurnMetadataLineComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements AfterViewInit, OnDestroy {
+  private readonly metadataDefaults = inject(CHAT_TURN_METADATA_OPTIONS);
   readonly messages = input<ChatMessage[]>([]);
+  /** Bind a user preference here to override the library metadata default. */
+  readonly metadataEnabled = input<boolean | null>(null);
+  readonly metadataOptions = computed<TurnMetadataOptions>(() => ({
+    ...this.metadataDefaults,
+    enabled: this.metadataEnabled() ?? this.metadataDefaults.enabled,
+  }));
+  readonly metadataSummary = computed(() =>
+    turnMetadataSummaryLabel(
+      summarizeTurnMetadata(
+        this.messages()
+          .filter((message) => message.role === 'agent' || message.role === 'orchestrator')
+          .map((message) => message.turnMetadata),
+        this.metadataOptions(),
+      ),
+    ),
+  );
   readonly events = input<ChatEvent[]>([]);
   readonly placeholder = input<string>('Type a message…');
   readonly emptyState = input<string>('No messages yet.');
@@ -340,6 +367,10 @@ export class ChatComponent implements AfterViewInit, OnDestroy {
         formattedTime: this.formatTime(message.timestamp),
         message,
         provenanceChips,
+        metadataChips:
+          message.role === 'agent' || message.role === 'orchestrator'
+            ? turnMetadataChips(message.turnMetadata, this.metadataOptions())
+            : [],
         staleError: isStaleError(message.timestamp, !!message.error),
       };
     });

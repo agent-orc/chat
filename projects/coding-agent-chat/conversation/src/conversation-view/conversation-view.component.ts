@@ -4,6 +4,7 @@ import {
   ElementRef,
   computed,
   effect,
+  inject,
   input,
   output,
   signal,
@@ -24,13 +25,20 @@ import {
   persistExpandedMessageIds,
   readExpandedMessageIds,
   StickToBottomDirective,
+  CHAT_TURN_METADATA_OPTIONS,
+  TurnMetadataLineComponent,
   TooltipDirective,
   type StructuredTooltip,
 } from 'coding-agent-chat/shared';
 import {
   parseRateLimit,
+  summarizeTurnMetadata,
+  turnMetadataChips,
+  turnMetadataSummaryLabel,
   type MessageContentPayload,
   type SessionCardData,
+  type TurnMetadataOptions,
+  type TurnMetadataChip,
 } from 'coding-agent-chat/core';
 import type {
   AgentNeedsInputEvent,
@@ -66,6 +74,7 @@ interface MessageGroupItem {
   target?: string;
   attachments?: readonly string[];
   severity?: ConversationEventSeverity;
+  metadataChips?: readonly TurnMetadataChip[];
   /** True only for transcript-sized non-user messages. */
   collapsible: boolean;
 }
@@ -234,6 +243,7 @@ function classifyMessageBody(body: string): ClassifiedBody {
     PixelProgressComponent,
     PlanChecklistComponent,
     ModelLevelIndicatorComponent,
+    TurnMetadataLineComponent,
     TooltipDirective,
     StickToBottomDirective,
     ArrowKeyScrollDirective,
@@ -243,7 +253,27 @@ function classifyMessageBody(body: string): ClassifiedBody {
   styleUrl: './conversation-view.component.scss',
 })
 export class ConversationViewComponent {
+  private readonly metadataDefaults = inject(CHAT_TURN_METADATA_OPTIONS);
   readonly events = input.required<readonly ConversationEvent[]>();
+  /** Bind a user preference here to override the library metadata default. */
+  readonly metadataEnabled = input<boolean | null>(null);
+  readonly metadataOptions = computed<TurnMetadataOptions>(() => ({
+    ...this.metadataDefaults,
+    enabled: this.metadataEnabled() ?? this.metadataDefaults.enabled,
+  }));
+  readonly metadataSummary = computed(() =>
+    turnMetadataSummaryLabel(
+      summarizeTurnMetadata(
+        this.events()
+          .filter(
+            (event): event is MessageEvent =>
+              isMessageKind(event.kind) && event.kind !== 'message.user',
+          )
+          .map((event) => event.turnMetadata),
+        this.metadataOptions(),
+      ),
+    ),
+  );
   readonly isRunning = input<boolean>(false);
   readonly queuedFollowUp = input<boolean>(false);
   readonly variant = input<'framed' | 'embedded'>('embedded');
@@ -631,6 +661,10 @@ export class ConversationViewComponent {
           target: m.target,
           attachments: m.attachments,
           severity: m.severity,
+          metadataChips:
+            m.kind === 'message.user'
+              ? []
+              : turnMetadataChips(m.turnMetadata, this.metadataOptions()),
           collapsible: m.kind !== 'message.user' && isMessageCollapsible(body),
         });
         group.lastTs = ts;

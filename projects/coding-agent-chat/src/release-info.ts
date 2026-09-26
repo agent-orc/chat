@@ -15,14 +15,14 @@ export interface CodingAgentChatReleaseInfo {
  */
 export const CODING_AGENT_CHAT_RELEASE_INFO: CodingAgentChatReleaseInfo = {
   name: 'coding-agent-chat',
-  version: '0.4.1',
+  version: '0.5.0',
   tag: null,
   commit: null,
   buildTimestamp: null,
 };
 
 export function codingAgentChatReleaseLabel(
-  info: CodingAgentChatReleaseInfo = CODING_AGENT_CHAT_RELEASE_INFO
+  info: CodingAgentChatReleaseInfo = CODING_AGENT_CHAT_RELEASE_INFO,
 ): string {
   const pieces = [`${info.name}@${info.version}`];
   if (info.tag !== null) pieces.push(info.tag);

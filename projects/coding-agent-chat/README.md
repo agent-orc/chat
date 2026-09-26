@@ -68,6 +68,63 @@ The `core` entry point keeps the `ConversationEvent` wire contract importable wi
 zero Angular weight, so backends, SSR and tests can consume the types without the
 renderer.
 
+## Per-turn metadata
+
+Assistant `MessageEvent` and `ChatMessage` turns may carry `turnMetadata`. The
+host supplies facts from its runner or pricing service; the library does not
+estimate tokens, prices, or missing timestamps. Declare what each mode can
+report with `provideCodingAgentChat`:
+
+```ts
+provideCodingAgentChat({
+  metadata: {
+    // enabled defaults to true; omit fields to show every capable field.
+    enabled: true,
+    capabilities: {
+      'codex-exec': {
+        fields: [
+          'model',
+          'tokens.input',
+          'tokens.cachedInput',
+          'tokens.output',
+          'cost.amount',
+          'cost.currency',
+          'durations.totalMs',
+        ],
+      },
+    },
+  },
+});
+
+const reply: ChatMessage = {
+  id: 'reply-1',
+  role: 'agent',
+  text: 'Done.',
+  timestamp: new Date().toISOString(),
+  turnMetadata: {
+    mode: 'codex-exec',
+    model: 'gpt-5.4-mini',
+    tokens: { input: 1200, cachedInput: 200, output: 300 },
+    cost: { amount: 0.02, currency: 'USD', priceSource: 'host price catalog' },
+    durations: { totalMs: 2400 },
+  },
+};
+```
+
+The same `turnMetadata` property works on assistant `ConversationEvent`
+messages. `mode` selects its capability entry; `'*'` is a fallback for hosts
+with one capability set. `metadata.fields` is an optional allow-list for
+further filtering. A field appears only when it is both declared and present.
+Cost requires both `cost.amount` and `cost.currency`. With no capabilities,
+the new metadata line and session summary do not appear. The existing
+`ChatTurnProvenance` display remains available for archived turns.
+
+Both `<cac-chat>` and `<cac-conversation-view>` show a compact line under each
+assistant turn and a session summary of reported tokens, costs by currency,
+turns, and average reported latency. Cached input and reasoning tokens are
+subsets and are not added again to totals. Bind `[metadataEnabled]` to a user
+preference to override the configured `enabled` default on either component.
+
 ## Structured runtime projection
 
 `projectConversation()` treats structured runtime telemetry as detail, not as

@@ -21,6 +21,7 @@
  * so the Trace fallback stays one click away. The compact chat is allowed
  * to hide noise; it is not allowed to delete traceability.
  */
+import type { TurnMetadata } from './turn-metadata';
 
 /**
  * Lanes a task can be in when a user types into the chat of a task that is no
@@ -156,6 +157,8 @@ export interface MessageEvent extends ConversationEventBase {
     | 'message.supportingAgent';
   /** Plain or markdown text. The renderer decides how to format. */
   body: string;
+  /** Optional capability-filtered usage and execution facts for this assistant turn. */
+  turnMetadata?: TurnMetadata | null;
   /**
    * Renderer-safe semantic content derived from {@link body}. Only
    * `markdown` payloads may enter a Markdown parser; source files, diffs,

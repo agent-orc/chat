@@ -11,6 +11,13 @@ pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 
 ### Added
 
+- Typed, optional per-turn provider, model, mode, effort, token, cost, timing,
+  session, thread, and execution-host metadata for both conversation surfaces.
+  Hosts declare reportable fields per mode; the UI filters absent or unsupported
+  facts, shows an accessible turn line and session summary, and supports a
+  library opt-out plus a per-user toggle input. The Conversation Lab includes
+  full and partial metadata examples.
+
 - A versioned Codex/Claude/Gemini frame compatibility corpus, documented
   deviation matrix, capture-backed rendering regression tier, and Conversation
   Lab replays now make CLI protocol differences explicit.

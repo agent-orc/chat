@@ -488,6 +488,13 @@ export const LAB_TURN_METADATA_MESSAGES: readonly ChatMessage[] = [
       ) +
       '\n\n```ts\nconst visible = true;\nconst collapsible = false;\n```',
     timestamp: at(19, 38),
+    turnMetadata: {
+      mode: 'chat-session',
+      model: 'gpt-5.4-mini',
+      tokens: { input: 12_345, output: 6_789 },
+      cost: { amount: 0.1234, currency: 'USD' },
+      durations: { totalMs: 98_000 },
+    },
     provenance: {
       cli: 'Codex CLI',
       provider: 'OpenAI',
@@ -513,6 +520,44 @@ export const LAB_TURN_METADATA_MESSAGES: readonly ChatMessage[] = [
     },
     attachments: [{ url: LAB_IMAGE_CHART, alt: 'visual-check-chart' }],
     error: 'Technical diagnostic example: command exited with code 1.',
+  },
+];
+
+/** Per-event metadata in the conversation renderer, with one partial report. */
+export const LAB_TURN_METADATA_EVENTS: readonly ConversationEvent[] = [
+  {
+    id: 'metadata-user',
+    kind: 'message.user',
+    timestamp: at(18),
+    actor: 'You',
+    body: 'How much did this run use?',
+    rawRange: nextRange(),
+  },
+  {
+    id: 'metadata-agent-1',
+    kind: 'message.taskAgent',
+    timestamp: at(19),
+    actor: 'Agent',
+    body: 'I checked the usage reported by the execution mode.',
+    rawRange: nextRange(),
+    turnMetadata: {
+      mode: 'codex-exec',
+      provider: 'OpenAI',
+      model: 'gpt-5.4-mini',
+      thinkingLevel: 'high',
+      tokens: { input: 1_250, cachedInput: 300, output: 420, reasoning: 120 },
+      cost: { amount: 0.018, currency: 'USD', priceSource: 'Token Economy' },
+      durations: { totalMs: 3_200 },
+    },
+  },
+  {
+    id: 'metadata-agent-2',
+    kind: 'message.taskAgent',
+    timestamp: at(20),
+    actor: 'Agent',
+    body: 'The follow-up mode reported only output tokens.',
+    rawRange: nextRange(),
+    turnMetadata: { mode: 'codex-exec', model: 'gpt-5.4-mini', tokens: { output: 73 } },
   },
 ];
 

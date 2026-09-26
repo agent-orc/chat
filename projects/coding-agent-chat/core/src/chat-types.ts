@@ -9,6 +9,7 @@
  */
 
 export type ChatRole = 'user' | 'agent' | 'orchestrator' | 'system';
+import type { TurnMetadata } from './turn-metadata';
 
 interface ChatAttachmentBase {
   /** Display label (alt text). */
@@ -107,6 +108,8 @@ export interface ChatMessage {
   error?: string;
   /** Immutable provenance / turn metadata. Omit for legacy turns. */
   provenance?: ChatTurnProvenance | null;
+  /** Optional capability-filtered usage and execution facts for this assistant turn. */
+  turnMetadata?: TurnMetadata | null;
   /**
    * `bubble` (default) renders the normal chat bubble. `notice` renders a
    * centered divider line instead — for meta events that belong in the

@@ -1,4 +1,13 @@
 <div class="chat" [class.chat--embedded]="variant() === 'embedded'">
+  @if (metadataSummary(); as summary) {
+    <header
+      class="chat__metadata-summary"
+      data-testid="chat-metadata-summary"
+      [attr.aria-label]="'Session summary: ' + summary"
+    >
+      {{ summary }}
+    </header>
+  }
   <!-- No content and no empty-state text → no body at all: an empty
            framed strip above the composer helps nobody. -->
   @if (rendered().length > 0 || emptyState()) {
@@ -87,6 +96,9 @@
                     [codeLineNumbers]="true"
                     testId="chat-turn-md"
                   />
+                  @if (item.metadataChips.length) {
+                    <cac-turn-metadata-line [chips]="item.metadataChips" />
+                  }
                   @if (item.message.attachments?.length) {
                     <ul
                       class="chat__msg-attachments"

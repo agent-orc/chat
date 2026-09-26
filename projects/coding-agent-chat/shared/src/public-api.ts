@@ -21,3 +21,5 @@ export * from './media-lightbox.token';
 export * from './markdown-image-lightbox.directive';
 export * from './model-level-indicator.component';
 export * from './message-collapse';
+export * from './turn-metadata.token';
+export * from './turn-metadata-line.component';

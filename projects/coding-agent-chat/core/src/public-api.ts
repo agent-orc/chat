@@ -14,6 +14,7 @@ export * from './message-content';
 export * from './conversation-session-meta';
 export * from './merge-by-timestamp';
 export * from './chat-types';
+export * from './turn-metadata';
 export * from './attachment-contract';
 export * from './composer-controls';
 export * from './model-level-indicator';

@@ -37,6 +37,7 @@ import {
   LAB_CONVERSATION_EVENTS,
   LAB_IMAGE_EVENTS,
   LAB_TURN_METADATA_MESSAGES,
+  LAB_TURN_METADATA_EVENTS,
 } from './lab-fixtures';
 
 export type LabScenarioKind = 'events' | 'replay' | 'live';
@@ -334,7 +335,7 @@ export const LAB_SCENARIOS: readonly LabScenario[] = [
     title: 'Turn metadata + complete message',
     description:
       'Complete short and long chat turns with immutable CLI, model, token, time, and run provenance. Details opens the quiet metadata view with copy actions.',
-    events: [],
+    events: LAB_TURN_METADATA_EVENTS,
     messages: LAB_TURN_METADATA_MESSAGES,
   },
   {

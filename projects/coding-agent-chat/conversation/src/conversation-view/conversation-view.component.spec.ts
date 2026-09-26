@@ -6,7 +6,7 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
-import { StickToBottomDirective } from 'coding-agent-chat/shared';
+import { CHAT_TURN_METADATA_OPTIONS, StickToBottomDirective } from 'coding-agent-chat/shared';
 
 import type {
   ArtifactImageEvent,
@@ -104,6 +104,56 @@ async function render(events: readonly ConversationEvent[], inputs: Record<strin
 describe('ConversationViewComponent', () => {
   beforeEach(() => {
     sessionStorage.clear();
+  });
+
+  it('renders only declared assistant facts and a session summary, then obeys opt-out', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CHAT_TURN_METADATA_OPTIONS,
+          useValue: {
+            capabilities: {
+              'codex-exec': {
+                fields: [
+                  'model',
+                  'tokens.input',
+                  'tokens.output',
+                  'cost.amount',
+                  'cost.currency',
+                  'durations.totalMs',
+                ],
+              },
+            },
+          },
+        },
+      ],
+    });
+    const turnMetadata = {
+      mode: 'codex-exec',
+      model: 'gpt-example',
+      provider: 'OpenAI',
+      tokens: { input: 20, output: 5, reasoning: 2 },
+      cost: { amount: 0.01, currency: 'USD' },
+      durations: { totalMs: 2000 },
+    };
+    const events = [
+      msg('message.user', 'Question', { turnMetadata }),
+      msg('message.taskAgent', 'Answer', { turnMetadata }),
+    ];
+    const fixture = await render(events);
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('[data-testid="turn-metadata-line"]')).toHaveLength(1);
+    expect(root.querySelector('[data-testid="turn-metadata-line"]')?.textContent).toContain('25');
+    expect(root.querySelector('[data-testid="turn-metadata-line"]')?.textContent).not.toContain(
+      'OpenAI',
+    );
+    expect(
+      root.querySelector('[data-testid="conversation-metadata-summary"]')?.textContent,
+    ).toContain('1 turn · 25 reported tokens · 0.01 USD · average latency 2.0 s');
+    fixture.componentRef.setInput('metadataEnabled', false);
+    await fixture.whenStable();
+    expect(root.querySelector('[data-testid="turn-metadata-line"]')).toBeNull();
+    expect(root.querySelector('[data-testid="conversation-metadata-summary"]')).toBeNull();
   });
 
   it('shows the shared compact indicator on an attributed message boundary', async () => {

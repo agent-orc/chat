@@ -32,7 +32,7 @@ describe('App', () => {
     // The project-chat-history panel was retired — one view only.
     expect(compiled.querySelector('cac-project-chat-list')).toBeNull();
     expect(compiled.querySelector('[data-testid="lab-release"]')?.textContent).toContain(
-      'coding-agent-chat@0.4.1',
+      'coding-agent-chat@0.5.0',
     );
   });
 

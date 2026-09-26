@@ -17,6 +17,7 @@ import type {
   ChatToolbarItem,
 } from 'coding-agent-chat/core';
 import { ChatComponent } from './chat.component';
+import { CHAT_TURN_METADATA_OPTIONS } from 'coding-agent-chat/shared';
 
 const message = (
   id: string,
@@ -91,6 +92,36 @@ const pngFile = (name = 'shot.png', bytes = 16): File =>
   new File([new Uint8Array(bytes)], name, { type: 'image/png' });
 
 describe('ChatComponent', () => {
+  it('shows partial turn metadata only when the mode declares its fields', async () => {
+    const turn = message('turn-1', 'agent', 'Answer');
+    turn.turnMetadata = {
+      mode: 'chat-session',
+      model: 'gpt-example',
+      tokens: { output: 7 },
+      cost: { amount: 0.02, currency: 'USD' },
+    };
+    const withoutCapabilities = await createChat({ messages: [turn] });
+    expect(query(withoutCapabilities, '[data-testid="turn-metadata-line"]')).toBeNull();
+    withoutCapabilities.destroy();
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CHAT_TURN_METADATA_OPTIONS,
+          useValue: {
+            capabilities: { 'chat-session': { fields: ['model', 'tokens.output'] } },
+          },
+        },
+      ],
+    });
+    const fixture = await createChat({ messages: [turn] });
+    expect(query(fixture, '[data-testid="turn-metadata-line"]')?.textContent).toContain('output 7');
+    expect(query(fixture, '[data-testid="turn-metadata-line"]')?.textContent).not.toContain('USD');
+    expect(query(fixture, '[data-testid="chat-metadata-summary"]')?.textContent).toContain(
+      '1 turn',
+    );
+  });
   beforeEach(() => {
     // jsdom has no object-URL implementation; the draft-staging path needs one.
     let counter = 0;

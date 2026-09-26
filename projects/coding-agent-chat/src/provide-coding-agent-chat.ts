@@ -12,7 +12,12 @@ import {
   INLINE_REFERENCE_RENDERERS,
   InlineReferenceMatcher,
 } from 'coding-agent-chat/markdown';
-import { CHAT_MEDIA_LIGHTBOX, ChatMediaLightbox } from 'coding-agent-chat/shared';
+import {
+  CHAT_MEDIA_LIGHTBOX,
+  CHAT_TURN_METADATA_OPTIONS,
+  ChatMediaLightbox,
+} from 'coding-agent-chat/shared';
+import type { TurnMetadataOptions } from 'coding-agent-chat/core';
 
 /**
  * Host wiring for the optional library seams. Every seam has a safe no-op
@@ -43,6 +48,8 @@ export interface CodingAgentChatOptions {
    * benchmark-backed defaults exported as DEFAULT_CHAT_HISTORY_WINDOW_CONFIG.
    */
   historyWindow?: ChatHistoryWindowOptions;
+  /** Opt-out metadata display and the reportable fields for each host mode. */
+  metadata?: TurnMetadataOptions;
 }
 
 /**
@@ -78,6 +85,9 @@ export function provideCodingAgentChat(options: CodingAgentChatOptions = {}): En
       provide: CHAT_HISTORY_WINDOW_CONFIG,
       useValue: resolveChatHistoryWindowConfig(options.historyWindow),
     });
+  }
+  if (options.metadata) {
+    providers.push({ provide: CHAT_TURN_METADATA_OPTIONS, useValue: options.metadata });
   }
   return makeEnvironmentProviders(providers);
 }
