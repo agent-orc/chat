@@ -5,9 +5,11 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/). Releases are cut by
 pushing a `v<version>` tag (`scripts/release.sh <version>`), which the
 `release` workflow builds and publishes to npm. The latest published version is
-[0.4.1](https://www.npmjs.com/package/coding-agent-chat/v/0.4.1).
+[0.5.0](https://www.npmjs.com/package/coding-agent-chat/v/0.5.0).
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-09-27
 
 ### Added
 
